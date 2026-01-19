@@ -1,0 +1,131 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('employees', function (Blueprint $table) {
+            $table->id();
+            $table->string('employee_id')->unique()->nullable();
+            
+            // Official profile
+            $table->string('salutation')->nullable(); // Added from 2025_12_16
+            $table->string('name');
+            $table->date('date_of_birth')->nullable(); // Added from 2025_12_16
+            $table->date('dob')->nullable(); // Kept for compatibility
+            $table->string('marital_status')->nullable(); // Added from 2025_12_16
+            $table->string('blood_group')->nullable(); // Added from 2025_12_16
+            
+            $table->string('department')->nullable();
+            $table->string('designation')->nullable();
+            $table->string('employment_type')->nullable(); // Added from 2025_12_16
+            $table->string('employment_status')->nullable(); // Added from 2025_12_16
+            
+            $table->string('reporting_manager')->nullable();
+            $table->string('branch_location')->nullable();
+            
+            $table->string('date_of_joining')->nullable(); // Added from 2025_12_16 (string format)
+            $table->date('doj')->nullable(); // Date of Joining (date format)
+            
+            $table->string('date_of_leaving')->nullable(); // Added from 2025_12_16 (string format)
+            $table->date('dol')->nullable(); // Date of Leaving (date format)
+            
+            $table->string('emergency_contact')->nullable();
+            $table->string('work_email')->unique()->nullable();
+            $table->string('crm_access_user_id')->nullable(); // sales1, ops1, ps1, etc.
+            
+            // Login details
+            $table->string('user_id')->unique()->nullable(); // Added from 2025_12_16 (with unique)
+            $table->string('login_work_email')->unique()->nullable(); // Added from 2025_12_16 (with unique)
+            $table->string('password')->nullable(); // Added from 2025_12_16
+            $table->rememberToken(); // Added from 2025_12_16
+            $table->string('login_access_rights')->nullable(); // Added from 2025_12_16
+             $table->enum('role', [
+                'Admin',
+                'Sales Manager',
+                'Sales',
+                'Operation Manager',
+                'Operation',
+                'Accounts Manager',
+                'Accounts',
+                'Post Sales Manager',
+                'Post Sales',
+                'Delivery Manager',
+                'Delivery',
+                'HR',
+                'Developer'
+            ])->nullable(); // Added from 2025_12_16
+
+            $table->decimal('starting_salary', 12, 2)->nullable(); // Added from 2025_12_16
+            $table->decimal('last_withdrawn_salary', 12, 2)->nullable(); // Added from 2025_12_16
+
+            // Basic information (Added from 2025_12_16)
+            $table->string('previous_employer')->nullable();
+            $table->string('previous_employer_contact_person')->nullable();
+            $table->string('previous_employer_contact_number')->nullable();
+            $table->string('reason_for_leaving')->nullable();
+            $table->string('highest_qualification')->nullable();
+            $table->string('specialization')->nullable();
+            $table->string('year_of_passing')->nullable();
+            $table->string('work_experience')->nullable();
+            $table->string('father_mother_name')->nullable();
+            $table->string('father_mother_contact_number')->nullable();
+            $table->string('nominee_name')->nullable();
+            $table->string('nominee_contact_number')->nullable();
+            $table->string('aadhar_number')->nullable();
+            $table->string('pan_number')->nullable();
+            $table->string('passport_number')->nullable();
+
+            // Addresses (Added from 2025_12_16)
+            $table->text('present_address')->nullable();
+            $table->text('permanent_address')->nullable();
+            $table->boolean('permanent_same_as_present')->default(false);
+
+            // Incentive & performance (Added from 2025_12_16)
+            $table->boolean('incentive_eligibility')->default(false);
+            $table->string('incentive_type')->nullable();
+            $table->string('monthly_target')->nullable();
+            $table->string('incentive_payout_date')->nullable();
+
+            // Statutory & payroll (Added from 2025_12_16)
+            $table->string('bank_name')->nullable();
+            $table->string('account_number')->nullable();
+            $table->string('ifsc_code')->nullable();
+            $table->string('salary_structure')->nullable();
+            $table->string('pf_number')->nullable();
+            $table->string('esic_number')->nullable();
+            $table->string('uan_number')->nullable();
+
+            // Exit & clearance (Added from 2025_12_16)
+            $table->string('exit_initiated_by')->nullable();
+            $table->string('resignation_date')->nullable();
+            $table->string('notice_period')->nullable();
+            $table->string('last_working_day')->nullable();
+            $table->string('exit_interview_notes')->nullable();
+            $table->boolean('service_certificate_issued')->default(false);
+            $table->string('service_certificate_issue_date')->nullable();
+            $table->boolean('handed_over_laptop')->default(false);
+            $table->boolean('handed_over_mobile')->default(false);
+            $table->boolean('handed_over_id_card')->default(false);
+            $table->boolean('all_dues_cleared')->default(false);
+            $table->enum('status', ['Active', 'Inactive'])->default('Active');
+
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('employees');
+    }
+};
