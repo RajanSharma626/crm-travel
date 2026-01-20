@@ -536,16 +536,6 @@
                         <td><strong>Number of Nights</strong></td>
                         <td>{{ $nights }}</td>
                     </tr>
-                    <tr>
-                        <td><strong>Rooms</strong></td>
-                        <td>SGL: {{ $accommodation->single_room ?? 0 }}</td>
-                        <td>DBL: {{ $accommodation->dbl_room ?? 0 }}</td>
-                        <td>TWIN: {{ $accommodation->twin ?? 0 }}</td>
-                        <td>TRPL: {{ $accommodation->trpl ?? 0 }}</td>
-                        <td>QUAD: {{ $accommodation->quad_room ?? 0 }}</td>
-                        <td>CWB: {{ $accommodation->cwb ?? 0 }}</td>
-                        <td>CNB: {{ $accommodation->cnb ?? 0 }}</td>
-                    </tr>
                 @endforeach
             </table>
         </div>
@@ -814,12 +804,11 @@
     <div class="info-section">
         <div class="info-section-title">COMMENTS</div>
         <div class="info-section-content">
+            {{-- Always show default comment first --}}
+            All above services are pre-paid. Extras to be collect directly, if any.
             @if (isset($voucher) && $voucher->comments)
-                {{-- Display dynamic comments from voucher --}}
-                {!! $voucher->comments !!}
-            @else
-                {{-- Fallback to default comment --}}
-                All above services are pre-paid. Extras to be collect directly, if any.
+                {{-- Show additional comments from voucher after default text --}}
+                <br><br>{!! $voucher->comments !!}
             @endif
             @if ($accommodation && $accommodation->confirmation_no)
                 <br><br><strong>{{ $accommodation->room_type ?? 'Deluxe Room' }}</strong> in

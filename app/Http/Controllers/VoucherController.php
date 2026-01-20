@@ -41,6 +41,8 @@ class VoucherController extends Controller
         }
 
         $validated = $request->validate([
+            'voucher_number' => 'nullable|string|max:50|unique:vouchers,voucher_number',
+            'emergency_contact_number' => 'nullable|string|max:20',
             'service_provided' => 'required|string',
             'comments' => 'required|string',
         ]);
@@ -57,8 +59,8 @@ class VoucherController extends Controller
                 ]);
             }
 
-            // Generate voucher number
-            $voucherNumber = Voucher::generateVoucherNumber('service');
+            // Use provided voucher number or generate one
+            $voucherNumber = $validated['voucher_number'] ?? Voucher::generateVoucherNumber('service');
 
             // Update operation with voucher number if not set
             if (!$operation->voucher_number) {
@@ -94,7 +96,7 @@ class VoucherController extends Controller
     }
 
     /**
-     * Create Itinerary Voucher
+     * Create Itinerary
      * No service or comment input required - directly created
      */
     public function createItineraryVoucher(Request $request, Lead $lead)
@@ -137,7 +139,7 @@ class VoucherController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Itinerary voucher created successfully',
+                'message' => 'Itinerary created successfully',
                 'voucher' => $voucher->load('createdBy'),
             ]);
 
@@ -145,7 +147,7 @@ class VoucherController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating itinerary voucher: ' . $e->getMessage()
+                'message' => 'Error creating itinerary: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -162,6 +164,8 @@ class VoucherController extends Controller
         }
 
         $validated = $request->validate([
+            'voucher_number' => 'nullable|string|max:50|unique:vouchers,voucher_number',
+            'emergency_contact_number' => 'nullable|string|max:20',
             'accommodation_id' => 'required|exists:booking_accommodations,id',
             'service_provided' => 'required|string',
             'comments' => 'required|string',
@@ -184,8 +188,8 @@ class VoucherController extends Controller
                 ]);
             }
 
-            // Generate voucher number
-            $voucherNumber = Voucher::generateVoucherNumber('accommodation');
+            // Use provided voucher number or generate one
+            $voucherNumber = $validated['voucher_number'] ?? Voucher::generateVoucherNumber('accommodation');
 
             // Update operation with voucher number if not set
             if (!$operation->voucher_number) {

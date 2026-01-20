@@ -359,7 +359,7 @@ class DeliveryController extends Controller
         
         // Generate PDF based on type
         if ($type === 'itinerary') {
-            // Get the latest itinerary voucher
+            // Get the latest itinerary
             $voucher = $lead->vouchers()->where('voucher_type', 'itinerary')->latest()->first();
             
             // Generate itinerary PDF

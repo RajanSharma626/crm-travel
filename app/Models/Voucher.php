@@ -14,6 +14,7 @@ class Voucher extends Model
         'operation_id',
         'voucher_type',
         'voucher_number',
+        'emergency_contact_number',
         'service_provided',
         'comments',
         'accommodation_id',

@@ -155,6 +155,24 @@
                                                         </div>
                                                     @endif
 
+                                                    @if ($hotel->contact_person_name || $hotel->contact_person_phone)
+                                                        <div class="mt-2 mb-1">
+                                                            <small class="text-muted">
+                                                                <i data-feather="user"
+                                                                    style="width: 12px; height: 12px;"></i>
+                                                                @if ($hotel->contact_person_name)
+                                                                    {{ $hotel->contact_person_name }}
+                                                                @endif
+                                                                @if ($hotel->contact_person_phone)
+                                                                    @if ($hotel->contact_person_name)
+                                                                        -
+                                                                    @endif
+                                                                    {{ $hotel->contact_person_phone }}
+                                                                @endif
+                                                            </small>
+                                                        </div>
+                                                    @endif
+
                                                     @if ($hotel->address)
                                                         <div class="mt-2">
                                                             <small class="text-muted">
@@ -258,7 +276,7 @@
                     locationSelect.innerHTML = '<option value="">All Locations</option>';
 
                     if (country) {
-                        fetch(`/api/hotels/countries/${encodeURIComponent(country)}/destinations`)
+                        fetch(`/api/hotels/destinations/${encodeURIComponent(country)}`)
                             .then(response => response.json())
                             .then(data => {
                                 data.forEach(destination => {
@@ -275,7 +293,7 @@
                 // Load destinations on page load if country is selected
                 if (countrySelect.value) {
                     const country = countrySelect.value;
-                    fetch(`/api/hotels/countries/${encodeURIComponent(country)}/destinations`)
+                    fetch(`/api/hotels/destinations/${encodeURIComponent(country)}`)
                         .then(response => response.json())
                         .then(data => {
                             data.forEach(destination => {
@@ -354,17 +372,34 @@
                     addLocationSelect.innerHTML = '<option value="">-- Select Location --</option>';
 
                     if (country) {
-                        fetch(`/api/hotels/countries/${encodeURIComponent(country)}/destinations`)
-                            .then(response => response.json())
-                            .then(data => {
-                                data.forEach(destination => {
-                                    const option = document.createElement('option');
-                                    option.value = destination.id;
-                                    option.textContent = destination.name;
-                                    addDestinationSelect.appendChild(option);
-                                });
+                        console.log('Fetching destinations for country:', country);
+                        fetch(`/api/hotels/destinations/${encodeURIComponent(country)}`)
+                            .then(response => {
+                                console.log('Response status:', response.status);
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json();
                             })
-                            .catch(error => console.error('Error:', error));
+                            .then(data => {
+                                console.log('Destinations received:', data);
+                                if (Array.isArray(data) && data.length > 0) {
+                                    data.forEach(destination => {
+                                        const option = document.createElement('option');
+                                        option.value = destination.id;
+                                        option.textContent = destination.name;
+                                        addDestinationSelect.appendChild(option);
+                                    });
+                                } else {
+                                    console.log('No destinations found for this country');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error loading destinations:', error);
+                                alert(
+                                    'Error loading destinations. Please check the console for details.'
+                                );
+                            });
                     }
                 });
 
@@ -406,6 +441,8 @@
                                 .contact_no_1 || '';
                             document.getElementById('edit_contact_no_2').value = hotel
                                 .contact_no_2 || '';
+                            document.getElementById('edit_contact_person_name').value = hotel
+                                .contact_person_name || '';
                             document.getElementById('edit_contact_person_phone').value = hotel
                                 .contact_person_phone || '';
                             document.getElementById('edit_address').value = hotel.address || '';
@@ -416,7 +453,7 @@
 
                             if (hotel.country) {
                                 fetch(
-                                        `/api/hotels/countries/${encodeURIComponent(hotel.country)}/destinations`
+                                        `/api/hotels/destinations/${encodeURIComponent(hotel.country)}`
                                     )
                                     .then(response => response.json())
                                     .then(data => {
@@ -491,7 +528,7 @@
                     editLocationSelect.innerHTML = '<option value="">-- Select Location --</option>';
 
                     if (country) {
-                        fetch(`/api/hotels/countries/${encodeURIComponent(country)}/destinations`)
+                        fetch(`/api/hotels/destinations/${encodeURIComponent(country)}`)
                             .then(response => response.json())
                             .then(data => {
                                 data.forEach(destination => {
@@ -548,7 +585,8 @@
                     </div>
                     <div class="modal-body">
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <!-- Row 1: Country, Destination, Location -->
+                            <div class="col-md-4">
                                 <label class="form-label small">Country</label>
                                 <select name="country" id="add_country" class="form-select form-select-sm">
                                     <option value="">-- Select Country --</option>
@@ -557,40 +595,49 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label small">Destination</label>
                                 <select name="destination_id" id="add_destination_id" class="form-select form-select-sm">
                                     <option value="">-- Select Destination --</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label small">Location</label>
                                 <select name="location_id" id="add_location_id" class="form-select form-select-sm">
                                     <option value="">-- Select Location --</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
+
+                            <!-- Row 2: Hotel Name, Contact No. 1, Contact No. 2 -->
+                            <div class="col-md-4">
                                 <label class="form-label small">Hotel Name <span class="text-danger">*</span></label>
                                 <input type="text" name="name" class="form-control form-control-sm" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small">Contact Number 1</label>
+                                <label class="form-label small">Contact No. 1</label>
                                 <input type="text" name="contact_no_1" class="form-control form-control-sm"
                                     placeholder="+91 1234567890">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small">Contact Number 2</label>
+                                <label class="form-label small">Contact No. 2</label>
                                 <input type="text" name="contact_no_2" class="form-control form-control-sm"
                                     placeholder="+91 0987654321">
+                            </div>
+
+                            <!-- Row 3: Contact Person Name, Contact Person Phone, Address -->
+                            <div class="col-md-4">
+                                <label class="form-label small">Contact Person Name</label>
+                                <input type="text" name="contact_person_name" class="form-control form-control-sm"
+                                    placeholder="Contact person name">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label small">Contact Person Phone</label>
                                 <input type="text" name="contact_person_phone" class="form-control form-control-sm"
                                     placeholder="+91 0987654321">
                             </div>
-                            <div class="col-12">
+                            <div class="col-md-4">
                                 <label class="form-label small">Address</label>
-                                <textarea name="address" class="form-control form-control-sm" rows="2"
+                                <textarea name="address" class="form-control form-control-sm" rows="1"
                                     placeholder="Full address of the hotel"></textarea>
                             </div>
                         </div>
@@ -624,7 +671,8 @@
                     </div>
                     <div class="modal-body">
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <!-- Row 1: Country, Destination, Location -->
+                            <div class="col-md-4">
                                 <label class="form-label small">Country</label>
                                 <select name="country" id="edit_country" class="form-select form-select-sm">
                                     <option value="">-- Select Country --</option>
@@ -633,32 +681,41 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label small">Destination</label>
                                 <select name="destination_id" id="edit_destination_id"
                                     class="form-select form-select-sm">
                                     <option value="">-- Select Destination --</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label small">Location</label>
                                 <select name="location_id" id="edit_location_id" class="form-select form-select-sm">
                                     <option value="">-- Select Location --</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
+
+                            <!-- Row 2: Hotel Name, Contact No. 1, Contact No. 2 -->
+                            <div class="col-md-4">
                                 <label class="form-label small">Hotel Name <span class="text-danger">*</span></label>
                                 <input type="text" name="name" id="edit_name" class="form-control form-control-sm"
                                     required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small">Contact Number 1</label>
+                                <label class="form-label small">Contact No. 1</label>
                                 <input type="text" name="contact_no_1" id="edit_contact_no_1"
                                     class="form-control form-control-sm">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small">Contact Number 2</label>
+                                <label class="form-label small">Contact No. 2</label>
                                 <input type="text" name="contact_no_2" id="edit_contact_no_2"
+                                    class="form-control form-control-sm">
+                            </div>
+
+                            <!-- Row 3: Contact Person Name, Contact Person Phone, Address -->
+                            <div class="col-md-4">
+                                <label class="form-label small">Contact Person Name</label>
+                                <input type="text" name="contact_person_name" id="edit_contact_person_name"
                                     class="form-control form-control-sm">
                             </div>
                             <div class="col-md-4">
@@ -666,9 +723,9 @@
                                 <input type="text" name="contact_person_phone" id="edit_contact_person_phone"
                                     class="form-control form-control-sm">
                             </div>
-                            <div class="col-12">
+                            <div class="col-md-4">
                                 <label class="form-label small">Address</label>
-                                <textarea name="address" id="edit_address" class="form-control form-control-sm" rows="2"></textarea>
+                                <textarea name="address" id="edit_address" class="form-control form-control-sm" rows="1"></textarea>
                             </div>
                         </div>
                     </div>

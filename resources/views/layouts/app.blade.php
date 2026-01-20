@@ -96,7 +96,8 @@
             <div class="menu-header">
                 <span>
                     <a class="navbar-brand" href="{{ route('dashboard') }}">
-                        <h5 class="fw-bold mb-0">Travel Shravel</h5>
+                        <img src="{{ asset('dist/img/transparency Royal Blue 2-01.png') }}" alt="Travel Shravel"
+                            style="height: 40px; width: auto;">
                     </a>
                     <button class="btn btn-icon btn-rounded btn-flush-dark flush-soft-hover navbar-toggle">
                         <span class="icon">
@@ -243,7 +244,7 @@
                                         <span class="nav-link-text">Operations</span>
                                     </a>
                                 </li>
-                            @endif 
+                            @endif
 
                             <!-- Ticketing Tab -->
                             @if (($isAdmin || Auth::user()->hasRole('Ticketing') || Auth::user()->department === 'Ticketing') && !$isCustomerCare)
@@ -565,6 +566,15 @@
     <!-- Sidebar Menu Logic -->
     <script>
         $(document).ready(function() {
+            // Set sidebar to collapsed state by default on desktop
+            if ($(window).width() > 1199) {
+                var $wrapper = $('.hk-wrapper');
+                $wrapper.attr('data-layout-style', 'collapsed');
+                setTimeout(function() {
+                    $wrapper.attr('data-hover', 'active');
+                }, 250);
+            }
+
             // Keep submenu open if child is active on page load
             $('.nav-item.active').each(function() {
                 const parentSubmenu = $(this).closest('.nav-children');

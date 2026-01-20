@@ -13,6 +13,7 @@ class Hotel extends Model
         'name',
         'contact_no_1',
         'contact_no_2',
+        'contact_person_name',
         'contact_person_phone',
         'address',
         'country',

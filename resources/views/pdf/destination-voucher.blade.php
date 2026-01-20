@@ -528,16 +528,6 @@
                         <td><strong>Number of Nights</strong></td>
                         <td>{{ $nights }}</td>
                     </tr>
-                    <tr>
-                        <td><strong>Rooms</strong></td>
-                        <td>SGL: {{ $accommodationItem->single_room ?? 0 }}</td>
-                        <td>DBL: {{ $accommodationItem->dbl_room ?? 0 }}</td>
-                        <td>TWIN: {{ $accommodationItem->twin ?? 0 }}</td>
-                        <td>TRPL: {{ $accommodationItem->trpl ?? 0 }}</td>
-                        <td>QUAD: {{ $accommodationItem->quad_room ?? 0 }}</td>
-                        <td>CWB: {{ $accommodationItem->cwb ?? 0 }}</td>
-                        <td>CNB: {{ $accommodationItem->cnb ?? 0 }}</td>
-                    </tr>
                 @endforeach
             </table>
         </div>
@@ -802,12 +792,11 @@
     <div class="info-section">
         <div class="info-section-title">COMMENTS</div>
         <div class="info-section-content">
+            {{-- Always show default comment first --}}
+            All above services are pre-paid. Extras to be collect directly, if any.
             @if (isset($voucher) && $voucher->comments)
-                {{-- Display dynamic comments from voucher --}}
-                {!! $voucher->comments !!}
-            @else
-                {{-- Fallback to default comment --}}
-                All above services are pre-paid. Extras to be collect directly, if any.
+                {{-- Show additional comments from voucher after default text --}}
+                <br><br>{!! $voucher->comments !!}
             @endif
             @php
                 $selectedAccommodation =

@@ -2129,6 +2129,18 @@
                         <div class="modal-body">
                             <form id="serviceVoucherForm">
                                 <div class="mb-3">
+                                    <label for="serviceVoucherNumber" class="form-label">Voucher Number</label>
+                                    <input type="text" class="form-control" id="serviceVoucherNumber"
+                                        name="voucher_number" placeholder="Leave blank for auto-generation">
+                                    <small class="text-muted">Optional: Enter custom voucher number or leave blank to
+                                        auto-generate</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="serviceEmergencyContact" class="form-label">Emergency Contact Number</label>
+                                    <input type="text" class="form-control" id="serviceEmergencyContact"
+                                        name="emergency_contact_number" placeholder="Enter emergency contact number">
+                                </div>
+                                <div class="mb-3">
                                     <label for="serviceProvided" class="form-label">Service Provided <span
                                             class="text-danger">*</span></label>
                                     <textarea class="form-control" id="serviceProvided" name="service_provided" rows="3" required
@@ -2198,6 +2210,19 @@
                                 <hr>
                                 <input type="hidden" id="selectedAccommodationId">
                                 <div class="mb-3">
+                                    <label for="accommodationVoucherNumber" class="form-label">Voucher Number</label>
+                                    <input type="text" class="form-control" id="accommodationVoucherNumber"
+                                        placeholder="Leave blank for auto-generation">
+                                    <small class="text-muted">Optional: Enter custom voucher number or leave blank to
+                                        auto-generate</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="accommodationEmergencyContact" class="form-label">Emergency Contact
+                                        Number</label>
+                                    <input type="text" class="form-control" id="accommodationEmergencyContact"
+                                        placeholder="Enter emergency contact number">
+                                </div>
+                                <div class="mb-3">
                                     <label for="accommodationServiceProvided" class="form-label">Service Provided <span
                                             class="text-danger">*</span></label>
                                     <textarea class="form-control" id="accommodationServiceProvided" rows="3" required
@@ -2224,19 +2249,19 @@
             </div>
         @endif
 
-        <!-- Itinerary Voucher Confirmation Modal (Ops Only) -->
+        <!-- Itinerary Confirmation Modal (Ops Only) -->
         @if ($isOpsDept ?? false)
             <div class="modal fade" id="itineraryConfirmModal" tabindex="-1"
                 aria-labelledby="itineraryConfirmModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="itineraryConfirmModalLabel">Create Itinerary Voucher</h5>
+                            <h5 class="modal-title" id="itineraryConfirmModalLabel">Create Itinerary</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <p class="mb-0">Create itinerary voucher?</p>
+                            <p class="mb-0">Create itinerary?</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -3888,22 +3913,24 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                alert('Itinerary voucher created successfully!');
+                                alert('Itinerary created successfully!');
                                 @if ($isOpsDept ?? false)
                                     loadVouchers();
                                 @endif
                             } else {
-                                alert('Error: ' + (data.message || 'Failed to create itinerary voucher'));
+                                alert('Error: ' + (data.message || 'Failed to create itinerary'));
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            alert('An error occurred while creating the itinerary voucher');
+                            alert('An error occurred while creating the itinerary');
                         });
                 };
 
                 window.submitServiceVoucher = function() {
-                    // Get data from CKEditor
+                    // Get data from CKEditor and form inputs
+                    const voucherNumber = document.getElementById('serviceVoucherNumber').value.trim();
+                    const emergencyContact = document.getElementById('serviceEmergencyContact').value.trim();
                     const serviceProvided = serviceProvidedEditor ? serviceProvidedEditor.getData().trim() : '';
                     const comments = document.getElementById('serviceComments').value.trim();
 
@@ -3925,6 +3952,8 @@
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify({
+                                voucher_number: voucherNumber || undefined,
+                                emergency_contact_number: emergencyContact || undefined,
                                 service_provided: serviceProvided,
                                 comments: comments
                             })
@@ -3949,6 +3978,8 @@
 
                 window.submitAccommodationVoucher = function() {
                     const accommodationId = document.getElementById('selectedAccommodationId').value;
+                    const voucherNumber = document.getElementById('accommodationVoucherNumber').value.trim();
+                    const emergencyContact = document.getElementById('accommodationEmergencyContact').value.trim();
                     // Get data from CKEditor
                     const serviceProvided = accommodationServiceEditor ? accommodationServiceEditor.getData().trim() : '';
                     const comments = document.getElementById('accommodationComments').value.trim();
@@ -3976,6 +4007,8 @@
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify({
+                                voucher_number: voucherNumber || undefined,
+                                emergency_contact_number: emergencyContact || undefined,
                                 accommodation_id: accommodationId,
                                 service_provided: serviceProvided,
                                 comments: comments

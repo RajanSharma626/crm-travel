@@ -36,7 +36,7 @@ function updateCreateButtonVisibility(vouchers) {
         serviceBtn.style.display = hasServiceVoucher ? "none" : "inline-block";
     }
 
-    // Itinerary voucher button
+    // Itinerary button
     const itineraryBtn = document.getElementById("createItineraryVoucherBtn");
     if (itineraryBtn) {
         itineraryBtn.style.display = hasItineraryVoucher
