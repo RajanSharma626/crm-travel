@@ -37,7 +37,8 @@
 
 <body>
     <!-- Wrapper -->
-    <div class="hk-wrapper" data-layout="vertical" data-layout-style="default" data-menu="light" data-footer="simple">
+    <div class="hk-wrapper" data-layout="vertical" data-layout-style="collapsed" data-hover="active" data-menu="light"
+        data-footer="simple">
         <!-- Top Navbar -->
         <nav class="hk-navbar navbar navbar-expand-xl navbar-light fixed-top">
             <div class="container-fluid">
@@ -239,7 +240,8 @@
                                 <li class="nav-item {{ $isOpsActive ? 'active' : '' }}">
                                     <a class="nav-link" href="{{ route('operations.index') }}">
                                         <span class="nav-icon-wrap">
-                                            <span class="svg-icon"><i data-feather="globe" class="small"></i></span>
+                                            <span class="svg-icon"><i data-feather="clipboard"
+                                                    class="small"></i></span>
                                         </span>
                                         <span class="nav-link-text">Operations</span>
                                     </a>
@@ -566,15 +568,6 @@
     <!-- Sidebar Menu Logic -->
     <script>
         $(document).ready(function() {
-            // Set sidebar to collapsed state by default on desktop
-            if ($(window).width() > 1199) {
-                var $wrapper = $('.hk-wrapper');
-                $wrapper.attr('data-layout-style', 'collapsed');
-                setTimeout(function() {
-                    $wrapper.attr('data-hover', 'active');
-                }, 250);
-            }
-
             // Keep submenu open if child is active on page load
             $('.nav-item.active').each(function() {
                 const parentSubmenu = $(this).closest('.nav-children');

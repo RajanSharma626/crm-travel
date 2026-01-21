@@ -28,21 +28,21 @@
                                         $hasOperation = $lead->operation !== null;
                                     @endphp
 
-                                    <a href="{{ route('deliveries.download-voucher', ['lead' => $lead, 'type' => 'itinerary']) }}"
+                                    <button type="button"
                                         class="btn btn-sm btn-outline-success {{ !$hasOperation ? 'disabled' : '' }}"
-                                        target="_blank"
-                                        @if (!$hasOperation) onclick="return false;" style="pointer-events: none; opacity: 0.6;" @endif>
+                                        onclick="openDownloadModal('{{ route('deliveries.download-voucher', ['lead' => $lead, 'type' => 'itinerary']) }}')"
+                                        @if (!$hasOperation) disabled style="opacity: 0.6;" @endif>
                                         <i data-feather="download" class="me-1" style="width: 14px; height: 14px;"></i>
                                         Itinerary
-                                    </a>
+                                    </button>
 
-                                    <a href="{{ route('deliveries.download-voucher', ['lead' => $lead, 'type' => 'service-voucher']) }}"
+                                    <button type="button"
                                         class="btn btn-sm btn-outline-success {{ !$hasOperation ? 'disabled' : '' }}"
-                                        target="_blank"
-                                        @if (!$hasOperation) onclick="return false;" style="pointer-events: none; opacity: 0.6;" @endif>
+                                        onclick="openDownloadModal('{{ route('deliveries.download-voucher', ['lead' => $lead, 'type' => 'service-voucher']) }}')"
+                                        @if (!$hasOperation) disabled style="opacity: 0.6;" @endif>
                                         <i data-feather="download" class="me-1" style="width: 14px; height: 14px;"></i>
                                         Service
-                                    </a>
+                                    </button>
 
                                     @can('edit leads')
                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
@@ -315,17 +315,18 @@
                                                             <td>{{ $ba->room_type }}</td>
                                                             <td>{{ $ba->meal_plan }}</td>
                                                             <td class="text-center">
-                                                                <a href="{{ route('deliveries.download-accommodation-voucher', ['lead' => $lead, 'accommodation' => $ba->id]) }}"
+                                                                <button type="button"
                                                                     class="btn btn-sm btn-outline-success {{ !($hasOperation && $lead->vouchers()->where('voucher_type', 'accommodation')->where('accommodation_id', $ba->id)->exists()) ? 'disabled' : '' }}"
-                                                                    target="_blank" title="Download Accommodation Voucher"
+                                                                    onclick="openDownloadModal('{{ route('deliveries.download-accommodation-voucher', ['lead' => $lead, 'accommodation' => $ba->id]) }}')"
+                                                                    title="Download Accommodation Voucher"
                                                                     @if (
                                                                         !(
                                                                             $hasOperation &&
                                                                             $lead->vouchers()->where('voucher_type', 'accommodation')->where('accommodation_id', $ba->id)->exists()
-                                                                        )) onclick="return false;" style="pointer-events: none; opacity: 0.6;" @endif>
+                                                                        )) disabled style="opacity: 0.6;" @endif>
                                                                     <i data-feather="download"
                                                                         style="width: 16px; height: 16px;"></i>
-                                                                </a>
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                     @endforeach
@@ -501,7 +502,70 @@
         @include('layouts.footer')
     </div>
 
+    <!-- Download Options Modal -->
+    <div class="modal fade" id="downloadOptionsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title mx-auto">Download Option</h5>
+                    <button type="button" class="btn-close position-absolute end-0 top-0 m-3" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-4 p-4">
+                    <input type="hidden" id="downloadBaseUrl">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <button type="button"
+                                class="btn btn-outline-primary w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm"
+                                onclick="downloadWithOptions('wcd')">
+                                <i data-feather="check-circle" style="width: 32px; height: 32px;"></i>
+                                <span class="fw-bold fs-5 mt-1">WCD</span>
+                                <span class="small text-muted">With Company Details</span>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button"
+                                class="btn btn-outline-danger w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm"
+                                onclick="downloadWithOptions('ncd')">
+                                <i data-feather="slash" style="width: 32px; height: 32px;"></i>
+                                <span class="fw-bold fs-5 mt-1">NCD</span>
+                                <span class="small text-muted">No Company Details</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
+        <script>
+            function openDownloadModal(url) {
+                document.getElementById('downloadBaseUrl').value = url;
+                const modal = new bootstrap.Modal(document.getElementById('downloadOptionsModal'));
+                modal.show();
+
+                // Re-initialize icons inside modal if needed, though they are likely static
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
+            }
+
+            function downloadWithOptions(option) {
+                const baseUrl = document.getElementById('downloadBaseUrl').value;
+                const withCompanyDetails = option === 'wcd' ? '1' : '0';
+                const separator = baseUrl.includes('?') ? '&' : '?';
+                const url = `${baseUrl}${separator}with_company_details=${withCompanyDetails}`;
+
+                window.open(url, '_blank');
+
+                const modalEl = document.getElementById('downloadOptionsModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) {
+                    modal.hide();
+                }
+            }
+        </script>
         <script>
             $(document).ready(function() {
                 // Initialize feather icons

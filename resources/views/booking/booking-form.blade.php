@@ -286,132 +286,131 @@
                                 @endif
 
                                 <!-- Destination Section -->
-                                @if (!($isPostSales ?? false))
-                                    <div class="mb-4 border rounded-3 p-3 bg-light">
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <h6 class="text-uppercase text-muted small fw-semibold mb-0">
-                                                <i data-feather="map-pin" class="me-1"
-                                                    style="width: 14px; height: 14px;"></i>
-                                                Destination
-                                            </h6>
-                                            @if (!$isViewOnly)
-                                                <button type="button" class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal" data-bs-target="#addDestinationModal">
-                                                    <i data-feather="plus" style="width: 14px; height: 14px;"></i>
-                                                    Add
-                                                </button>
-                                            @endif
-                                        </div>
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-sm mb-0" id="destinationTable">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th style="width: 15%;">Destination</th>
-                                                        <th style="width: 15%;">Location</th>
-                                                        <th style="width: 12%;" class="text-center">Only Hotel</th>
-                                                        <th style="width: 12%;" class="text-center">Only TT</th>
-                                                        <th style="width: 12%;" class="text-center">Hotel + TT</th>
-                                                        <th style="width: 10%;">From Date</th>
-                                                        <th style="width: 10%;">To Date</th>
-                                                        @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false))))
-                                                            <th style="width: 10%;" class="text-center">Action</th>
-                                                        @endif
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="destinationTableBody">
-                                                    @if ($lead->bookingDestinations && $lead->bookingDestinations->count() > 0)
-                                                        @foreach ($lead->bookingDestinations as $index => $bd)
-                                                            <tr class="destination-data-row"
-                                                                data-destination-id="{{ $bd->id }}"
-                                                                data-row-index="{{ $index }}">
-                                                                <td>{{ $bd->destination }}</td>
-                                                                <td>{{ $bd->location }}</td>
-                                                                <td class="text-center">
-                                                                    @if ($bd->only_hotel)
-                                                                        <i data-feather="check"
-                                                                            style="width: 16px; height: 16px; color: #28a745;"></i>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="text-center">
-                                                                    @if ($bd->only_tt)
-                                                                        <i data-feather="check"
-                                                                            style="width: 16px; height: 16px; color: #28a745;"></i>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="text-center">
-                                                                    @if ($bd->hotel_tt)
-                                                                        <i data-feather="check"
-                                                                            style="width: 16px; height: 16px; color: #28a745;"></i>
-                                                                    @endif
-                                                                </td>
-                                                                <td>{{ $bd->from_date ? $bd->from_date->format('d/m/Y') : '' }}
-                                                                </td>
-                                                                <td>{{ $bd->to_date ? $bd->to_date->format('d/m/Y') : '' }}
-                                                                </td>
-                                                                @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false))))
-                                                                    <td class="text-center">
-                                                                        @if (!$isViewOnly)
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                width="16" height="16"
-                                                                                viewBox="0 0 24 24" fill="none"
-                                                                                stroke="currentColor" stroke-width="2"
-                                                                                stroke-linecap="round"
-                                                                                stroke-linejoin="round"
-                                                                                class="editDestinationRow"
-                                                                                data-id="{{ $bd->id }}"
-                                                                                data-destination="{{ $bd->destination }}"
-                                                                                data-location="{{ $bd->location }}"
-                                                                                data-only-hotel="{{ $bd->only_hotel ? 1 : 0 }}"
-                                                                                data-only-tt="{{ $bd->only_tt ? 1 : 0 }}"
-                                                                                data-hotel-tt="{{ $bd->hotel_tt ? 1 : 0 }}"
-                                                                                data-from-date="{{ $bd->from_date ? $bd->from_date->format('Y-m-d') : '' }}"
-                                                                                data-to-date="{{ $bd->to_date ? $bd->to_date->format('Y-m-d') : '' }}"
-                                                                                data-bs-toggle="modal"
-                                                                                data-bs-target="#addDestinationModal"
-                                                                                style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
-                                                                                <path
-                                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                                                </path>
-                                                                                <path
-                                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                                </path>
-                                                                            </svg>
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                width="16" height="16"
-                                                                                viewBox="0 0 24 24" fill="none"
-                                                                                stroke="currentColor" stroke-width="2"
-                                                                                stroke-linecap="round"
-                                                                                stroke-linejoin="round"
-                                                                                class="removeDestinationRow"
-                                                                                data-id="{{ $bd->id }}"
-                                                                                style="width: 16px; height: 16px; color: #dc3545; cursor: pointer;">
-                                                                                <polyline points="3 6 5 6 21 6">
-                                                                                </polyline>
-                                                                                <path
-                                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                                </path>
-                                                                            </svg>
-                                                                        @endif
-                                                                    </td>
-                                                                @endif
-                                                            </tr>
-                                                        @endforeach
-                                                    @else
-                                                        <tr>
-                                                            <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false))) ? '8' : '7' }}"
-                                                                class="text-center text-muted py-4">
-                                                                <i data-feather="inbox"
-                                                                    style="width: 24px; height: 24px; opacity: 0.5;"
-                                                                    class="mb-2"></i>
-                                                                <div>No destination data available</div>
-                                                            </td>
-                                                        </tr>
-                                                    @endif
-                                                </tbody>
-                                            </table>
-                                        </div>
+
+                                <div class="mb-4 border rounded-3 p-3 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="text-uppercase text-muted small fw-semibold mb-0">
+                                            <i data-feather="map-pin" class="me-1"
+                                                style="width: 14px; height: 14px;"></i>
+                                            Destination
+                                        </h6>
+                                        @if (!$isViewOnly)
+                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                data-bs-target="#addDestinationModal">
+                                                <i data-feather="plus" style="width: 14px; height: 14px;"></i>
+                                                Add
+                                            </button>
+                                        @endif
                                     </div>
-                                @endif
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm mb-0" id="destinationTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 15%;">Destination</th>
+                                                    <th style="width: 15%;">Location</th>
+                                                    <th style="width: 12%;" class="text-center">Only Hotel</th>
+                                                    <th style="width: 12%;" class="text-center">Only TT</th>
+                                                    <th style="width: 12%;" class="text-center">Hotel + TT</th>
+                                                    <th style="width: 10%;">From Date</th>
+                                                    <th style="width: 10%;">To Date</th>
+                                                    @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
+                                                        <th style="width: 10%;" class="text-center">Action</th>
+                                                    @endif
+                                                </tr>
+                                            </thead>
+                                            <tbody id="destinationTableBody">
+                                                @if ($lead->bookingDestinations && $lead->bookingDestinations->count() > 0)
+                                                    @foreach ($lead->bookingDestinations as $index => $bd)
+                                                        <tr class="destination-data-row"
+                                                            data-destination-id="{{ $bd->id }}"
+                                                            data-row-index="{{ $index }}">
+                                                            <td>{{ $bd->destination }}</td>
+                                                            <td>{{ $bd->location }}</td>
+                                                            <td class="text-center">
+                                                                @if ($bd->only_hotel)
+                                                                    <i data-feather="check"
+                                                                        style="width: 16px; height: 16px; color: #28a745;"></i>
+                                                                @endif
+                                                            </td>
+                                                            <td class="text-center">
+                                                                @if ($bd->only_tt)
+                                                                    <i data-feather="check"
+                                                                        style="width: 16px; height: 16px; color: #28a745;"></i>
+                                                                @endif
+                                                            </td>
+                                                            <td class="text-center">
+                                                                @if ($bd->hotel_tt)
+                                                                    <i data-feather="check"
+                                                                        style="width: 16px; height: 16px; color: #28a745;"></i>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $bd->from_date ? $bd->from_date->format('d/m/Y') : '' }}
+                                                            </td>
+                                                            <td>{{ $bd->to_date ? $bd->to_date->format('d/m/Y') : '' }}
+                                                            </td>
+                                                            @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
+                                                                <td class="text-center">
+                                                                    @if (!$isViewOnly)
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16" height="16"
+                                                                            viewBox="0 0 24 24" fill="none"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round"
+                                                                            class="editDestinationRow"
+                                                                            data-id="{{ $bd->id }}"
+                                                                            data-destination="{{ $bd->destination }}"
+                                                                            data-location="{{ $bd->location }}"
+                                                                            data-only-hotel="{{ $bd->only_hotel ? 1 : 0 }}"
+                                                                            data-only-tt="{{ $bd->only_tt ? 1 : 0 }}"
+                                                                            data-hotel-tt="{{ $bd->hotel_tt ? 1 : 0 }}"
+                                                                            data-from-date="{{ $bd->from_date ? $bd->from_date->format('Y-m-d') : '' }}"
+                                                                            data-to-date="{{ $bd->to_date ? $bd->to_date->format('Y-m-d') : '' }}"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#addDestinationModal"
+                                                                            style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
+                                                                            <path
+                                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                            </path>
+                                                                            <path
+                                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                            </path>
+                                                                        </svg>
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16" height="16"
+                                                                            viewBox="0 0 24 24" fill="none"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round"
+                                                                            class="removeDestinationRow"
+                                                                            data-id="{{ $bd->id }}"
+                                                                            style="width: 16px; height: 16px; color: #dc3545; cursor: pointer;">
+                                                                            <polyline points="3 6 5 6 21 6">
+                                                                            </polyline>
+                                                                            <path
+                                                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                            </path>
+                                                                        </svg>
+                                                                    @endif
+                                                                </td>
+                                                            @endif
+                                                        </tr>
+                                                    @endforeach
+                                                @else
+                                                    <tr>
+                                                        <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false))) ? '8' : '7' }}"
+                                                            class="text-center text-muted py-4">
+                                                            <i data-feather="inbox"
+                                                                style="width: 24px; height: 24px; opacity: 0.5;"
+                                                                class="mb-2"></i>
+                                                            <div>No destination data available</div>
+                                                        </td>
+                                                    </tr>
+                                                @endif
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+
 
                                 {{-- Customer Payments (Post Sales editable, others view-only via accounts booking file) --}}
                                 @if ($isPostSales ?? false)
@@ -530,135 +529,132 @@
                                     </div>
                                 @endif
                                 <!-- Arrival/Departure Details Section -->
-                                @if (!($isPostSales ?? false))
-                                    <div class="mb-4 border rounded-3 p-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <h6 class="text-uppercase text-muted small fw-semibold mb-0">
-                                                <i data-feather="navigation" class="me-1"
-                                                    style="width: 14px; height: 14px;"></i>
-                                                Arrival/Departure Details
-                                            </h6>
-                                            @if (!$isViewOnly || (auth()->check() && auth()->user()->department === 'Ticketing'))
-                                                <button type="button" class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal" data-bs-target="#addArrivalDepartureModal">
-                                                    <i data-feather="plus" style="width: 14px; height: 14px;"></i>
-                                                    Add
-                                                </button>
-                                            @endif
-                                        </div>
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-sm mb-0 text-center"
-                                                id="arrivalDepartureTable">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th style="width: 12%;" rowspan="2">Mode</th>
-                                                        <th style="width: 15%;" rowspan="2">Info</th>
-                                                        <th style="width: 12%;" rowspan="2">From City</th>
-                                                        <th style="width: 12%;" rowspan="2">To City</th>
-                                                        <th colspan="2" style="width: 18%;">Dep Date & Time</th>
-                                                        <th colspan="2" style="width: 18%;">Arrival Date & Time
-                                                        </th>
-                                                        @if (
-                                                            !($isViewOnly && ($isOpsDept || ($isPostSales ?? false))) ||
-                                                                (auth()->check() && auth()->user()->department === 'Ticketing'))
-                                                            <th style="width: 13%;" rowspan="2" class="text-center">
-                                                                Action</th>
-                                                        @endif
-                                                    </tr>
 
-                                                </thead>
-                                                <tbody id="arrivalDepartureTableBody">
-                                                    @php
-                                                        $allTransports = $lead->bookingArrivalDepartures ?? collect();
-                                                    @endphp
-                                                    @if ($allTransports && $allTransports->count() > 0)
-                                                        @foreach ($allTransports as $index => $transport)
-                                                            <tr class="arrival-departure-data-row"
-                                                                data-transport-id="{{ $transport->id }}"
-                                                                data-row-index="{{ $index }}">
-                                                                <td>{{ $transport->mode }}</td>
-                                                                <td>{{ $transport->info }}</td>
-                                                                <td>{{ $transport->from_city }}</td>
-                                                                <td>{{ $transport->to_city ?? '' }}</td>
-                                                                <td>
-                                                                    {{ $transport->departure_date ? ($transport->departure_date instanceof \DateTime ? $transport->departure_date->format('d/m/Y') : date('d/m/Y', strtotime($transport->departure_date))) : '' }}
-                                                                </td>
-                                                                <td>
-                                                                    {{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}
-                                                                </td>
-                                                                <td>
-                                                                    {{ $transport->arrival_date ? ($transport->arrival_date instanceof \DateTime ? $transport->arrival_date->format('d/m/Y') : date('d/m/Y', strtotime($transport->arrival_date))) : '' }}
-                                                                </td>
-                                                                <td>
-                                                                    {{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}
-                                                                </td>
-                                                                @if (
-                                                                    !($isViewOnly && ($isOpsDept || ($isPostSales ?? false))) ||
-                                                                        (auth()->check() && auth()->user()->department === 'Ticketing'))
-                                                                    <td class="text-center">
-                                                                        @if (!$isViewOnly || (auth()->check() && auth()->user()->department === 'Ticketing'))
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                width="16" height="16"
-                                                                                viewBox="0 0 24 24" fill="none"
-                                                                                stroke="currentColor" stroke-width="2"
-                                                                                stroke-linecap="round"
-                                                                                stroke-linejoin="round"
-                                                                                class="editArrivalDepartureRow"
-                                                                                data-id="{{ $transport->id }}"
-                                                                                data-mode="{{ $transport->mode }}"
-                                                                                data-info="{{ $transport->info }}"
-                                                                                data-from-city="{{ $transport->from_city }}"
-                                                                                data-to-city="{{ $transport->to_city }}"
-                                                                                data-departure-date="{{ $transport->departure_date ? $transport->departure_date->format('Y-m-d') : '' }}"
-                                                                                data-departure-time="{{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}"
-                                                                                data-arrival-date="{{ $transport->arrival_date ? $transport->arrival_date->format('Y-m-d') : '' }}"
-                                                                                data-arrival-time="{{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}"
-                                                                                data-bs-toggle="modal"
-                                                                                data-bs-target="#addArrivalDepartureModal"
-                                                                                style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
-                                                                                <path
-                                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                                                </path>
-                                                                                <path
-                                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                                </path>
-                                                                            </svg>
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                width="16" height="16"
-                                                                                viewBox="0 0 24 24" fill="none"
-                                                                                stroke="currentColor" stroke-width="2"
-                                                                                stroke-linecap="round"
-                                                                                stroke-linejoin="round"
-                                                                                class="removeArrivalDepartureRow"
-                                                                                data-id="{{ $transport->id }}"
-                                                                                style="width: 16px; height: 16px; color: #dc3545; cursor: pointer;">
-                                                                                <polyline points="3 6 5 6 21 6">
-                                                                                </polyline>
-                                                                                <path
-                                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                                </path>
-                                                                            </svg>
-                                                                        @endif
-                                                                    </td>
-                                                                @endif
-                                                            </tr>
-                                                        @endforeach
-                                                    @else
-                                                        <tr>
-                                                            <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false))) || (auth()->check() && auth()->user()->department === 'Ticketing') ? '9' : '8' }}"
-                                                                class="text-center text-muted py-4">
-                                                                <i data-feather="inbox"
-                                                                    style="width: 24px; height: 24px; opacity: 0.5;"
-                                                                    class="mb-2"></i>
-                                                                <div>No arrival/departure data available</div>
-                                                            </td>
-                                                        </tr>
-                                                    @endif
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                <div class="mb-4 border rounded-3 p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="text-uppercase text-muted small fw-semibold mb-0">
+                                            <i data-feather="navigation" class="me-1"
+                                                style="width: 14px; height: 14px;"></i>
+                                            Arrival/Departure Details
+                                        </h6>
+                                        @if (!$isViewOnly || (auth()->check() && auth()->user()->department === 'Ticketing'))
+                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                data-bs-target="#addArrivalDepartureModal">
+                                                <i data-feather="plus" style="width: 14px; height: 14px;"></i>
+                                                Add
+                                            </button>
+                                        @endif
                                     </div>
-                                @endif
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-sm mb-0 text-center"
+                                            id="arrivalDepartureTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 12%;" rowspan="2">Mode</th>
+                                                    <th style="width: 15%;" rowspan="2">Info</th>
+                                                    <th style="width: 12%;" rowspan="2">From City</th>
+                                                    <th style="width: 12%;" rowspan="2">To City</th>
+                                                    <th colspan="2" style="width: 18%;">Dep Date & Time</th>
+                                                    <th colspan="2" style="width: 18%;">Arrival Date & Time
+                                                    </th>
+                                                    @if (
+                                                        !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) ||
+                                                            (auth()->check() && auth()->user()->department === 'Ticketing'))
+                                                        <th style="width: 13%;" rowspan="2" class="text-center">
+                                                            Action</th>
+                                                    @endif
+                                                </tr>
+
+                                            </thead>
+                                            <tbody id="arrivalDepartureTableBody">
+                                                @php
+                                                    $allTransports = $lead->bookingArrivalDepartures ?? collect();
+                                                @endphp
+                                                @if ($allTransports && $allTransports->count() > 0)
+                                                    @foreach ($allTransports as $index => $transport)
+                                                        <tr class="arrival-departure-data-row"
+                                                            data-transport-id="{{ $transport->id }}"
+                                                            data-row-index="{{ $index }}">
+                                                            <td>{{ $transport->mode }}</td>
+                                                            <td>{{ $transport->info }}</td>
+                                                            <td>{{ $transport->from_city }}</td>
+                                                            <td>{{ $transport->to_city ?? '' }}</td>
+                                                            <td>
+                                                                {{ $transport->departure_date ? ($transport->departure_date instanceof \DateTime ? $transport->departure_date->format('d/m/Y') : date('d/m/Y', strtotime($transport->departure_date))) : '' }}
+                                                            </td>
+                                                            <td>
+                                                                {{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}
+                                                            </td>
+                                                            <td>
+                                                                {{ $transport->arrival_date ? ($transport->arrival_date instanceof \DateTime ? $transport->arrival_date->format('d/m/Y') : date('d/m/Y', strtotime($transport->arrival_date))) : '' }}
+                                                            </td>
+                                                            <td>
+                                                                {{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}
+                                                            </td>
+                                                            @if (
+                                                                !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) ||
+                                                                    (auth()->check() && auth()->user()->department === 'Ticketing'))
+                                                                <td class="text-center">
+                                                                    @if (!$isViewOnly || (auth()->check() && auth()->user()->department === 'Ticketing'))
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16" height="16"
+                                                                            viewBox="0 0 24 24" fill="none"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round"
+                                                                            class="editArrivalDepartureRow"
+                                                                            data-id="{{ $transport->id }}"
+                                                                            data-mode="{{ $transport->mode }}"
+                                                                            data-info="{{ $transport->info }}"
+                                                                            data-from-city="{{ $transport->from_city }}"
+                                                                            data-to-city="{{ $transport->to_city }}"
+                                                                            data-departure-date="{{ $transport->departure_date ? $transport->departure_date->format('Y-m-d') : '' }}"
+                                                                            data-departure-time="{{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}"
+                                                                            data-arrival-date="{{ $transport->arrival_date ? $transport->arrival_date->format('Y-m-d') : '' }}"
+                                                                            data-arrival-time="{{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#addArrivalDepartureModal"
+                                                                            style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
+                                                                            <path
+                                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                            </path>
+                                                                            <path
+                                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                            </path>
+                                                                        </svg>
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16" height="16"
+                                                                            viewBox="0 0 24 24" fill="none"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round" stroke-linejoin="round"
+                                                                            class="removeArrivalDepartureRow"
+                                                                            data-id="{{ $transport->id }}"
+                                                                            style="width: 16px; height: 16px; color: #dc3545; cursor: pointer;">
+                                                                            <polyline points="3 6 5 6 21 6">
+                                                                            </polyline>
+                                                                            <path
+                                                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                            </path>
+                                                                        </svg>
+                                                                    @endif
+                                                                </td>
+                                                            @endif
+                                                        </tr>
+                                                    @endforeach
+                                                @else
+                                                    <tr>
+                                                        <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) || (auth()->check() && auth()->user()->department === 'Ticketing') ? '9' : '8' }}"
+                                                            class="text-center text-muted py-4">
+                                                            <i data-feather="inbox"
+                                                                style="width: 24px; height: 24px; opacity: 0.5;"
+                                                                class="mb-2"></i>
+                                                            <div>No arrival/departure data available</div>
+                                                        </td>
+                                                    </tr>
+                                                @endif
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
 
                                 <!-- Accommodation Details Section -->
                                 @if (!($isPostSales ?? false))
@@ -689,7 +685,7 @@
                                                         <th>Room Type</th>
                                                         <th>Meal Plan</th>
                                                         <th>Confirmation No.</th>
-                                                        @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false))))
+                                                        @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
                                                             <th style="width: 4%;" class="text-center">Action</th>
                                                         @endif
                                                     </tr>
@@ -713,7 +709,7 @@
                                                                 @else
                                                                     <td><span class="badge bg-warning">Pending</span></td>
                                                                 @endif
-                                                                @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false))))
+                                                                @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
                                                                     <td class="text-center text-nowrap">
                                                                         @if (!$isViewOnly)
                                                                             <svg xmlns="http://www.w3.org/2000/svg"
@@ -773,7 +769,7 @@
                                                         @endforeach
                                                     @else
                                                         <tr>
-                                                            <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false))) ? '9' : '8' }}"
+                                                            <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) ? '9' : '8' }}"
                                                                 class="text-center text-muted py-4">
                                                                 <i data-feather="inbox"
                                                                     style="width: 24px; height: 24px; opacity: 0.5;"
@@ -816,7 +812,7 @@
                                                         <th style="width: 20%;">Activity/Tour Description</th>
                                                         <th style="width: 10%;">Stay at</th>
                                                         <th style="width: 15%;">Remarks</th>
-                                                        @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false))))
+                                                        @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
                                                             <th style="width: 7%;" class="text-center">Action</th>
                                                         @endif
                                                     </tr>
@@ -866,7 +862,7 @@
                                                                 </td>
                                                                 <td>{{ $bi->stay_at }}</td>
                                                                 <td>{{ $bi->remarks }}</td>
-                                                                @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false))))
+                                                                @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
                                                                     <td class="text-center">
                                                                         @if (!$isViewOnly)
                                                                             <svg xmlns="http://www.w3.org/2000/svg"
@@ -915,7 +911,7 @@
                                                         @endforeach
                                                     @else
                                                         <tr>
-                                                            <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false))) ? '7' : '6' }}"
+                                                            <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) ? '7' : '6' }}"
                                                                 class="text-center text-muted py-4">
                                                                 <i data-feather="inbox"
                                                                     style="width: 24px; height: 24px; opacity: 0.5;"
@@ -931,7 +927,7 @@
                                 @endif
 
                                 <!-- Traveller Document Details (Post Sales editable, Operations view-only) -->
-                                @if (($isPostSales ?? false) || ($isOpsDept ?? false))
+                                @if (($isPostSales ?? false) || ($isOpsDept ?? false) || ($isRestrictedView ?? false))
                                     <div class="mb-4 border rounded-3 p-3">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <h6 class="text-uppercase text-muted small fw-semibold mb-0">
@@ -939,7 +935,7 @@
                                                     style="width: 14px; height: 14px;"></i>
                                                 Traveller Document Details
                                             </h6>
-                                            @if (!($isOpsDept ?? false))
+                                            @if (!($isOpsDept ?? false) && !($isRestrictedView ?? false))
                                                 <button type="button" id="openTravellerDocModalBtn"
                                                     class="btn btn-sm btn-primary" data-bs-toggle="modal"
                                                     data-bs-target="#travellerDocumentModal">
@@ -963,7 +959,7 @@
                                                         <th style="width: 10%;">Expiry</th>
                                                         <th style="width: 12%;">Remark</th>
                                                         <th style="width: 10%;">Status</th>
-                                                        @if (!($isOpsDept ?? false))
+                                                        @if (!($isOpsDept ?? false) && !($isRestrictedView ?? false))
                                                             <th style="width: 8%;" class="text-center">Action</th>
                                                         @endif
                                                     </tr>
@@ -1096,7 +1092,7 @@
                                                                     </span>
                                                                 @endif
                                                             </td>
-                                                            @if (!($isOpsDept ?? false))
+                                                            @if (!($isOpsDept ?? false) && !($isRestrictedView ?? false))
                                                                 <td class="text-center text-nowrap">
                                                                     <button type="button"
                                                                         class="btn btn-link p-0 me-1 traveller-doc-edit"
@@ -1129,7 +1125,7 @@
                                                         </tr>
                                                         @empty
                                                             <tr>
-                                                                <td colspan="{{ $isOpsDept ?? false ? '11' : '12' }}"
+                                                                <td colspan="{{ ($isOpsDept ?? false) || ($isRestrictedView ?? false) ? '11' : '12' }}"
                                                                     class="text-center text-muted py-3">
                                                                     No traveller document details added yet.
                                                                 </td>
@@ -2277,6 +2273,43 @@
 
         <!-- CKEditor 5 CDN -->
         <script src="https://cdn.ckeditor.com/ckeditor5/40.2.0/classic/ckeditor.js"></script>
+
+        <!-- Download Voucher Options Modal -->
+        <div class="modal fade" id="downloadVoucherModal" tabindex="-1" aria-labelledby="downloadVoucherModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title mx-auto" id="downloadVoucherModalLabel">Download Option</h5>
+                        <button type="button" class="btn-close position-absolute end-0 top-0 m-3" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-4 p-4">
+                        <input type="hidden" id="downloadVoucherId">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <button type="button"
+                                    class="btn btn-outline-primary w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm"
+                                    onclick="downloadVoucherWithOptions('wcd')">
+                                    <i data-feather="check-circle" style="width: 32px; height: 32px;"></i>
+                                    <span class="fw-bold fs-5 mt-1">WCD</span>
+                                    <span class="small text-muted">With Company Details</span>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button"
+                                    class="btn btn-outline-danger w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center gap-2 shadow-sm"
+                                    onclick="downloadVoucherWithOptions('ncd')">
+                                    <i data-feather="slash" style="width: 32px; height: 32px;"></i>
+                                    <span class="fw-bold fs-5 mt-1">NCD</span>
+                                    <span class="small text-muted">No Company Details</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         @push('scripts')
             <script>
@@ -3771,10 +3804,10 @@
                                     <td><small>${createdBy}</small></td>
                                     <td><small>${createdAt}</small></td>
                                     <td class="text-center">
-                                        <a href="{{ url('/leads') }}/${voucher.lead_id}/vouchers/${voucher.id}/download" 
-                                            class="btn btn-sm btn-outline-primary" target="_blank" title="Download Voucher">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            onclick="openDownloadModal(${voucher.id}, ${voucher.lead_id})" title="Download Voucher">
                                             <i data-feather="download" style="width: 14px; height: 14px;"></i>
-                                        </a>
+                                        </button>
                                         <button type="button" class="btn btn-sm btn-outline-danger" 
                                             onclick="deleteVoucher(${voucher.id})" title="Delete Voucher">
                                             <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
@@ -4059,6 +4092,40 @@
                             console.error('Error:', error);
                             alert('An error occurred while deleting the voucher');
                         });
+                };
+
+                window.openDownloadModal = function(voucherId, leadId) {
+                    const input = document.getElementById('downloadVoucherId');
+                    input.value = voucherId;
+                    input.dataset.leadId = leadId;
+
+                    const modal = new bootstrap.Modal(document.getElementById('downloadVoucherModal'));
+                    modal.show();
+
+                    if (typeof feather !== 'undefined') {
+                        feather.replace();
+                    }
+                };
+
+                window.downloadVoucherWithOptions = function(option) {
+                    const input = document.getElementById('downloadVoucherId');
+                    const voucherId = input.value;
+                    const leadId = input.dataset.leadId;
+                    const withCompanyDetails = option === 'wcd' ? '1' : '0';
+
+                    // Construct URL
+                    const url =
+                        `{{ url('/leads') }}/${leadId}/vouchers/${voucherId}/download?with_company_details=${withCompanyDetails}`;
+
+                    // Trigger download
+                    window.open(url, '_blank');
+
+                    // Close modal
+                    const modalEl = document.getElementById('downloadVoucherModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) {
+                        modal.hide();
+                    }
                 };
             </script>
         @endpush

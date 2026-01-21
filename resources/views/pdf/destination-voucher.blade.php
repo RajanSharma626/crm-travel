@@ -471,7 +471,7 @@
                     Kindly provide the mentioned services to our esteemed guests in the exchange of this voucher.
                 </div>
             </div>
-            @if (isset($logoBase64) && $logoBase64)
+            @if ((!isset($withCompanyDetails) || $withCompanyDetails == '1') && isset($logoBase64) && $logoBase64)
                 <div class="header-right">
                     <img src="{{ $logoBase64 }}" alt="Travel Shravel Logo" class="logo">
                 </div>
@@ -833,19 +833,22 @@
     </div>
 
     <!-- Footer -->
-    <div class="footer">
-        <div class="footer-header">
-            <div class="footer-title">For further details / queries, approach
-                <div class="footer-company-name">TRAVEL SHRAVEL TOUR & TRAVELS</div>
+    <!-- Footer -->
+    @if (!isset($withCompanyDetails) || $withCompanyDetails == '1')
+        <div class="footer">
+            <div class="footer-header">
+                <div class="footer-title">For further details / queries, approach
+                    <div class="footer-company-name">TRAVEL SHRAVEL TOUR & TRAVELS</div>
+                </div>
             </div>
-        </div>
 
-        <div class="footer-contact-section">
-            <div class="contact-left">Email: travel@travelshravel.com</div>
-            <div class="contact-right">Mobile: +91 9086421601</div>
+            <div class="footer-contact-section">
+                <div class="contact-left">Email: travel@travelshravel.com</div>
+                <div class="contact-right">Mobile: +91 9086421601</div>
+            </div>
+            <div class="footer-website">www.travelshravel.com</div>
         </div>
-        <div class="footer-website">www.travelshravel.com</div>
-    </div>
+    @endif
 </body>
 
 </html>

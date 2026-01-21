@@ -335,6 +335,7 @@ class DeliveryController extends Controller
         }
 
         $type = $request->get('type', 'itinerary'); // Default to itinerary
+        $withCompanyDetails = $request->get('with_company_details', '1'); // Default to Yes
 
         // Load necessary relationships
         $lead->load([
@@ -363,7 +364,7 @@ class DeliveryController extends Controller
             $voucher = $lead->vouchers()->where('voucher_type', 'itinerary')->latest()->first();
             
             // Generate itinerary PDF
-            $pdf = Pdf::loadView('pdf.itinerary', compact('lead', 'logoBase64', 'voucher'));
+            $pdf = Pdf::loadView('pdf.itinerary', compact('lead', 'logoBase64', 'voucher', 'withCompanyDetails'));
             $pdf->setPaper('A4', 'portrait');
             return $pdf->download('Itinerary_' . $lead->tsq . '.pdf');
         } elseif ($type === 'service-voucher') {
@@ -371,12 +372,12 @@ class DeliveryController extends Controller
             $voucher = $lead->vouchers()->where('voucher_type', 'service')->latest()->first();
             
             // Generate service voucher PDF
-            $pdf = Pdf::loadView('pdf.service-voucher', compact('lead', 'logoBase64', 'voucher'));
+            $pdf = Pdf::loadView('pdf.service-voucher', compact('lead', 'logoBase64', 'voucher', 'withCompanyDetails'));
             $pdf->setPaper('A4', 'portrait');
             return $pdf->download('Service_Voucher_' . $lead->tsq . '.pdf');
         } elseif ($type === 'destination') {
             // Generate accommodation voucher PDF
-            $pdf = Pdf::loadView('pdf.destination-voucher', compact('lead', 'logoBase64'));
+            $pdf = Pdf::loadView('pdf.destination-voucher', compact('lead', 'logoBase64', 'withCompanyDetails'));
             $pdf->setPaper('A4', 'portrait');
             return $pdf->download('Accommodation_Voucher_' . $lead->tsq . '.pdf');
         } else {
@@ -392,12 +393,14 @@ class DeliveryController extends Controller
         }
     }
 
-    public function downloadAccommodationVoucher(Lead $lead, $accommodationId)
+    public function downloadAccommodationVoucher(Request $request, Lead $lead, $accommodationId)
     {
         // Check if user has permission to view deliveries
         if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager'])) {
             abort(403, 'Unauthorized');
         }
+
+        $withCompanyDetails = $request->get('with_company_details', '1'); // Default to Yes
 
         // Load necessary relationships
         $lead->load([
@@ -439,7 +442,7 @@ class DeliveryController extends Controller
             ->first();
         
         // Generate accommodation voucher PDF with single accommodation
-        $pdf = Pdf::loadView('pdf.destination-voucher', compact('lead', 'logoBase64', 'accommodation', 'voucher'));
+        $pdf = Pdf::loadView('pdf.destination-voucher', compact('lead', 'logoBase64', 'accommodation', 'voucher', 'withCompanyDetails'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->download($filename);
     }

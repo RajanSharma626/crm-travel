@@ -29,17 +29,27 @@ class CustomerCareController extends LeadController
         $filters = [
             'status' => $request->input('status'),
             'search' => $request->input('search'),
+            'service_id' => $request->input('service_id'),
+            'destination_id' => $request->input('destination_id'),
         ];
 
-        // Show only unassigned leads (where assigned_user_id is null)
+        // Show all leads ordered by status priority
         $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }])
-            ->whereNull('assigned_user_id')
+            ->orderByRaw("FIELD(status, 'priority', 'new', 'follow_up', 'contacted', 'booked', 'closed', 'cancelled', 'refunded')")
             ->orderBy('created_at', 'desc');
 
         if (!empty($filters['status'])) {
             $leadsQuery->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['service_id'])) {
+            $leadsQuery->where('service_id', $filters['service_id']);
+        }
+
+        if (!empty($filters['destination_id'])) {
+            $leadsQuery->where('destination_id', $filters['destination_id']);
         }
 
         if (!empty($filters['search'])) {

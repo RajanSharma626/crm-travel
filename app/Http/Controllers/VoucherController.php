@@ -228,7 +228,7 @@ class VoucherController extends Controller
     /**
      * Download voucher PDF
      */
-    public function downloadVoucher(Lead $lead, Voucher $voucher)
+    public function downloadVoucher(Lead $lead, Voucher $voucher, Request $request)
     {
         // Check if user has permission
         if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager', 'Operations', 'Operation', 'Operation Manager'])) {
@@ -239,6 +239,9 @@ class VoucherController extends Controller
         if ($voucher->lead_id !== $lead->id) {
             abort(404, 'Voucher not found for this lead');
         }
+
+        // Check for with_company_details parameter (default to 1/true)
+        $withCompanyDetails = $request->query('with_company_details', '1');
 
         // Load necessary relationships
         $lead->load([
@@ -262,16 +265,16 @@ class VoucherController extends Controller
 
         // Generate PDF based on voucher type
         if ($voucher->voucher_type === 'itinerary') {
-            $pdf = Pdf::loadView('pdf.itinerary', compact('lead', 'logoBase64', 'voucher'));
+            $pdf = Pdf::loadView('pdf.itinerary', compact('lead', 'logoBase64', 'voucher', 'withCompanyDetails'));
             $pdf->setPaper('A4', 'portrait');
             return $pdf->download('Itinerary_' . $lead->tsq . '_' . $voucher->voucher_number . '.pdf');
         } elseif ($voucher->voucher_type === 'service') {
-            $pdf = Pdf::loadView('pdf.service-voucher', compact('lead', 'logoBase64', 'voucher'));
+            $pdf = Pdf::loadView('pdf.service-voucher', compact('lead', 'logoBase64', 'voucher', 'withCompanyDetails'));
             $pdf->setPaper('A4', 'portrait');
             return $pdf->download('Service_Voucher_' . $lead->tsq . '_' . $voucher->voucher_number . '.pdf');
         } elseif ($voucher->voucher_type === 'accommodation') {
             $accommodation = $voucher->accommodation;
-            $pdf = Pdf::loadView('pdf.destination-voucher', compact('lead', 'logoBase64', 'voucher', 'accommodation'));
+            $pdf = Pdf::loadView('pdf.destination-voucher', compact('lead', 'logoBase64', 'voucher', 'accommodation', 'withCompanyDetails'));
             $pdf->setPaper('A4', 'portrait');
             
             $location = $accommodation->location ?? 'Accommodation';

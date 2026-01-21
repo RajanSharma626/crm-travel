@@ -355,6 +355,11 @@ class PaymentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        // If amount changes, set status to pending automatically
+        if ($payment->amount != $validated['amount']) {
+            $validated['status'] = 'pending';
+        }
+
         $payment->update($validated);
         
         // Calculate and log profit

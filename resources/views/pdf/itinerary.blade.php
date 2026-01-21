@@ -510,14 +510,19 @@
 <body>
     <div class="header">
         <div class="header-wrapper">
-            <div class="header-left">
-                <div class="company-name">TRAVEL SHRAVEL</div>
-                <div class="tagline">Nothing Unexplored</div>
-            </div>
-            @if (isset($logoBase64) && $logoBase64)
-                <div class="header-right">
-                    <img src="{{ $logoBase64 }}" alt="Travel Shravel Logo" class="logo">
+            @if (!isset($withCompanyDetails) || $withCompanyDetails == '1')
+                <div class="header-left">
+                    <div class="company-name">TRAVEL SHRAVEL</div>
+                    <div class="tagline">Nothing Unexplored</div>
                 </div>
+                @if (isset($logoBase64) && $logoBase64)
+                    <div class="header-right">
+                        <img src="{{ $logoBase64 }}" alt="Travel Shravel Logo" class="logo">
+                    </div>
+                @endif
+            @else
+                {{-- Spacer for layout stability if needed, otherwise empty --}}
+                <div class="header-left">&nbsp;</div>
             @endif
         </div>
     </div>
@@ -742,45 +747,45 @@
                         $firstItinerary = $dayItineraries[0];
 
                         // Extract date from day_and_date (use first entry's date if present)
-                        $dateMatch = preg_match(
-                            '/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/',
-                            $firstItinerary->day_and_date ?? '',
-                            $dateMatches,
-                        );
-                        
-                        $dateStr = $dateMatch ? $dateMatches[1] : '';
-                        $formattedDate = '';
-                        if ($dateStr) {
-                            try {
-                                $dateObj = \Carbon\Carbon::createFromFormat('d/m/Y', str_replace('-', '/', $dateStr));
-                                $formattedDate = $dateObj->format('d-M-y');
-                            } catch (\Exception $e) {
-                                try {
-                                    $dateObj = \Carbon\Carbon::parse($dateStr);
-                                    $formattedDate = $dateObj->format('d-M-y');
-                                } catch (\Exception $e2) {
-                                    $formattedDate = $dateStr;
-                                }
-                            }
-                        }
+$dateMatch = preg_match(
+    '/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/',
+    $firstItinerary->day_and_date ?? '',
+    $dateMatches,
+);
 
-                        // Build time labels for all entries of the day (unique)
-                        $timeLabels = [];
-                        foreach ($dayItineraries as $dit) {
-                            $tStr = $dit->time ? \Carbon\Carbon::parse($dit->time)->format('H:i') : '';
-                            $tLabel = 'Schedule';
-                            if (
-                                stripos($dit->day_and_date ?? '', 'depart') !== false ||
-                                stripos($dit->day_and_date ?? '', 'departure') !== false
-                            ) {
-                                $tLabel = 'Depart';
-                            } elseif (
-                                stripos($dit->day_and_date ?? '', 'pick-up') !== false ||
-                                stripos($dit->day_and_date ?? '', 'pickup') !== false
-                            ) {
-                                $tLabel = 'Pick-up';
-                            } elseif ($tStr) {
-                                $tLabel = $tStr . ' Hours';
+$dateStr = $dateMatch ? $dateMatches[1] : '';
+$formattedDate = '';
+if ($dateStr) {
+    try {
+        $dateObj = \Carbon\Carbon::createFromFormat('d/m/Y', str_replace('-', '/', $dateStr));
+        $formattedDate = $dateObj->format('d-M-y');
+    } catch (\Exception $e) {
+        try {
+            $dateObj = \Carbon\Carbon::parse($dateStr);
+            $formattedDate = $dateObj->format('d-M-y');
+        } catch (\Exception $e2) {
+            $formattedDate = $dateStr;
+        }
+    }
+}
+
+// Build time labels for all entries of the day (unique)
+$timeLabels = [];
+foreach ($dayItineraries as $dit) {
+    $tStr = $dit->time ? \Carbon\Carbon::parse($dit->time)->format('H:i') : '';
+    $tLabel = 'Schedule';
+    if (
+        stripos($dit->day_and_date ?? '', 'depart') !== false ||
+        stripos($dit->day_and_date ?? '', 'departure') !== false
+    ) {
+        $tLabel = 'Depart';
+    } elseif (
+        stripos($dit->day_and_date ?? '', 'pick-up') !== false ||
+        stripos($dit->day_and_date ?? '', 'pickup') !== false
+    ) {
+        $tLabel = 'Pick-up';
+    } elseif ($tStr) {
+        $tLabel = $tStr . ' Hours';
                             }
                             if (!in_array($tLabel, $timeLabels)) {
                                 $timeLabels[] = $tLabel;
@@ -849,7 +854,11 @@
     </table>
 
     <div class="footer">
-        <strong>"Travel Shravel wishes you a very happy, comfortable and safe journey"</strong>
+        @if (!isset($withCompanyDetails) || $withCompanyDetails == '1')
+            <strong>"Travel Shravel wishes you a very happy, comfortable and safe journey"</strong>
+        @else
+            <strong>"Wishing you a very happy, comfortable and safe journey"</strong>
+        @endif
     </div>
 </body>
 

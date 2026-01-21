@@ -57,7 +57,10 @@ class LeadController extends Controller
             'Post Sales',
             'Post Sales Manager',
             'Accounts',
-            'Accounts Manager'
+            'Accounts Manager',
+            'Ticketing',
+            'Visa',
+            'Insurance'
         ];
 
         return in_array($role, $nonSalesDepartments);
@@ -320,6 +323,8 @@ class LeadController extends Controller
         $employee = Auth::user();
         $role = $employee->role ?? $employee->getRoleNameAttribute();
         $isOpsDept = $role && in_array($role, ['Operation', 'Operation Manager']);
+        $isPostSales = $role && in_array($role, ['Post Sales', 'Post Sales Manager']);
+        $isRestrictedView = $role && in_array($role, ['Ticketing', 'Visa', 'Insurance']);
 
         // Get stage info for current user's department
         $userDepartment = $this->getUserDepartment();
@@ -338,6 +343,8 @@ class LeadController extends Controller
             'currentStage' => $currentStage,
             'customerPaymentState' => $customerPaymentState,
             'totalCustomerReceived' => $totalReceived,
+            'isPostSales' => $isPostSales,
+            'isRestrictedView' => $isRestrictedView,
         ]);
     }
 
@@ -1179,13 +1186,20 @@ class LeadController extends Controller
             'status' => 'nullable|string|in:Pending,Cancelled',
         ]);
 
+        $status = $validated['status'] ?? 'Pending';
+        
+        // If purchase cost changes, force status to Pending
+        if ($vendorPayment->purchase_cost != $validated['purchase_cost']) {
+            $status = 'Pending';
+        }
+
         $vendorPayment->update([
             'vendor_code' => $validated['vendor_code'],
             'booking_type' => $validated['booking_type'],
             'location' => $validated['location'],
             'purchase_cost' => $validated['purchase_cost'],
             'due_date' => $validated['due_date'],
-            'status' => $validated['status'] ?? 'Pending',
+            'status' => $status,
             'pending_amount' => $validated['purchase_cost'] - ($vendorPayment->paid_amount ?? 0),
         ]);
 
@@ -1500,12 +1514,7 @@ class LeadController extends Controller
             'cnb' => 'nullable|integer|min:0',
         ]);
 
-        // Database enum only allows: CP, MAP, AP, AI (not EP)
-        // Set EP to null since it's not in the database enum
-        $mealPlan = $validated['meal_plan'] ?? null;
-        if ($mealPlan === 'EP') {
-            $mealPlan = null;
-        }
+
 
         $accommodation = $lead->bookingAccommodations()->create([
             'destination' => $validated['destination'] ?? null,
@@ -1514,7 +1523,7 @@ class LeadController extends Controller
             'checkin_date' => $validated['checkin_date'] ?? null,
             'checkout_date' => $validated['checkout_date'] ?? null,
             'room_type' => $validated['room_type'] ?? null,
-            'meal_plan' => $mealPlan,
+            'meal_plan' => $validated['meal_plan'] ?? null,
             'confirmation_no' => $validated['confirmation_no'] ?? null,
             'single_room' => $validated['single_room'] ?? 0,
             'dbl_room' => $validated['dbl_room'] ?? 0,
@@ -1568,12 +1577,7 @@ class LeadController extends Controller
             'inf' => 'nullable|integer|min:0',
         ]);
 
-        // Database enum only allows: CP, MAP, AP, AI (not EP)
-        // Set EP to null since it's not in the database enum
-        $mealPlan = $validated['meal_plan'] ?? null;
-        if ($mealPlan === 'EP') {
-            $mealPlan = null;
-        }
+
 
         $accommodation->update([
             'destination' => $validated['destination'] ?? null,
@@ -1582,7 +1586,7 @@ class LeadController extends Controller
             'checkin_date' => $validated['checkin_date'] ?? null,
             'checkout_date' => $validated['checkout_date'] ?? null,
             'room_type' => $validated['room_type'] ?? null,
-            'meal_plan' => $mealPlan,
+            'meal_plan' => $validated['meal_plan'] ?? null,
             'confirmation_no' => $validated['confirmation_no'] ?? null,
             'single_room' => $validated['single_room'] ?? 0,
             'dbl_room' => $validated['dbl_room'] ?? 0,
