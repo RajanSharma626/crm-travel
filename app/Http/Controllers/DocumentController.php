@@ -13,8 +13,15 @@ class DocumentController extends Controller
 {
     public function index(Request $request)
     {
+        // Get stage info for current user's department
+        $userDepartment = $this->getUserDepartment();
+        $stageInfo = $this->getDepartmentStages($userDepartment);
+
         $filters = [
             'search' => $request->input('search'),
+            'travel_date' => $request->input('travel_date'),
+            'stage' => $request->input('stage'),
+            'next_days' => $request->input('next_days'),
         ];
 
         // Show booked leads for Post Sales team
@@ -61,6 +68,21 @@ class DocumentController extends Controller
             });
         }
 
+        if (!empty($filters['travel_date'])) {
+            $leadsQuery->whereDate('travel_date', '=', $filters['travel_date']);
+        }
+
+        if (!empty($filters['stage'])) {
+            $leadsQuery->where($stageInfo['stage_key'], $filters['stage']);
+        }
+
+        if (!empty($filters['next_days'])) {
+            $days = (int) $filters['next_days'];
+            $startDate = now()->startOfDay();
+            $endDate = now()->addDays($days)->endOfDay();
+            $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
         $leads = $leadsQuery->paginate(25);
         $leads->appends($request->query());
 
@@ -75,7 +97,7 @@ class DocumentController extends Controller
         $destinations = \App\Models\Destination::orderBy('name')->get();
         $employees = User::whereNotNull('user_id')->orderBy('name')->get();
 
-        return view('post-sales.index', compact('leads', 'filters', 'services', 'destinations', 'employees'));
+        return view('post-sales.index', compact('leads', 'filters', 'services', 'destinations', 'employees', 'stageInfo'));
     }
 
     /**

@@ -2143,9 +2143,8 @@
                                         placeholder="Enter services to be provided..."></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="serviceComments" class="form-label">Comments <span
-                                            class="text-danger">*</span></label>
-                                    <textarea class="form-control" id="serviceComments" name="comments" rows="2" required
+                                    <label for="serviceComments" class="form-label">Comments</label>
+                                    <textarea class="form-control" id="serviceComments" name="comments" rows="2"
                                         placeholder="Enter comments..."></textarea>
                                 </div>
                             </form>
@@ -2225,10 +2224,8 @@
                                         placeholder="Enter services to be provided for this hotel..."></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="accommodationComments" class="form-label">Comments <span
-                                            class="text-danger">*</span></label>
-                                    <textarea class="form-control" id="accommodationComments" rows="2" required
-                                        placeholder="Enter comments..."></textarea>
+                                    <label for="accommodationComments" class="form-label">Comments</label>
+                                    <textarea class="form-control" id="accommodationComments" rows="2" placeholder="Enter comments..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -3972,10 +3969,7 @@
                         return;
                     }
 
-                    if (!comments) {
-                        alert('Please enter comments');
-                        return;
-                    }
+
 
                     fetch('{{ route('vouchers.create-service', $lead) }}', {
                             method: 'POST',
@@ -4027,10 +4021,7 @@
                         return;
                     }
 
-                    if (!comments) {
-                        alert('Please enter comments');
-                        return;
-                    }
+
 
                     fetch('{{ route('vouchers.create-accommodation', $lead) }}', {
                             method: 'POST',

@@ -228,7 +228,7 @@ class Lead extends Model
 
     public function bookingItineraries()
     {
-        return $this->hasMany(BookingItinerary::class);
+        return $this->hasMany(BookingItinerary::class)->orderByRaw('LENGTH(day_and_date) ASC')->orderBy('day_and_date', 'ASC');
     }
 
     public function accountSummaries()

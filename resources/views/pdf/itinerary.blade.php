@@ -575,7 +575,8 @@
                             </tr>
                             <tr>
                                 <td class="label-cell">Voucher no.</td>
-                                <td class="value-cell">{{ $lead->operation->voucher_number ?? 'N/A' }}
+                                <td class="value-cell">
+                                    {{ $voucher->voucher_number ?? ($lead->operation->voucher_number ?? 'N/A') }}
                                 </td>
                             </tr>
                             <tr>
@@ -589,7 +590,7 @@
                                     Emergency No. :
                                 </td>
                                 <td class="value-cell">
-                                    +91 9796614307
+                                    {{ $voucher->emergency_contact_number ?? '+91 9796614307' }}
                                 </td>
                             </tr>
                         </tbody>

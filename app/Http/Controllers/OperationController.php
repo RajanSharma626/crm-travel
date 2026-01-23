@@ -12,8 +12,15 @@ class OperationController extends Controller
 {
     public function index(Request $request)
     {
+        // Get stage info for current user's department
+        $userDepartment = $this->getUserDepartment();
+        $stageInfo = $this->getDepartmentStages($userDepartment);
+
         $filters = [
             'search' => $request->input('search'),
+            'travel_date' => $request->input('travel_date'),
+            'stage' => $request->input('stage'),
+            'next_days' => $request->input('next_days'),
         ];
 
         // Show booked leads for Operations team
@@ -60,6 +67,21 @@ class OperationController extends Controller
             });
         }
 
+        if (!empty($filters['travel_date'])) {
+            $leadsQuery->whereDate('travel_date', '=', $filters['travel_date']);
+        }
+
+        if (!empty($filters['stage'])) {
+            $leadsQuery->where($stageInfo['stage_key'], $filters['stage']);
+        }
+
+        if (!empty($filters['next_days'])) {
+            $days = (int) $filters['next_days'];
+            $startDate = now()->startOfDay();
+            $endDate = now()->addDays($days)->endOfDay();
+            $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
         $leads = $leadsQuery->paginate(25);
         $leads->appends($request->query());
 
@@ -77,7 +99,7 @@ class OperationController extends Controller
         $indexRoute = 'operations.index';
         $bookingFileRoute = 'operations.booking-file';
 
-        return view('operations.index', compact('leads', 'filters', 'services', 'destinations', 'employees', 'indexRoute', 'bookingFileRoute'));
+        return view('operations.index', compact('leads', 'filters', 'services', 'destinations', 'employees', 'indexRoute', 'bookingFileRoute', 'stageInfo'));
     }
 
     /**
@@ -248,8 +270,16 @@ class OperationController extends Controller
             return redirect()->back()->with('error', 'Unauthorized');
         }
 
+        // reused logic
+        $stageInfo = $this->getDepartmentStages('Ticketing');
+
         // Reuse index logic but restrict to Ticketing assignments
-        $filters = ['search' => $request->input('search')];
+        $filters = [
+            'search' => $request->input('search'),
+            'travel_date' => $request->input('travel_date'),
+            'stage' => $request->input('stage'),
+            'next_days' => $request->input('next_days'),
+        ];
         $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }, 'bookingFileRemarks' => function ($q) {
@@ -280,6 +310,21 @@ class OperationController extends Controller
             });
         }
 
+        if (!empty($filters['travel_date'])) {
+            $leadsQuery->whereDate('travel_date', '=', $filters['travel_date']);
+        }
+
+        if (!empty($filters['stage'])) {
+            $leadsQuery->where('ticketing_stage', $filters['stage']);
+        }
+
+        if (!empty($filters['next_days'])) {
+            $days = (int) $filters['next_days'];
+            $startDate = now()->startOfDay();
+            $endDate = now()->addDays($days)->endOfDay();
+            $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
         $leads = $leadsQuery->paginate(25);
         $leads->appends($request->query());
 
@@ -296,7 +341,7 @@ class OperationController extends Controller
         $indexRoute = 'ticketing.index';
         $bookingFileRoute = 'ticketing.booking-file';
 
-        return view('operations.index', compact('leads', 'filters', 'services', 'destinations', 'employees', 'indexRoute', 'bookingFileRoute'));
+        return view('operations.index', compact('leads', 'filters', 'services', 'destinations', 'employees', 'indexRoute', 'bookingFileRoute', 'stageInfo'));
     }
 
     /**
@@ -334,7 +379,14 @@ class OperationController extends Controller
             return redirect()->back()->with('error', 'Unauthorized');
         }
 
-        $filters = ['search' => $request->input('search')];
+        $stageInfo = $this->getDepartmentStages('Visa');
+
+        $filters = [
+            'search' => $request->input('search'),
+            'travel_date' => $request->input('travel_date'),
+            'stage' => $request->input('stage'),
+            'next_days' => $request->input('next_days'),
+        ];
         $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }, 'bookingFileRemarks' => function ($q) {
@@ -365,6 +417,21 @@ class OperationController extends Controller
             });
         }
 
+        if (!empty($filters['travel_date'])) {
+            $leadsQuery->whereDate('travel_date', '=', $filters['travel_date']);
+        }
+
+        if (!empty($filters['stage'])) {
+            $leadsQuery->where('visa_stage', $filters['stage']);
+        }
+
+        if (!empty($filters['next_days'])) {
+            $days = (int) $filters['next_days'];
+            $startDate = now()->startOfDay();
+            $endDate = now()->addDays($days)->endOfDay();
+            $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
         $leads = $leadsQuery->paginate(25);
         $leads->appends($request->query());
 
@@ -381,7 +448,7 @@ class OperationController extends Controller
         $indexRoute = 'visa.index';
         $bookingFileRoute = 'visa.booking-file';
 
-        return view('operations.index', compact('leads', 'filters', 'services', 'destinations', 'employees', 'indexRoute', 'bookingFileRoute'));
+        return view('operations.index', compact('leads', 'filters', 'services', 'destinations', 'employees', 'indexRoute', 'bookingFileRoute', 'stageInfo'));
     }
 
     /**
@@ -419,7 +486,14 @@ class OperationController extends Controller
             return redirect()->back()->with('error', 'Unauthorized');
         }
 
-        $filters = ['search' => $request->input('search')];
+        $stageInfo = $this->getDepartmentStages('Insurance');
+
+        $filters = [
+            'search' => $request->input('search'),
+            'travel_date' => $request->input('travel_date'),
+            'stage' => $request->input('stage'),
+            'next_days' => $request->input('next_days'),
+        ];
         $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }, 'bookingFileRemarks' => function ($q) {
@@ -450,6 +524,21 @@ class OperationController extends Controller
             });
         }
 
+        if (!empty($filters['travel_date'])) {
+            $leadsQuery->whereDate('travel_date', '=', $filters['travel_date']);
+        }
+
+        if (!empty($filters['stage'])) {
+            $leadsQuery->where('insurance_stage', $filters['stage']);
+        }
+
+        if (!empty($filters['next_days'])) {
+            $days = (int) $filters['next_days'];
+            $startDate = now()->startOfDay();
+            $endDate = now()->addDays($days)->endOfDay();
+            $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
         $leads = $leadsQuery->paginate(25);
         $leads->appends($request->query());
 
@@ -466,7 +555,7 @@ class OperationController extends Controller
         $indexRoute = 'insurance.index';
         $bookingFileRoute = 'insurance.booking-file';
 
-        return view('operations.index', compact('leads', 'filters', 'services', 'destinations', 'employees', 'indexRoute', 'bookingFileRoute'));
+        return view('operations.index', compact('leads', 'filters', 'services', 'destinations', 'employees', 'indexRoute', 'bookingFileRoute', 'stageInfo'));
     }
 
     /**

@@ -44,7 +44,7 @@ class VoucherController extends Controller
             'voucher_number' => 'nullable|string|max:50|unique:vouchers,voucher_number',
             'emergency_contact_number' => 'nullable|string|max:20',
             'service_provided' => 'required|string',
-            'comments' => 'required|string',
+            'comments' => 'nullable|string',
         ]);
 
         try {
@@ -168,7 +168,7 @@ class VoucherController extends Controller
             'emergency_contact_number' => 'nullable|string|max:20',
             'accommodation_id' => 'required|exists:booking_accommodations,id',
             'service_provided' => 'required|string',
-            'comments' => 'required|string',
+            'comments' => 'nullable|string',
         ]);
 
         try {
@@ -330,7 +330,7 @@ class VoucherController extends Controller
         if ($voucher->voucher_type === 'service' || $voucher->voucher_type === 'accommodation') {
             $validated = $request->validate([
                 'service_provided' => 'required|string',
-                'comments' => 'required|string',
+                'comments' => 'nullable|string',
             ]);
 
             try {

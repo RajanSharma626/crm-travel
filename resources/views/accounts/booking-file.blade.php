@@ -676,6 +676,7 @@
                                 <label class="form-label">Status <span class="text-danger">*</span></label>
                                 <select class="form-select form-select-sm" id="accountsModalStatus" name="status"
                                     required>
+                                    <option value="">-- Select --</option>
                                     <option value="Paid">Paid</option>
                                     <option value="Pending">Pending</option>
                                 </select>

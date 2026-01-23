@@ -20,9 +20,16 @@ class DeliveryController extends Controller
 {
     public function index(Request $request)
     {
+        // Get stage info for current user's department
+        $userDepartment = $this->getUserDepartment();
+        $stageInfo = $this->getDepartmentStages($userDepartment);
+
         $filters = [
             'search' => $request->input('search'),
             'delivery_status' => $request->input('delivery_status'),
+            'travel_date' => $request->input('travel_date'),
+            'stage' => $request->input('stage'),
+            'next_days' => $request->input('next_days'),
         ];
 
         // Show leads that have operations with status 'completed' (vouchered) or have deliveries
@@ -88,6 +95,21 @@ class DeliveryController extends Controller
             });
         }
 
+        if (!empty($filters['travel_date'])) {
+            $leadsQuery->whereDate('travel_date', '=', $filters['travel_date']);
+        }
+
+        if (!empty($filters['stage'])) {
+            $leadsQuery->where($stageInfo['stage_key'], $filters['stage']);
+        }
+
+        if (!empty($filters['next_days'])) {
+            $days = (int) $filters['next_days'];
+            $startDate = now()->startOfDay();
+            $endDate = now()->addDays($days)->endOfDay();
+            $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
         $leads = $leadsQuery->paginate(25);
         $leads->appends($request->query());
 
@@ -107,7 +129,7 @@ class DeliveryController extends Controller
             $q->whereIn('name', ['Delivery', 'Admin']);
         })->orderBy('name')->get();
 
-        return view('deliveries.index', compact('leads', 'filters', 'services', 'destinations', 'users', 'deliveryUsers'));
+        return view('deliveries.index', compact('leads', 'filters', 'services', 'destinations', 'users', 'deliveryUsers', 'stageInfo'));
     }
 
     /**

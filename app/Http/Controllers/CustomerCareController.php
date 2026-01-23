@@ -89,6 +89,9 @@ class CustomerCareController extends LeadController
             'services' => $services,
             'destinations' => $destinations,
             'employees' => $employees,
+            'indexRoute' => 'customer-care.leads.index',
+            'storeRoute' => 'customer-care.leads.store',
+            'destroyRoute' => 'customer-care.leads.destroy',
         ]);
     }
 

@@ -25,6 +25,44 @@
 
                                 <form method="GET" action="{{ route('accounts.index') }}" class="row g-3 mb-4"
                                     id="accountsFiltersForm">
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="travel_date" class="form-label">Travel Date</label>
+                                        <input type="date" name="travel_date" id="travel_date"
+                                            class="form-control form-control-sm"
+                                            value="{{ $filters['travel_date'] ?? '' }}">
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="next_days" class="form-label">Next Days</label>
+                                        <select name="next_days" id="next_days" class="form-select form-select-sm">
+                                            <option value="">-- Select --</option>
+                                            <option value="7"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '7' ? 'selected' : '' }}>
+                                                7 Days</option>
+                                            <option value="14"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '14' ? 'selected' : '' }}>
+                                                14 Days</option>
+                                            <option value="21"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '21' ? 'selected' : '' }}>
+                                                21 Days</option>
+                                            <option value="28"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '28' ? 'selected' : '' }}>
+                                                28 Days</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="stage" class="form-label">Stage</label>
+                                        <select name="stage" id="stage" class="form-select form-select-sm">
+                                            <option value="">All Stages</option>
+                                            @if (isset($stageInfo) && isset($stageInfo['stages']))
+                                                @foreach ($stageInfo['stages'] as $stageOption)
+                                                    <option value="{{ $stageOption }}"
+                                                        {{ isset($filters['stage']) && $filters['stage'] == $stageOption ? 'selected' : '' }}>
+                                                        {{ $stageOption }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
                                     <div class="col-md-4 col-lg-3">
                                         <label for="search" class="form-label">Search</label>
                                         <div class="d-flex">
@@ -45,7 +83,12 @@
                                             </a>
                                         </div>
                                     @endcan
-                                    @if (!empty($filters['search']) || !empty($filters['payment_status']))
+                                    @if (
+                                        !empty($filters['search']) ||
+                                            !empty($filters['payment_status']) ||
+                                            !empty($filters['travel_date']) ||
+                                            !empty($filters['stage']) ||
+                                            !empty($filters['next_days']))
                                         <div class="col-md-3 col-lg-2 align-self-end ms-auto">
                                             <a href="{{ route('accounts.index') }}"
                                                 class="btn btn-outline-danger w-100 btn-sm">Clear
@@ -660,7 +703,7 @@
                                 viewLeadAlert.classList.remove('alert-danger');
                                 viewLeadAlert.classList.add('alert-success');
                                 viewLeadAlert.textContent = payload?.message ||
-                                'Remark added successfully!';
+                                    'Remark added successfully!';
                             }
 
                             remarkForm.reset();

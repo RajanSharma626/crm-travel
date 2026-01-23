@@ -175,8 +175,15 @@ class LeadController extends Controller
 
     public function bookings(Request $request)
     {
+        // Get stage info for current user's department
+        $userDepartment = $this->getUserDepartment();
+        $stageInfo = $this->getDepartmentStages($userDepartment);
+
         $filters = [
             'search' => $request->input('search'),
+            'travel_date' => $request->input('travel_date'),
+            'stage' => $request->input('stage'),
+            'next_days' => $request->input('next_days'),
         ];
 
         // Only show booked leads
@@ -204,10 +211,10 @@ class LeadController extends Controller
             }
         } else {
             // Other users: Use existing logic (filter by assigned user if not admin/manager)
-        if (!$this->canSeeAllLeads()) {
-            $userId = $this->getCurrentUserId();
-            if ($userId) {
-                $leadsQuery->where('assigned_user_id', $userId);
+            if (!$this->canSeeAllLeads()) {
+                $userId = $this->getCurrentUserId();
+                if ($userId) {
+                    $leadsQuery->where('assigned_user_id', $userId);
                 }
             }
         }
@@ -227,6 +234,21 @@ class LeadController extends Controller
                     ->orWhere('tsq', 'like', $likeTerm)
                     ->orWhere('tsq_number', 'like', $likeTerm);
             });
+        }
+
+        if (!empty($filters['travel_date'])) {
+            $leadsQuery->whereDate('travel_date', '=', $filters['travel_date']);
+        }
+
+        if (!empty($filters['stage'])) {
+            $leadsQuery->where($stageInfo['stage_key'], $filters['stage']);
+        }
+
+        if (!empty($filters['next_days'])) {
+            $days = (int) $filters['next_days'];
+            $startDate = now()->startOfDay();
+            $endDate = now()->addDays($days)->endOfDay();
+            $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
         }
 
         $leads = $leadsQuery->paginate(25);
@@ -249,6 +271,7 @@ class LeadController extends Controller
             'services' => $services,
             'destinations' => $destinations,
             'employees' => $employees,
+            'stageInfo' => $stageInfo,
         ]);
     }
 

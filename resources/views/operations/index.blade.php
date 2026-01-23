@@ -25,6 +25,44 @@
 
                                 <form method="GET" action="{{ route($indexRoute ?? 'operations.index') }}"
                                     class="row g-3 mb-4" id="operationsFiltersForm">
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="travel_date" class="form-label">Travel Date</label>
+                                        <input type="date" name="travel_date" id="travel_date"
+                                            class="form-control form-control-sm"
+                                            value="{{ $filters['travel_date'] ?? '' }}">
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="next_days" class="form-label">Next Days</label>
+                                        <select name="next_days" id="next_days" class="form-select form-select-sm">
+                                            <option value="">-- Select --</option>
+                                            <option value="7"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '7' ? 'selected' : '' }}>
+                                                7 Days</option>
+                                            <option value="14"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '14' ? 'selected' : '' }}>
+                                                14 Days</option>
+                                            <option value="21"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '21' ? 'selected' : '' }}>
+                                                21 Days</option>
+                                            <option value="28"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '28' ? 'selected' : '' }}>
+                                                28 Days</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="stage" class="form-label">Stage</label>
+                                        <select name="stage" id="stage" class="form-select form-select-sm">
+                                            <option value="">All Stages</option>
+                                            @if (isset($stageInfo) && isset($stageInfo['stages']))
+                                                @foreach ($stageInfo['stages'] as $stageOption)
+                                                    <option value="{{ $stageOption }}"
+                                                        {{ isset($filters['stage']) && $filters['stage'] == $stageOption ? 'selected' : '' }}>
+                                                        {{ $stageOption }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
                                     <div class="col-md-4 col-lg-3">
                                         <label for="search" class="form-label">Search</label>
                                         <div class="d-flex">
@@ -36,7 +74,7 @@
                                                     class="ri-search-line me-1"></i> Filter</button>
                                         </div>
                                     </div>
-                                    @if ($filters['search'])
+                                    @if ($filters['search'] || !empty($filters['travel_date']) || !empty($filters['stage']) || !empty($filters['next_days']))
                                         <div class="col-md-3 col-lg-2 align-self-end ms-auto">
                                             <a href="{{ route($indexRoute ?? 'operations.index') }}"
                                                 class="btn btn-outline-danger w-100 btn-sm">Clear
@@ -178,7 +216,8 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">First Name</label>
-                                    <input type="text" id="viewFirstName" class="form-control form-control-sm" readonly>
+                                    <input type="text" id="viewFirstName" class="form-control form-control-sm"
+                                        readonly>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Last Name</label>
@@ -966,7 +1005,7 @@
                                 editLeadAlert.classList.remove('d-none');
                                 editLeadAlert.classList.add('alert-success');
                                 editLeadAlert.textContent = payload?.message ||
-                                'Lead updated successfully!';
+                                    'Lead updated successfully!';
                             }
 
                             // Reload lead details and switch back to view mode
@@ -1024,7 +1063,7 @@
                                 viewLeadAlert.classList.remove('alert-danger');
                                 viewLeadAlert.classList.add('alert-success');
                                 viewLeadAlert.textContent = payload?.message ||
-                                'Remark added successfully!';
+                                    'Remark added successfully!';
                             }
 
                             remarkForm.reset();

@@ -40,6 +40,44 @@
 
                                 <form method="GET" action="{{ route('bookings.index') }}" class="row g-3 mb-4"
                                     id="bookingFiltersForm">
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="travel_date" class="form-label">Travel Date</label>
+                                        <input type="date" name="travel_date" id="travel_date"
+                                            class="form-control form-control-sm"
+                                            value="{{ $filters['travel_date'] ?? '' }}">
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="next_days" class="form-label">Next Days</label>
+                                        <select name="next_days" id="next_days" class="form-select form-select-sm">
+                                            <option value="">-- Select --</option>
+                                            <option value="7"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '7' ? 'selected' : '' }}>
+                                                7 Days</option>
+                                            <option value="14"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '14' ? 'selected' : '' }}>
+                                                14 Days</option>
+                                            <option value="21"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '21' ? 'selected' : '' }}>
+                                                21 Days</option>
+                                            <option value="28"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '28' ? 'selected' : '' }}>
+                                                28 Days</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="stage" class="form-label">Stage</label>
+                                        <select name="stage" id="stage" class="form-select form-select-sm">
+                                            <option value="">All Stages</option>
+                                            @if (isset($stageInfo) && isset($stageInfo['stages']))
+                                                @foreach ($stageInfo['stages'] as $stageOption)
+                                                    <option value="{{ $stageOption }}"
+                                                        {{ isset($filters['stage']) && $filters['stage'] == $stageOption ? 'selected' : '' }}>
+                                                        {{ $stageOption }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
                                     <div class="col-md-4 col-lg-3">
                                         <label for="search" class="form-label">Search</label>
                                         <div class="d-flex">
@@ -51,7 +89,7 @@
                                                     class="ri-search-line me-1"></i> Filter</button>
                                         </div>
                                     </div>
-                                    @if ($filters['search'])
+                                    @if ($filters['search'] || !empty($filters['travel_date']) || !empty($filters['stage']) || !empty($filters['next_days']))
                                         <div class="col-md-3 col-lg-2 align-self-end ms-auto">
                                             <a href="{{ route('bookings.index') }}"
                                                 class="btn btn-outline-danger w-100 btn-sm">Clear
@@ -75,7 +113,7 @@
                                     <tbody>
                                         @forelse ($leads as $lead)
                                             @php
-                                                    $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead);
+                                                $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead);
                                             @endphp
                                             <tr>
                                                 <td><strong>{{ $lead->tsq }}</strong></td>
@@ -86,7 +124,7 @@
                                                     </a>
                                                 </td>
                                                 <td>{{ $lead->primary_phone ?? $lead->phone }}</td>
-                                               
+
                                                 <td>
                                                     <span class="badge {{ $stageInfo['badge_class'] }}">
                                                         {{ $stageInfo['stage'] }}
@@ -98,9 +136,11 @@
                                                             <div class="flex-grow-1">
                                                                 <div class="small text-muted mb-1">
                                                                     <strong>{{ $lead->latest_booking_file_remark->user->name ?? 'Unknown' }}</strong>
-                                                                    <span class="ms-2">{{ $lead->latest_booking_file_remark->created_at->format('d/m/Y h:i A') }}</span>
+                                                                    <span
+                                                                        class="ms-2">{{ $lead->latest_booking_file_remark->created_at->format('d/m/Y h:i A') }}</span>
                                                                 </div>
-                                                                <div class="text-truncate" style="max-width: 200px;" title="{{ $lead->latest_booking_file_remark->remark }}">
+                                                                <div class="text-truncate" style="max-width: 200px;"
+                                                                    title="{{ $lead->latest_booking_file_remark->remark }}">
                                                                     {{ Str::limit($lead->latest_booking_file_remark->remark, 50) }}
                                                                 </div>
                                                             </div>
@@ -114,9 +154,18 @@
                                                     @php
                                                         $user = Auth::user();
                                                         $role = $user->role ?? $user->getRoleNameAttribute();
-                                                        $nonSalesDepartments = ['Operation', 'Operation Manager', 'Delivery', 'Delivery Manager', 
-                                                                                'Post Sales', 'Post Sales Manager', 'Accounts', 'Accounts Manager'];
-                                                        $isNonSalesDept = $role && in_array($role, $nonSalesDepartments);
+                                                        $nonSalesDepartments = [
+                                                            'Operation',
+                                                            'Operation Manager',
+                                                            'Delivery',
+                                                            'Delivery Manager',
+                                                            'Post Sales',
+                                                            'Post Sales Manager',
+                                                            'Accounts',
+                                                            'Accounts Manager',
+                                                        ];
+                                                        $isNonSalesDept =
+                                                            $role && in_array($role, $nonSalesDepartments);
                                                     @endphp
                                                     <div class="d-flex align-items-center">
                                                         <div class="d-flex">

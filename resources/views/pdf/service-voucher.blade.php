@@ -572,7 +572,8 @@
                             </tr>
                             <tr>
                                 <td class="label-cell">Voucher no.</td>
-                                <td class="value-cell">{{ $lead->operation->voucher_number ?? 'N/A' }}</td>
+                                <td class="value-cell">
+                                    {{ $voucher->voucher_number ?? ($lead->operation->voucher_number ?? 'N/A') }}</td>
                             </tr>
                             <tr>
                                 <td class="label-cell">Dated</td>
@@ -585,7 +586,7 @@
                                     Emergency No. :
                                 </td>
                                 <td class="value-cell">
-                                    +91 9796614307
+                                    {{ $voucher->emergency_contact_number ?? '+91 9796614307' }}
                                 </td>
                             </tr>
                         </tbody>
@@ -810,10 +811,14 @@
                 {{-- Show additional comments from voucher after default text --}}
                 <br><br>{!! $voucher->comments !!}
             @endif
-            @if ($accommodation && $accommodation->confirmation_no)
-                <br><br><strong>{{ $accommodation->room_type ?? 'Deluxe Room' }}</strong> in
-                <strong>{{ $accommodation->stay_at ?? 'Hotel' }}</strong> is confirmed under confirmation number
-                <strong>{{ $accommodation->confirmation_no }}</strong>.
+            @if (isset($accommodations) && $accommodations->count() > 0)
+                @foreach ($accommodations as $acc)
+                    @if ($acc->confirmation_no)
+                        <br><br><strong>{{ $acc->room_type ?? 'Deluxe Room' }}</strong> in
+                        <strong>{{ $acc->stay_at ?? 'Hotel' }}</strong> is confirmed under confirmation number
+                        <strong>{{ $acc->confirmation_no }}</strong>.
+                    @endif
+                @endforeach
             @endif
         </div>
     </div>

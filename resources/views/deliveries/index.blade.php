@@ -25,169 +25,214 @@
 
                                 <form method="GET" action="{{ route('deliveries.index') }}" class="row g-3 mb-4"
                                     id="deliveriesFiltersForm">
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="travel_date" class="form-label">Travel Date</label>
+                                        <input type="date" name="travel_date" id="travel_date"
+                                            class="form-control form-control-sm"
+                                            value="{{ $filters['travel_date'] ?? '' }}">
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="next_days" class="form-label">Next Days</label>
+                                        <select name="next_days" id="next_days" class="form-select form-select-sm">
+                                            <option value="">-- Select --</option>
+                                            <option value="7"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '7' ? 'selected' : '' }}>
+                                                7 Days</option>
+                                            <option value="14"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '14' ? 'selected' : '' }}>
+                                                14 Days</option>
+                                            <option value="21"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '21' ? 'selected' : '' }}>
+                                                21 Days</option>
+                                            <option value="28"
+                                                {{ isset($filters['next_days']) && $filters['next_days'] == '28' ? 'selected' : '' }}>
+                                                28 Days</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="stage" class="form-label">Stage</label>
+                                        <select name="stage" id="stage" class="form-select form-select-sm">
+                                            <option value="">All Stages</option>
+                                            @if (isset($stageInfo) && isset($stageInfo['stages']))
+                                                @foreach ($stageInfo['stages'] as $stageOption)
+                                                    <option value="{{ $stageOption }}"
+                                                        {{ isset($filters['stage']) && $filters['stage'] == $stageOption ? 'selected' : '' }}>
+                                                        {{ $stageOption }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
                                     <div class="col-md-4 col-lg-3">
                                         <label for="search" class="form-label">Search</label>
-
                                         <input type="text" name="search" id="search"
                                             class="form-control form-control-sm" placeholder="Enter name, ref no., or phone"
                                             value="{{ $filters['search'] ?? '' }}">
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="delivery_status" class="form-label">Delivery Status</label>
+                                        <div class="d-flex">
+                                            <select name="delivery_status" id="delivery_status"
+                                                class="form-select form-select-sm">
+                                                <option value="">All Status</option>
+                                                <option value="Pending"
+                                                    {{ ($filters['delivery_status'] ?? '') == 'Pending' ? 'selected' : '' }}>
+                                                    Pending
+                                                </option>
+                                                <option value="In_Process"
+                                                    {{ ($filters['delivery_status'] ?? '') == 'In_Process' ? 'selected' : '' }}>
+                                                    In
+                                                    Process</option>
+                                                <option value="Delivered"
+                                                    {{ ($filters['delivery_status'] ?? '') == 'Delivered' ? 'selected' : '' }}>
+                                                    Delivered</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-primary btn-sm ms-2 d-flex"> <i
+                                                    class="ri-search-line me-1"></i> Filter</button>
+                                        </div>
+                                    </div>
+                                    @if (
+                                        !empty($filters['search']) ||
+                                            !empty($filters['delivery_status']) ||
+                                            !empty($filters['travel_date']) ||
+                                            !empty($filters['stage']) ||
+                                            !empty($filters['next_days']))
+                                        <div class="col-md-3 col-lg-2 align-self-end ms-auto">
+                                            <a href="{{ route('deliveries.index') }}"
+                                                class="btn btn-outline-danger w-100 btn-sm">Clear
+                                                Filters</a>
+                                        </div>
+                                    @endif
+                                </form>
 
-                                
-                            </div>
-                            <div class="col-md-3 col-lg-2">
-                                <label for="delivery_status" class="form-label">Delivery Status</label>
-                                <div class="d-flex">
-                                    <select name="delivery_status" id="delivery_status" class="form-select form-select-sm">
-                                        <option value="">All Status</option>
-                                        <option value="Pending"
-                                            {{ ($filters['delivery_status'] ?? '') == 'Pending' ? 'selected' : '' }}>Pending
-                                        </option>
-                                        <option value="In_Process"
-                                            {{ ($filters['delivery_status'] ?? '') == 'In_Process' ? 'selected' : '' }}>In
-                                            Process</option>
-                                        <option value="Delivered"
-                                            {{ ($filters['delivery_status'] ?? '') == 'Delivered' ? 'selected' : '' }}>
-                                            Delivered</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-primary btn-sm ms-2 d-flex"> <i
-                                            class="ri-search-line me-1"></i> Filter</button>
-                                </div>
-                            </div>
-                            @if (!empty($filters['search']) || !empty($filters['delivery_status']))
-                                <div class="col-md-3 col-lg-2 align-self-end ms-auto">
-                                    <a href="{{ route('deliveries.index') }}"
-                                        class="btn btn-outline-danger w-100 btn-sm">Clear
-                                        Filters</a>
-                                </div>
-                            @endif
-                            </form>
+                                <!-- Delivery Table -->
+                                @if (isset($leads) && $leads->count() > 0)
+                                    <div class="text-muted small mb-2 px-3">
+                                        Showing {{ $leads->firstItem() ?? 0 }} out of {{ $leads->total() }}
+                                    </div>
+                                @endif
 
-                            <!-- Delivery Table -->
-                            @if(isset($leads) && $leads->count() > 0)
-                            <div class="text-muted small mb-2 px-3">
-                                Showing {{ $leads->firstItem() ?? 0 }} out of {{ $leads->total() }}
-                            </div>
-                            @endif
-
-                            <table class="table table-striped small table-bordered w-100 mb-5" id="deliveriesTable">
-                                <thead>
-                                    <tr>
-                                        <th>Ref No.</th>
-                                        <th>Customer Name</th>
-                                        <th>Phone</th>
-                                        <th>Delivery Status</th>
-                                        <th>Assigned To</th>
-                                        <th>Delivery Method</th>
-                                        <th>Courier ID</th>
-                                        <th>Delivered At</th>
-                                        <th>Booking File Recent Remark</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse ($leads as $lead)
-                                        @php
-                                            $delivery = $lead->delivery;
-                                            $deliveryStatus = $delivery ? $delivery->delivery_status : 'Pending';
-                                        @endphp
-                                        <tr data-lead-id="{{ $lead->id }}">
-                                            <td><strong>{{ $lead->tsq }}</strong></td>
-                                            <td>
-                                                <a href="{{ route('deliveries.booking-file', $lead) }}"
-                                                    class="text-primary text-decoration-none fw-semibold">
-                                                    {{ $lead->customer_name }}
-                                                </a>
-                                            </td>
-                                            <td>{{ $lead->primary_phone ?? $lead->phone }}</td>
-                                          
+                                <table class="table table-striped small table-bordered w-100 mb-5" id="deliveriesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Ref No.</th>
+                                            <th>Customer Name</th>
+                                            <th>Phone</th>
+                                            <th>Delivery Status</th>
+                                            <th>Assigned To</th>
+                                            <th>Delivery Method</th>
+                                            <th>Courier ID</th>
+                                            <th>Delivered At</th>
+                                            <th>Booking File Recent Remark</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($leads as $lead)
                                             @php
-                                                $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead);
+                                                $delivery = $lead->delivery;
+                                                $deliveryStatus = $delivery ? $delivery->delivery_status : 'Pending';
                                             @endphp
-                                            <td>
-                                                <span class="badge {{ $stageInfo['badge_class'] }}">
-                                                    {{ $stageInfo['stage'] }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {{ $lead->assignedUser ? $lead->assignedUser->name : 'Unassigned' }}
-                                            </td>
-                                            <td>
-                                                @if ($delivery && $delivery->delivery_method)
-                                                    {{ ucfirst(str_replace('_', ' ', $delivery->delivery_method)) }}
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                {{ $delivery && $delivery->courier_id ? $delivery->courier_id : '-' }}
-                                            </td>
-                                            <td>
-                                                @if ($delivery && $delivery->delivered_at)
-                                                    {{ $delivery->delivered_at->format('d M, Y h:i A') }}
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($lead->latest_booking_file_remark)
-                                                    <div class="d-flex align-items-start">
-                                                        <div class="flex-grow-1">
-                                                            <div class="small text-muted mb-1">
-                                                                <strong>{{ $lead->latest_booking_file_remark->user->name ?? 'Unknown' }}</strong>
-                                                                <span class="ms-2">{{ $lead->latest_booking_file_remark->created_at->format('d/m/Y h:i A') }}</span>
-                                                            </div>
-                                                            <div class="text-truncate" style="max-width: 200px;" title="{{ $lead->latest_booking_file_remark->remark }}">
-                                                                {{ Str::limit($lead->latest_booking_file_remark->remark, 50) }}
+                                            <tr data-lead-id="{{ $lead->id }}">
+                                                <td><strong>{{ $lead->tsq }}</strong></td>
+                                                <td>
+                                                    <a href="{{ route('deliveries.booking-file', $lead) }}"
+                                                        class="text-primary text-decoration-none fw-semibold">
+                                                        {{ $lead->customer_name }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ $lead->primary_phone ?? $lead->phone }}</td>
+
+                                                @php
+                                                    $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead);
+                                                @endphp
+                                                <td>
+                                                    <span class="badge {{ $stageInfo['badge_class'] }}">
+                                                        {{ $stageInfo['stage'] }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {{ $lead->assignedUser ? $lead->assignedUser->name : 'Unassigned' }}
+                                                </td>
+                                                <td>
+                                                    @if ($delivery && $delivery->delivery_method)
+                                                        {{ ucfirst(str_replace('_', ' ', $delivery->delivery_method)) }}
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    {{ $delivery && $delivery->courier_id ? $delivery->courier_id : '-' }}
+                                                </td>
+                                                <td>
+                                                    @if ($delivery && $delivery->delivered_at)
+                                                        {{ $delivery->delivered_at->format('d M, Y h:i A') }}
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if ($lead->latest_booking_file_remark)
+                                                        <div class="d-flex align-items-start">
+                                                            <div class="flex-grow-1">
+                                                                <div class="small text-muted mb-1">
+                                                                    <strong>{{ $lead->latest_booking_file_remark->user->name ?? 'Unknown' }}</strong>
+                                                                    <span
+                                                                        class="ms-2">{{ $lead->latest_booking_file_remark->created_at->format('d/m/Y h:i A') }}</span>
+                                                                </div>
+                                                                <div class="text-truncate" style="max-width: 200px;"
+                                                                    title="{{ $lead->latest_booking_file_remark->remark }}">
+                                                                    {{ Str::limit($lead->latest_booking_file_remark->remark, 50) }}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="d-flex">
-                                                        <a href="{{ route('deliveries.booking-file', $lead) }}"
-                                                            class="btn btn-icon btn-flush-dark btn-rounded flush-soft-hover text-primary"
-                                                            data-bs-toggle="tooltip" data-placement="top"
-                                                            title="Booking File">
-                                                            <span class="icon">
-                                                                <span class="feather-icon">
-                                                                    <i data-feather="file-text"></i>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="d-flex">
+                                                            <a href="{{ route('deliveries.booking-file', $lead) }}"
+                                                                class="btn btn-icon btn-flush-dark btn-rounded flush-soft-hover text-primary"
+                                                                data-bs-toggle="tooltip" data-placement="top"
+                                                                title="Booking File">
+                                                                <span class="icon">
+                                                                    <span class="feather-icon">
+                                                                        <i data-feather="file-text"></i>
+                                                                    </span>
                                                                 </span>
-                                                            </span>
-                                                        </a>
+                                                            </a>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="11" class="text-center">No deliveries found</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                            <!-- Pagination -->
-                            @if ($leads->hasPages())
-                                <div class="d-flex justify-content-between align-items-center mt-4 mb-3 px-3">
-                                    <div class="text-muted small">
-                                        Showing {{ $leads->firstItem() ?? 0 }} to {{ $leads->lastItem() ?? 0 }} of
-                                        {{ $leads->total() }} entries
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="11" class="text-center">No deliveries found</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                <!-- Pagination -->
+                                @if ($leads->hasPages())
+                                    <div class="d-flex justify-content-between align-items-center mt-4 mb-3 px-3">
+                                        <div class="text-muted small">
+                                            Showing {{ $leads->firstItem() ?? 0 }} to {{ $leads->lastItem() ?? 0 }} of
+                                            {{ $leads->total() }} entries
+                                        </div>
+                                        <div>
+                                            {{ $leads->links('pagination::bootstrap-5') }}
+                                        </div>
                                     </div>
-                                    <div>
-                                        {{ $leads->links('pagination::bootstrap-5') }}
-                                    </div>
-                                </div>
-                            @endif
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    @include('layouts.footer')
+        @include('layouts.footer')
     </div>
 
     <!-- View Lead Modal - Same as bookings page -->
