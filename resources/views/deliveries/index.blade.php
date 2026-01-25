@@ -143,13 +143,9 @@
                                         <tr>
                                             <th>Ref No.</th>
                                             <th>Customer Name</th>
-                                            <th>Phone</th>
-                                            <th>Delivery Status</th>
-                                            <th>Assigned To</th>
-                                            <th>Delivery Method</th>
-                                            <th>Courier ID</th>
-                                            <th>Delivered At</th>
-                                            <th>Booking File Recent Remark</th>
+                                            <th>Travel Date</th>
+                                            <th>Status</th>
+                                            <th>Remark</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -167,7 +163,9 @@
                                                         {{ $lead->customer_name }}
                                                     </a>
                                                 </td>
-                                                <td>{{ $lead->primary_phone ?? $lead->phone }}</td>
+                                                <td>
+                                                    {{ $lead->travel_date ? \Carbon\Carbon::parse($lead->travel_date)->format('d M, Y') : '-' }}
+                                                </td>
 
                                                 @php
                                                     $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead);
@@ -176,26 +174,6 @@
                                                     <span class="badge {{ $stageInfo['badge_class'] }}">
                                                         {{ $stageInfo['stage'] }}
                                                     </span>
-                                                </td>
-                                                <td>
-                                                    {{ $lead->assignedUser ? $lead->assignedUser->name : 'Unassigned' }}
-                                                </td>
-                                                <td>
-                                                    @if ($delivery && $delivery->delivery_method)
-                                                        {{ ucfirst(str_replace('_', ' ', $delivery->delivery_method)) }}
-                                                    @else
-                                                        <span class="text-muted">-</span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    {{ $delivery && $delivery->courier_id ? $delivery->courier_id : '-' }}
-                                                </td>
-                                                <td>
-                                                    @if ($delivery && $delivery->delivered_at)
-                                                        {{ $delivery->delivered_at->format('d M, Y h:i A') }}
-                                                    @else
-                                                        <span class="text-muted">-</span>
-                                                    @endif
                                                 </td>
                                                 <td>
                                                     @if ($lead->latest_booking_file_remark)

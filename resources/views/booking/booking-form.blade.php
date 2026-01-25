@@ -56,11 +56,45 @@
                                 @endif
 
                                 @php
+                                    $currentUser = Auth::user();
+                                    $userDept = $currentUser->department ?? '';
+
+                                    // Force View Only for specific departments
+                                    // unless they are Admin/Developer which usually overrides
+                                    if (
+                                        in_array($userDept, [
+                                            'Ticketing',
+                                            'Visa',
+                                            'Insurance',
+                                            'Insurance Department',
+                                        ]) &&
+                                        !$currentUser->hasRole('Admin') &&
+                                        !$currentUser->hasRole('Developer')
+                                    ) {
+                                        $isViewOnly = true;
+                                    }
+
                                     $isViewOnly = $isViewOnly ?? false;
                                     $disabledAttr = $isViewOnly ? 'readonly disabled' : '';
                                     $disabledStyle = $isViewOnly
                                         ? 'style="background-color: #f8f9fa; cursor: not-allowed;"'
                                         : '';
+
+                                    // Allowed departments for specific sections
+                                    $allowedDepts = [
+                                        'Post Sales',
+                                        'Ticketing',
+                                        'Visa',
+                                        'Insurance',
+                                        'Insurance Department',
+                                    ];
+                                    // $currentUser and $userDept already defined above
+
+                                    $isAllowedSectionViewer =
+                                        in_array($userDept, $allowedDepts) ||
+                                        $currentUser->hasRole($allowedDepts) ||
+                                        $currentUser->hasRole('Admin') ||
+                                        $currentUser->hasRole('Developer');
                                 @endphp
 
                                 <form id="bookingFileForm" method="POST" action="{{ route('leads.update', $lead) }}"
@@ -70,186 +104,191 @@
                                     <input type="hidden" name="lead_id" value="{{ $lead->id }}">
 
                                     <!-- Customer Details Section -->
-                                    <div class="mb-4 border rounded-3 p-3">
-                                        <h6 class="text-uppercase text-muted small fw-semibold mb-3">
-                                            <i data-feather="user" class="me-1" style="width: 14px; height: 14px;"></i>
-                                            Customer Details
-                                        </h6>
-                                        <div class="row g-3">
-                                            <div class="col-md-3">
-                                                <label class="form-label">Ref No.</label>
-                                                <input type="text" value="{{ $lead->tsq }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Salutation</label>
-                                                <input type="text" value="{{ $lead->salutation ?? '' }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">First Name</label>
-                                                <input type="text" value="{{ $lead->first_name }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Last Name</label>
-                                                <input type="text" value="{{ $lead->last_name ?? '' }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Primary No.</label>
-                                                <input type="text" value="{{ $lead->primary_phone ?? $lead->phone }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Secondary No.</label>
-                                                <input type="text" value="{{ $lead->secondary_phone ?? '' }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Emergency No.</label>
-                                                <input type="text" value="{{ $lead->other_phone ?? '' }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Email ID</label>
-                                                <input type="email" value="{{ $lead->email }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">No. of Adult(s)</label>
-                                                <input type="number" value="{{ $lead->adults }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Child (2-5 years)</label>
-                                                <input type="number" value="{{ $lead->children_2_5 ?? 0 }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Child (6-11 years)</label>
-                                                <input type="number" value="{{ $lead->children_6_11 ?? 0 }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Infant (>2 years)</label>
-                                                <input type="number" value="{{ $lead->infants ?? 0 }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Travel Date</label>
-                                                <input type="text"
-                                                    value="{{ $lead->travel_date ? $lead->travel_date->format('d M, Y') : 'N/A' }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Return Date</label>
-                                                <input type="text"
-                                                    value="{{ $lead->return_date ? $lead->return_date->format('d M, Y') : 'N/A' }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label">Booked On</label>
-                                                <input type="text"
-                                                    value="{{ $lead->booked_on ? $lead->booked_on->format('d M, Y h:i A') : 'N/A' }}"
-                                                    class="form-control form-control-sm" readonly disabled
-                                                    style="background-color: #f8f9fa; cursor: not-allowed;">
-                                            </div>
-                                            @php
-                                                $paymentState = $customerPaymentState ?? 'none';
-                                                $salesBgColor = '#f8f9fa';
-                                                $salesBorderColor = '#ced4da';
-                                                $paymentIcon = null;
-                                                $paymentIconColor = '#6c757d';
+                                    @if ($isAllowedSectionViewer)
+                                        <div class="mb-4 border rounded-3 p-3">
+                                            <h6 class="text-uppercase text-muted small fw-semibold mb-3">
+                                                <i data-feather="user" class="me-1"
+                                                    style="width: 14px; height: 14px;"></i>
+                                                Customer Details
+                                            </h6>
+                                            <div class="row g-3">
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Ref No.</label>
+                                                    <input type="text" value="{{ $lead->tsq }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Salutation</label>
+                                                    <input type="text" value="{{ $lead->salutation ?? '' }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">First Name</label>
+                                                    <input type="text" value="{{ $lead->first_name }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Last Name</label>
+                                                    <input type="text" value="{{ $lead->last_name ?? '' }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Primary No.</label>
+                                                    <input type="text"
+                                                        value="{{ $lead->primary_phone ?? $lead->phone }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Secondary No.</label>
+                                                    <input type="text" value="{{ $lead->secondary_phone ?? '' }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Emergency No.</label>
+                                                    <input type="text" value="{{ $lead->other_phone ?? '' }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Email ID</label>
+                                                    <input type="email" value="{{ $lead->email }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">No. of Adult(s)</label>
+                                                    <input type="number" value="{{ $lead->adults }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Child (2-5 years)</label>
+                                                    <input type="number" value="{{ $lead->children_2_5 ?? 0 }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Child (6-11 years)</label>
+                                                    <input type="number" value="{{ $lead->children_6_11 ?? 0 }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Infant (>2 years)</label>
+                                                    <input type="number" value="{{ $lead->infants ?? 0 }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Travel Date</label>
+                                                    <input type="text"
+                                                        value="{{ $lead->travel_date ? $lead->travel_date->format('d M, Y') : 'N/A' }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Return Date</label>
+                                                    <input type="text"
+                                                        value="{{ $lead->return_date ? $lead->return_date->format('d M, Y') : 'N/A' }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Booked On</label>
+                                                    <input type="text"
+                                                        value="{{ $lead->booked_on ? $lead->booked_on->format('d M, Y h:i A') : 'N/A' }}"
+                                                        class="form-control form-control-sm" readonly disabled
+                                                        style="background-color: #f8f9fa; cursor: not-allowed;">
+                                                </div>
+                                                @php
+                                                    $paymentState = $customerPaymentState ?? 'none';
+                                                    $salesBgColor = '#f8f9fa';
+                                                    $salesBorderColor = '#ced4da';
+                                                    $paymentIcon = null;
+                                                    $paymentIconColor = '#6c757d';
 
-                                                if ($isViewOnly) {
-                                                    if ($paymentState === 'full') {
-                                                        $salesBgColor = '#d4edda'; // green
-                                                        $salesBorderColor = '#28a745';
-                                                        $paymentIcon = 'check-circle';
-                                                        $paymentIconColor = '#28a745';
-                                                    } elseif ($paymentState === 'partial') {
-                                                        $salesBgColor = '#fff3cd'; // yellow
-                                                        $salesBorderColor = '#ffc107';
-                                                        $paymentIcon = 'clock';
-                                                        $paymentIconColor = '#ffc107';
-                                                    } else {
-                                                        $salesBgColor = '#f8d7da'; // red
-                                                        $salesBorderColor = '#dc3545';
-                                                        $paymentIcon = 'alert-circle';
-                                                        $paymentIconColor = '#dc3545';
+                                                    if ($isViewOnly) {
+                                                        if ($paymentState === 'full') {
+                                                            $salesBgColor = '#d4edda'; // green
+                                                            $salesBorderColor = '#28a745';
+                                                            $paymentIcon = 'check-circle';
+                                                            $paymentIconColor = '#28a745';
+                                                        } elseif ($paymentState === 'partial') {
+                                                            $salesBgColor = '#fff3cd'; // yellow
+                                                            $salesBorderColor = '#ffc107';
+                                                            $paymentIcon = 'clock';
+                                                            $paymentIconColor = '#ffc107';
+                                                        } else {
+                                                            $salesBgColor = '#f8d7da'; // red
+                                                            $salesBorderColor = '#dc3545';
+                                                            $paymentIcon = 'alert-circle';
+                                                            $paymentIconColor = '#dc3545';
+                                                        }
                                                     }
-                                                }
-                                            @endphp
-                                            <div class="col-md-3">
-                                                <label class="form-label">Sales Cost</label>
-                                                @if ($isViewOnly || ($isOpsDept ?? false))
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="text"
-                                                            value="{{ $lead->selling_price ? number_format($lead->selling_price, 2) : '0.00' }}"
-                                                            class="form-control form-control-sm" readonly disabled
-                                                            style="background-color: {{ $salesBgColor }}; cursor: not-allowed; border-color: {{ $salesBorderColor }};">
-                                                        @if ($paymentIcon)
-                                                            <span class="input-group-text"
-                                                                style="background-color: {{ $salesBgColor }}; border-color: {{ $salesBorderColor }};">
-                                                                <i data-feather="{{ $paymentIcon }}"
-                                                                    style="width: 14px; height: 14px; color: {{ $paymentIconColor }};"></i>
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                @else
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" id="salesCostInput" name="selling_price"
-                                                            value="{{ old('selling_price', $lead->selling_price ?? 0) }}"
-                                                            class="form-control form-control-sm" step="0.01"
-                                                            min="0" placeholder="0.00">
-                                                        <button type="button" class="btn btn-primary btn-sm"
-                                                            id="updateSalesCostBtn">
-                                                            Update
-                                                        </button>
+                                                @endphp
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Sales Cost</label>
+                                                    @if ($isViewOnly || ($isOpsDept ?? false))
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text"
+                                                                value="{{ $lead->selling_price ? number_format($lead->selling_price, 2) : '0.00' }}"
+                                                                class="form-control form-control-sm" readonly disabled
+                                                                style="background-color: {{ $salesBgColor }}; cursor: not-allowed; border-color: {{ $salesBorderColor }};">
+                                                            @if ($paymentIcon)
+                                                                <span class="input-group-text"
+                                                                    style="background-color: {{ $salesBgColor }}; border-color: {{ $salesBorderColor }};">
+                                                                    <i data-feather="{{ $paymentIcon }}"
+                                                                        style="width: 14px; height: 14px; color: {{ $paymentIconColor }};"></i>
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    @else
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="number" id="salesCostInput"
+                                                                name="selling_price"
+                                                                value="{{ old('selling_price', $lead->selling_price ?? 0) }}"
+                                                                class="form-control form-control-sm" step="0.01"
+                                                                min="0" placeholder="0.00">
+                                                            <button type="button" class="btn btn-primary btn-sm"
+                                                                id="updateSalesCostBtn">
+                                                                Update
+                                                            </button>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                @php
+                                                    $stageInfo = $stageInfo ?? null;
+                                                    $currentStage = $currentStage ?? 'Pending';
+                                                @endphp
+                                                @if ($stageInfo)
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Stage</label>
+                                                        <div class="input-group input-group-sm">
+                                                            <select name="stage" id="stageSelect"
+                                                                class="form-select form-control-sm">
+                                                                @foreach ($stageInfo['stages'] as $stage)
+                                                                    <option value="{{ $stage }}"
+                                                                        {{ $currentStage == $stage ? 'selected' : '' }}>
+                                                                        {{ $stage }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                            <button type="button" class="btn btn-primary btn-sm"
+                                                                id="updateStageBtn">
+                                                                Update
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 @endif
                                             </div>
-                                            @php
-                                                $stageInfo = $stageInfo ?? null;
-                                                $currentStage = $currentStage ?? 'Pending';
-                                            @endphp
-                                            @if ($stageInfo)
-                                                <div class="col-md-3">
-                                                    <label class="form-label">Stage</label>
-                                                    <div class="input-group input-group-sm">
-                                                        <select name="stage" id="stageSelect"
-                                                            class="form-select form-control-sm">
-                                                            @foreach ($stageInfo['stages'] as $stage)
-                                                                <option value="{{ $stage }}"
-                                                                    {{ $currentStage == $stage ? 'selected' : '' }}>
-                                                                    {{ $stage }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                        <button type="button" class="btn btn-primary btn-sm"
-                                                            id="updateStageBtn">
-                                                            Update
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            @endif
                                         </div>
-                                    </div>
+                                    @endif
                                 </form>
 
                                 @if (Auth::user()->department === 'Sales' || Auth::user()->hasRole('Sales') || Auth::user()->hasRole('Sales Manager'))
@@ -287,133 +326,138 @@
 
                                 <!-- Destination Section -->
 
-                                <div class="mb-4 border rounded-3 p-3 bg-light">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="text-uppercase text-muted small fw-semibold mb-0">
-                                            <i data-feather="map-pin" class="me-1"
-                                                style="width: 14px; height: 14px;"></i>
-                                            Destination
-                                        </h6>
-                                        @if (!$isViewOnly)
-                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                                data-bs-target="#addDestinationModal">
-                                                <i data-feather="plus" style="width: 14px; height: 14px;"></i>
-                                                Add
-                                            </button>
-                                        @endif
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered table-sm mb-0" id="destinationTable">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th style="width: 15%;">Destination</th>
-                                                    <th style="width: 15%;">Location</th>
-                                                    <th style="width: 12%;" class="text-center">Only Hotel</th>
-                                                    <th style="width: 12%;" class="text-center">Only TT</th>
-                                                    <th style="width: 12%;" class="text-center">Hotel + TT</th>
-                                                    <th style="width: 10%;">From Date</th>
-                                                    <th style="width: 10%;">To Date</th>
-                                                    @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
-                                                        <th style="width: 10%;" class="text-center">Action</th>
-                                                    @endif
-                                                </tr>
-                                            </thead>
-                                            <tbody id="destinationTableBody">
-                                                @if ($lead->bookingDestinations && $lead->bookingDestinations->count() > 0)
-                                                    @foreach ($lead->bookingDestinations as $index => $bd)
-                                                        <tr class="destination-data-row"
-                                                            data-destination-id="{{ $bd->id }}"
-                                                            data-row-index="{{ $index }}">
-                                                            <td>{{ $bd->destination }}</td>
-                                                            <td>{{ $bd->location }}</td>
-                                                            <td class="text-center">
-                                                                @if ($bd->only_hotel)
-                                                                    <i data-feather="check"
-                                                                        style="width: 16px; height: 16px; color: #28a745;"></i>
-                                                                @endif
-                                                            </td>
-                                                            <td class="text-center">
-                                                                @if ($bd->only_tt)
-                                                                    <i data-feather="check"
-                                                                        style="width: 16px; height: 16px; color: #28a745;"></i>
-                                                                @endif
-                                                            </td>
-                                                            <td class="text-center">
-                                                                @if ($bd->hotel_tt)
-                                                                    <i data-feather="check"
-                                                                        style="width: 16px; height: 16px; color: #28a745;"></i>
-                                                                @endif
-                                                            </td>
-                                                            <td>{{ $bd->from_date ? $bd->from_date->format('d/m/Y') : '' }}
-                                                            </td>
-                                                            <td>{{ $bd->to_date ? $bd->to_date->format('d/m/Y') : '' }}
-                                                            </td>
-                                                            @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
+                                <!-- Destination Section -->
+                                @if ($isAllowedSectionViewer)
+                                    <div class="mb-4 border rounded-3 p-3 bg-light">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="text-uppercase text-muted small fw-semibold mb-0">
+                                                <i data-feather="map-pin" class="me-1"
+                                                    style="width: 14px; height: 14px;"></i>
+                                                Destination
+                                            </h6>
+                                            @if (!$isViewOnly)
+                                                <button type="button" class="btn btn-sm btn-primary"
+                                                    data-bs-toggle="modal" data-bs-target="#addDestinationModal">
+                                                    <i data-feather="plus" style="width: 14px; height: 14px;"></i>
+                                                    Add
+                                                </button>
+                                            @endif
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-sm mb-0" id="destinationTable">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th style="width: 15%;">Destination</th>
+                                                        <th style="width: 15%;">Location</th>
+                                                        <th style="width: 12%;" class="text-center">Only Hotel</th>
+                                                        <th style="width: 12%;" class="text-center">Only TT</th>
+                                                        <th style="width: 12%;" class="text-center">Hotel + TT</th>
+                                                        <th style="width: 10%;">From Date</th>
+                                                        <th style="width: 10%;">To Date</th>
+                                                        @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
+                                                            <th style="width: 10%;" class="text-center">Action</th>
+                                                        @endif
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="destinationTableBody">
+                                                    @if ($lead->bookingDestinations && $lead->bookingDestinations->count() > 0)
+                                                        @foreach ($lead->bookingDestinations as $index => $bd)
+                                                            <tr class="destination-data-row"
+                                                                data-destination-id="{{ $bd->id }}"
+                                                                data-row-index="{{ $index }}">
+                                                                <td>{{ $bd->destination }}</td>
+                                                                <td>{{ $bd->location }}</td>
                                                                 <td class="text-center">
-                                                                    @if (!$isViewOnly)
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            width="16" height="16"
-                                                                            viewBox="0 0 24 24" fill="none"
-                                                                            stroke="currentColor" stroke-width="2"
-                                                                            stroke-linecap="round" stroke-linejoin="round"
-                                                                            class="editDestinationRow"
-                                                                            data-id="{{ $bd->id }}"
-                                                                            data-destination="{{ $bd->destination }}"
-                                                                            data-location="{{ $bd->location }}"
-                                                                            data-only-hotel="{{ $bd->only_hotel ? 1 : 0 }}"
-                                                                            data-only-tt="{{ $bd->only_tt ? 1 : 0 }}"
-                                                                            data-hotel-tt="{{ $bd->hotel_tt ? 1 : 0 }}"
-                                                                            data-from-date="{{ $bd->from_date ? $bd->from_date->format('Y-m-d') : '' }}"
-                                                                            data-to-date="{{ $bd->to_date ? $bd->to_date->format('Y-m-d') : '' }}"
-                                                                            data-bs-toggle="modal"
-                                                                            data-bs-target="#addDestinationModal"
-                                                                            style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
-                                                                            <path
-                                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                                            </path>
-                                                                            <path
-                                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                            </path>
-                                                                        </svg>
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            width="16" height="16"
-                                                                            viewBox="0 0 24 24" fill="none"
-                                                                            stroke="currentColor" stroke-width="2"
-                                                                            stroke-linecap="round" stroke-linejoin="round"
-                                                                            class="removeDestinationRow"
-                                                                            data-id="{{ $bd->id }}"
-                                                                            style="width: 16px; height: 16px; color: #dc3545; cursor: pointer;">
-                                                                            <polyline points="3 6 5 6 21 6">
-                                                                            </polyline>
-                                                                            <path
-                                                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                            </path>
-                                                                        </svg>
+                                                                    @if ($bd->only_hotel)
+                                                                        <i data-feather="check"
+                                                                            style="width: 16px; height: 16px; color: #28a745;"></i>
                                                                     @endif
                                                                 </td>
-                                                            @endif
+                                                                <td class="text-center">
+                                                                    @if ($bd->only_tt)
+                                                                        <i data-feather="check"
+                                                                            style="width: 16px; height: 16px; color: #28a745;"></i>
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    @if ($bd->hotel_tt)
+                                                                        <i data-feather="check"
+                                                                            style="width: 16px; height: 16px; color: #28a745;"></i>
+                                                                    @endif
+                                                                </td>
+                                                                <td>{{ $bd->from_date ? $bd->from_date->format('d/m/Y') : '' }}
+                                                                </td>
+                                                                <td>{{ $bd->to_date ? $bd->to_date->format('d/m/Y') : '' }}
+                                                                </td>
+                                                                @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
+                                                                    <td class="text-center">
+                                                                        @if (!$isViewOnly)
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                width="16" height="16"
+                                                                                viewBox="0 0 24 24" fill="none"
+                                                                                stroke="currentColor" stroke-width="2"
+                                                                                stroke-linecap="round"
+                                                                                stroke-linejoin="round"
+                                                                                class="editDestinationRow"
+                                                                                data-id="{{ $bd->id }}"
+                                                                                data-destination="{{ $bd->destination }}"
+                                                                                data-location="{{ $bd->location }}"
+                                                                                data-only-hotel="{{ $bd->only_hotel ? 1 : 0 }}"
+                                                                                data-only-tt="{{ $bd->only_tt ? 1 : 0 }}"
+                                                                                data-hotel-tt="{{ $bd->hotel_tt ? 1 : 0 }}"
+                                                                                data-from-date="{{ $bd->from_date ? $bd->from_date->format('Y-m-d') : '' }}"
+                                                                                data-to-date="{{ $bd->to_date ? $bd->to_date->format('Y-m-d') : '' }}"
+                                                                                data-bs-toggle="modal"
+                                                                                data-bs-target="#addDestinationModal"
+                                                                                style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
+                                                                                <path
+                                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                                </path>
+                                                                                <path
+                                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                                </path>
+                                                                            </svg>
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                width="16" height="16"
+                                                                                viewBox="0 0 24 24" fill="none"
+                                                                                stroke="currentColor" stroke-width="2"
+                                                                                stroke-linecap="round"
+                                                                                stroke-linejoin="round"
+                                                                                class="removeDestinationRow"
+                                                                                data-id="{{ $bd->id }}"
+                                                                                style="width: 16px; height: 16px; color: #dc3545; cursor: pointer;">
+                                                                                <polyline points="3 6 5 6 21 6">
+                                                                                </polyline>
+                                                                                <path
+                                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                                </path>
+                                                                            </svg>
+                                                                        @endif
+                                                                    </td>
+                                                                @endif
+                                                            </tr>
+                                                        @endforeach
+                                                    @else
+                                                        <tr>
+                                                            <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false))) ? '8' : '7' }}"
+                                                                class="text-center text-muted py-4">
+                                                                <i data-feather="inbox"
+                                                                    style="width: 24px; height: 24px; opacity: 0.5;"
+                                                                    class="mb-2"></i>
+                                                                <div>no records found</div>
+                                                            </td>
                                                         </tr>
-                                                    @endforeach
-                                                @else
-                                                    <tr>
-                                                        <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false))) ? '8' : '7' }}"
-                                                            class="text-center text-muted py-4">
-                                                            <i data-feather="inbox"
-                                                                style="width: 24px; height: 24px; opacity: 0.5;"
-                                                                class="mb-2"></i>
-                                                            <div>no records found</div>
-                                                        </td>
-                                                    </tr>
-                                                @endif
-                                            </tbody>
-                                        </table>
+                                                    @endif
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
 
 
 
                                 {{-- Customer Payments (Post Sales editable, others view-only via accounts booking file) --}}
-                                @if ($isPostSales ?? false)
+                                @if ($isAllowedSectionViewer)
                                     <div class="mb-4 border rounded-3 p-3">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <h6 class="text-uppercase text-muted small fw-semibold mb-0">
@@ -421,23 +465,27 @@
                                                     style="width: 14px; height: 14px;"></i>
                                                 Customer Payments (Post Sales → Accounts)
                                             </h6>
-                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                                data-bs-target="#postSalesAddPaymentModal">
-                                                <i data-feather="plus" style="width: 14px; height: 14px;"></i>
-                                                Add Payment
-                                            </button>
+                                            @if (!$isViewOnly)
+                                                <button type="button" class="btn btn-sm btn-primary"
+                                                    data-bs-toggle="modal" data-bs-target="#postSalesAddPaymentModal">
+                                                    <i data-feather="plus" style="width: 14px; height: 14px;"></i>
+                                                    Add Payment
+                                                </button>
+                                            @endif
                                         </div>
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-sm mb-0" id="customerPaymentsTable">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th>Amount</th>
-                                                        <th>Method</th>
+                                                        <th>Payment Mode</th>
                                                         <th>Paid On</th>
                                                         <th>Due Date</th>
                                                         <th>Transaction ID</th>
                                                         <th>Status</th>
-                                                        <th class="text-center">Action</th>
+                                                        @if (!$isViewOnly)
+                                                            <th class="text-center">Action</th>
+                                                        @endif
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -468,58 +516,63 @@
                                                                         {{ ucfirst($payment->status) }}
                                                                     </span>
                                                                 </td>
-                                                                <td class="text-center">
-                                                                    @php
-                                                                        $currentUser = Auth::user();
-                                                                        $isPostSalesUser =
-                                                                            $currentUser &&
-                                                                            ($currentUser->department ===
-                                                                                'Post Sales' ||
-                                                                                ($currentUser->getRoleNameAttribute() ??
-                                                                                    '') ===
+                                                                @if (!$isViewOnly)
+                                                                    <td class="text-center">
+                                                                        @php
+                                                                            $currentUser = Auth::user();
+                                                                            $isPostSalesUser =
+                                                                                $currentUser &&
+                                                                                ($currentUser->department ===
                                                                                     'Post Sales' ||
-                                                                                (method_exists(
-                                                                                    $currentUser,
-                                                                                    'hasRole',
-                                                                                ) &&
-                                                                                    $currentUser->hasRole(
-                                                                                        'Post Sales',
-                                                                                    )) ||
-                                                                                (method_exists(
-                                                                                    $currentUser,
-                                                                                    'hasRole',
-                                                                                ) &&
-                                                                                    $currentUser->hasRole(
-                                                                                        'Post Sales Manager',
-                                                                                    )));
-                                                                    @endphp
-                                                                    @if (!($isPostSalesUser && $payment->status === 'received'))
-                                                                        <i data-feather="edit"
-                                                                            class="post-sales-edit-payment-btn"
-                                                                            data-payment-id="{{ $payment->id }}"
-                                                                            data-amount="{{ $payment->amount }}"
-                                                                            data-method="{{ $payment->method }}"
-                                                                            data-payment-date="{{ $payment->payment_date ? $payment->payment_date->format('Y-m-d') : '' }}"
-                                                                            data-due-date="{{ $payment->due_date ? $payment->due_date->format('Y-m-d') : '' }}"
-                                                                            data-reference="{{ $payment->reference }}"
-                                                                            data-status="{{ $payment->status }}"
-                                                                            data-bs-toggle="modal"
-                                                                            data-bs-target="#postSalesAddPaymentModal"
-                                                                            style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;"></i>
-                                                                        <button type="button"
-                                                                            class="border-0 bg-transparent p-0 m-0 delete-customer-payment-btn"
-                                                                            data-payment-id="{{ $payment->id }}"
-                                                                            title="Delete Payment">
-                                                                            <i data-feather="trash-2"
-                                                                                style="width: 16px; height: 16px; color: #dc3545; cursor: pointer; pointer-events: none;"></i>
-                                                                        </button>
-                                                                    @endif
-                                                                </td>
+                                                                                    ($currentUser->getRoleNameAttribute() ??
+                                                                                        '') ===
+                                                                                        'Post Sales' ||
+                                                                                    (method_exists(
+                                                                                        $currentUser,
+                                                                                        'hasRole',
+                                                                                    ) &&
+                                                                                        $currentUser->hasRole(
+                                                                                            'Post Sales',
+                                                                                        )) ||
+                                                                                    (method_exists(
+                                                                                        $currentUser,
+                                                                                        'hasRole',
+                                                                                    ) &&
+                                                                                        $currentUser->hasRole(
+                                                                                            'Post Sales Manager',
+                                                                                        )));
+                                                                        @endphp
+                                                                        @if (!($isPostSalesUser && $payment->status === 'received') && !$isViewOnly)
+                                                                            <button type="button"
+                                                                                class="btn btn-link p-0 me-2 post-sales-edit-payment-btn"
+                                                                                data-payment-id="{{ $payment->id }}"
+                                                                                data-amount="{{ $payment->amount }}"
+                                                                                data-method="{{ $payment->method }}"
+                                                                                data-payment-date="{{ $payment->payment_date ? $payment->payment_date->format('Y-m-d') : '' }}"
+                                                                                data-due-date="{{ $payment->due_date ? $payment->due_date->format('Y-m-d') : '' }}"
+                                                                                data-reference="{{ $payment->reference }}"
+                                                                                data-status="{{ $payment->status }}"
+                                                                                onclick="editCustomerPayment(this)"
+                                                                                title="Edit Payment">
+                                                                                <i data-feather="edit"
+                                                                                    style="width: 16px; height: 16px; color: #0d6efd;"></i>
+                                                                            </button>
+                                                                            <button type="button"
+                                                                                class="border-0 bg-transparent p-0 m-0 delete-customer-payment-btn"
+                                                                                data-payment-id="{{ $payment->id }}"
+                                                                                title="Delete Payment">
+                                                                                <i data-feather="trash-2"
+                                                                                    style="width: 16px; height: 16px; color: #dc3545; cursor: pointer; pointer-events: none;"></i>
+                                                                            </button>
+                                                                        @endif
+                                                                    </td>
+                                                                @endif
                                                             </tr>
                                                         @endforeach
                                                     @else
                                                         <tr>
-                                                            <td colspan="7" class="text-center text-muted py-3">No
+                                                            <td colspan="{{ $isViewOnly ? '6' : '7' }}"
+                                                                class="text-center text-muted py-3">No
                                                                 customer payments recorded</td>
                                                         </tr>
                                                     @endif
@@ -530,134 +583,135 @@
                                 @endif
                                 <!-- Arrival/Departure Details Section -->
 
-                                <div class="mb-4 border rounded-3 p-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="text-uppercase text-muted small fw-semibold mb-0">
-                                            <i data-feather="navigation" class="me-1"
-                                                style="width: 14px; height: 14px;"></i>
-                                            Arrival/Departure Details
-                                        </h6>
-                                        @if (!$isViewOnly || (auth()->check() && auth()->user()->department === 'Ticketing'))
-                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                                data-bs-target="#addArrivalDepartureModal">
-                                                <i data-feather="plus" style="width: 14px; height: 14px;"></i>
-                                                Add
-                                            </button>
-                                        @endif
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered table-sm mb-0 text-center"
-                                            id="arrivalDepartureTable">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th style="width: 12%;" rowspan="2">Mode</th>
-                                                    <th style="width: 15%;" rowspan="2">Info</th>
-                                                    <th style="width: 12%;" rowspan="2">From City</th>
-                                                    <th style="width: 12%;" rowspan="2">To City</th>
-                                                    <th colspan="2" style="width: 18%;">Dep Date & Time</th>
-                                                    <th colspan="2" style="width: 18%;">Arrival Date & Time
-                                                    </th>
-                                                    @if (
-                                                        !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) ||
-                                                            (auth()->check() && auth()->user()->department === 'Ticketing'))
-                                                        <th style="width: 13%;" rowspan="2" class="text-center">
-                                                            Action</th>
-                                                    @endif
-                                                </tr>
-
-                                            </thead>
-                                            <tbody id="arrivalDepartureTableBody">
-                                                @php
-                                                    $allTransports = $lead->bookingArrivalDepartures ?? collect();
-                                                @endphp
-                                                @if ($allTransports && $allTransports->count() > 0)
-                                                    @foreach ($allTransports as $index => $transport)
-                                                        <tr class="arrival-departure-data-row"
-                                                            data-transport-id="{{ $transport->id }}"
-                                                            data-row-index="{{ $index }}">
-                                                            <td>{{ $transport->mode }}</td>
-                                                            <td>{{ $transport->info }}</td>
-                                                            <td>{{ $transport->from_city }}</td>
-                                                            <td>{{ $transport->to_city ?? '' }}</td>
-                                                            <td>
-                                                                {{ $transport->departure_date ? ($transport->departure_date instanceof \DateTime ? $transport->departure_date->format('d/m/Y') : date('d/m/Y', strtotime($transport->departure_date))) : '' }}
-                                                            </td>
-                                                            <td>
-                                                                {{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}
-                                                            </td>
-                                                            <td>
-                                                                {{ $transport->arrival_date ? ($transport->arrival_date instanceof \DateTime ? $transport->arrival_date->format('d/m/Y') : date('d/m/Y', strtotime($transport->arrival_date))) : '' }}
-                                                            </td>
-                                                            <td>
-                                                                {{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}
-                                                            </td>
-                                                            @if (
-                                                                !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) ||
-                                                                    (auth()->check() && auth()->user()->department === 'Ticketing'))
-                                                                <td class="text-center">
-                                                                    @if (!$isViewOnly || (auth()->check() && auth()->user()->department === 'Ticketing'))
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            width="16" height="16"
-                                                                            viewBox="0 0 24 24" fill="none"
-                                                                            stroke="currentColor" stroke-width="2"
-                                                                            stroke-linecap="round" stroke-linejoin="round"
-                                                                            class="editArrivalDepartureRow"
-                                                                            data-id="{{ $transport->id }}"
-                                                                            data-mode="{{ $transport->mode }}"
-                                                                            data-info="{{ $transport->info }}"
-                                                                            data-from-city="{{ $transport->from_city }}"
-                                                                            data-to-city="{{ $transport->to_city }}"
-                                                                            data-departure-date="{{ $transport->departure_date ? $transport->departure_date->format('Y-m-d') : '' }}"
-                                                                            data-departure-time="{{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}"
-                                                                            data-arrival-date="{{ $transport->arrival_date ? $transport->arrival_date->format('Y-m-d') : '' }}"
-                                                                            data-arrival-time="{{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}"
-                                                                            data-bs-toggle="modal"
-                                                                            data-bs-target="#addArrivalDepartureModal"
-                                                                            style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
-                                                                            <path
-                                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                                            </path>
-                                                                            <path
-                                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                            </path>
-                                                                        </svg>
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            width="16" height="16"
-                                                                            viewBox="0 0 24 24" fill="none"
-                                                                            stroke="currentColor" stroke-width="2"
-                                                                            stroke-linecap="round" stroke-linejoin="round"
-                                                                            class="removeArrivalDepartureRow"
-                                                                            data-id="{{ $transport->id }}"
-                                                                            style="width: 16px; height: 16px; color: #dc3545; cursor: pointer;">
-                                                                            <polyline points="3 6 5 6 21 6">
-                                                                            </polyline>
-                                                                            <path
-                                                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                                            </path>
-                                                                        </svg>
-                                                                    @endif
-                                                                </td>
-                                                            @endif
-                                                        </tr>
-                                                    @endforeach
-                                                @else
+                                <!-- Arrival/Departure Details Section -->
+                                @if ($isAllowedSectionViewer)
+                                    <div class="mb-4 border rounded-3 p-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="text-uppercase text-muted small fw-semibold mb-0">
+                                                <i data-feather="navigation" class="me-1"
+                                                    style="width: 14px; height: 14px;"></i>
+                                                Arrival/Departure Details
+                                            </h6>
+                                            @if (!$isViewOnly)
+                                                <button type="button" class="btn btn-sm btn-primary"
+                                                    data-bs-toggle="modal" data-bs-target="#addArrivalDepartureModal">
+                                                    <i data-feather="plus" style="width: 14px; height: 14px;"></i>
+                                                    Add
+                                                </button>
+                                            @endif
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-sm mb-0 text-center"
+                                                id="arrivalDepartureTable">
+                                                <thead class="table-light">
                                                     <tr>
-                                                        <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) || (auth()->check() && auth()->user()->department === 'Ticketing') ? '9' : '8' }}"
-                                                            class="text-center text-muted py-4">
-                                                            <i data-feather="inbox"
-                                                                style="width: 24px; height: 24px; opacity: 0.5;"
-                                                                class="mb-2"></i>
-                                                            <div>no records found</div>
-                                                        </td>
+                                                        <th style="width: 12%;" rowspan="2">Mode</th>
+                                                        <th style="width: 15%;" rowspan="2">Info</th>
+                                                        <th style="width: 12%;" rowspan="2">From City</th>
+                                                        <th style="width: 12%;" rowspan="2">To City</th>
+                                                        <th colspan="2" style="width: 18%;">Dep Date & Time</th>
+                                                        <th colspan="2" style="width: 18%;">Arrival Date & Time
+                                                        </th>
+                                                        @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) && !$isViewOnly)
+                                                            <th style="width: 13%;" rowspan="2" class="text-center">
+                                                                Action</th>
+                                                        @endif
                                                     </tr>
-                                                @endif
-                                            </tbody>
-                                        </table>
+
+                                                </thead>
+                                                <tbody id="arrivalDepartureTableBody">
+                                                    @php
+                                                        $allTransports = $lead->bookingArrivalDepartures ?? collect();
+                                                    @endphp
+                                                    @if ($allTransports && $allTransports->count() > 0)
+                                                        @foreach ($allTransports as $index => $transport)
+                                                            <tr class="arrival-departure-data-row"
+                                                                data-transport-id="{{ $transport->id }}"
+                                                                data-row-index="{{ $index }}">
+                                                                <td>{{ $transport->mode }}</td>
+                                                                <td>{{ $transport->info }}</td>
+                                                                <td>{{ $transport->from_city }}</td>
+                                                                <td>{{ $transport->to_city ?? '' }}</td>
+                                                                <td>
+                                                                    {{ $transport->departure_date ? ($transport->departure_date instanceof \DateTime ? $transport->departure_date->format('d/m/Y') : date('d/m/Y', strtotime($transport->departure_date))) : '' }}
+                                                                </td>
+                                                                <td>
+                                                                    {{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}
+                                                                </td>
+                                                                <td>
+                                                                    {{ $transport->arrival_date ? ($transport->arrival_date instanceof \DateTime ? $transport->arrival_date->format('d/m/Y') : date('d/m/Y', strtotime($transport->arrival_date))) : '' }}
+                                                                </td>
+                                                                <td>
+                                                                    {{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}
+                                                                </td>
+                                                                @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) && !$isViewOnly)
+                                                                    <td class="text-center">
+                                                                        @if (!$isViewOnly)
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                width="16" height="16"
+                                                                                viewBox="0 0 24 24" fill="none"
+                                                                                stroke="currentColor" stroke-width="2"
+                                                                                stroke-linecap="round"
+                                                                                stroke-linejoin="round"
+                                                                                class="editArrivalDepartureRow"
+                                                                                data-id="{{ $transport->id }}"
+                                                                                data-mode="{{ $transport->mode }}"
+                                                                                data-info="{{ $transport->info }}"
+                                                                                data-from-city="{{ $transport->from_city }}"
+                                                                                data-to-city="{{ $transport->to_city }}"
+                                                                                data-departure-date="{{ $transport->departure_date ? $transport->departure_date->format('Y-m-d') : '' }}"
+                                                                                data-departure-time="{{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}"
+                                                                                data-arrival-date="{{ $transport->arrival_date ? $transport->arrival_date->format('Y-m-d') : '' }}"
+                                                                                data-arrival-time="{{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}"
+                                                                                data-bs-toggle="modal"
+                                                                                data-bs-target="#addArrivalDepartureModal"
+                                                                                style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
+                                                                                <path
+                                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                                </path>
+                                                                                <path
+                                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                                </path>
+                                                                            </svg>
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                width="16" height="16"
+                                                                                viewBox="0 0 24 24" fill="none"
+                                                                                stroke="currentColor" stroke-width="2"
+                                                                                stroke-linecap="round"
+                                                                                stroke-linejoin="round"
+                                                                                class="removeArrivalDepartureRow"
+                                                                                data-id="{{ $transport->id }}"
+                                                                                style="width: 16px; height: 16px; color: #dc3545; cursor: pointer;">
+                                                                                <polyline points="3 6 5 6 21 6">
+                                                                                </polyline>
+                                                                                <path
+                                                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                                                </path>
+                                                                            </svg>
+                                                                        @endif
+                                                                    </td>
+                                                                @endif
+                                                            </tr>
+                                                        @endforeach
+                                                    @else
+                                                        <tr>
+                                                            <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) || (auth()->check() && auth()->user()->department === 'Ticketing') ? '9' : '8' }}"
+                                                                class="text-center text-muted py-4">
+                                                                <i data-feather="inbox"
+                                                                    style="width: 24px; height: 24px; opacity: 0.5;"
+                                                                    class="mb-2"></i>
+                                                                <div>no records found</div>
+                                                            </td>
+                                                        </tr>
+                                                    @endif
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
 
                                 <!-- Accommodation Details Section -->
-                                @if (!($isPostSales ?? false))
+                                @if (!($isPostSales ?? false) && !in_array($userDept, ['Ticketing', 'Visa', 'Insurance', 'Insurance Department']))
                                     <div class="mb-4 border rounded-3 p-3 bg-light">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <h6 class="text-uppercase text-muted small fw-semibold mb-0">
@@ -707,7 +761,8 @@
                                                                 @if (!empty($ba->confirmation_no))
                                                                     <td>{{ $ba->confirmation_no }}</td>
                                                                 @else
-                                                                    <td><span class="badge bg-warning">Pending</span></td>
+                                                                    <td><span class="badge bg-warning">Pending</span>
+                                                                    </td>
                                                                 @endif
                                                                 @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))))
                                                                     <td class="text-center text-nowrap">
@@ -785,7 +840,7 @@
                                 @endif
 
                                 <!-- Day-Wise Itinerary Section -->
-                                @if (!($isPostSales ?? false))
+                                @if (!($isPostSales ?? false) && !in_array($userDept, ['Ticketing', 'Visa', 'Insurance', 'Insurance Department']))
                                     <div class="mb-4 border rounded-3 p-3" id="dayWiseItinerarySection"
                                         style="display: none;">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -900,7 +955,7 @@
                                 @endif
 
                                 <!-- Traveller Document Details (Post Sales editable, Operations view-only) -->
-                                @if (($isPostSales ?? false) || ($isOpsDept ?? false) || ($isRestrictedView ?? false))
+                                @if ($isAllowedSectionViewer)
                                     <div class="mb-4 border rounded-3 p-3">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <h6 class="text-uppercase text-muted small fw-semibold mb-0">
@@ -1111,7 +1166,7 @@
                                     @endif
 
                                     <!-- Vendor Payments Section (Ops Only) -->
-                                    @if ($isOpsDept ?? false)
+                                    @if (($isOpsDept ?? false) && !in_array($userDept, ['Ticketing', 'Visa', 'Insurance', 'Insurance Department']))
                                         <div class="mb-4 border rounded-3 p-3">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
@@ -1140,7 +1195,8 @@
                                                             @if (!($isOpsDept ?? false) && !($isPostSales ?? false))
                                                                 <th style="background-color: #fff3cd;">Paid</th>
                                                                 <th style="background-color: #fff3cd;">Pending</th>
-                                                                <th style="background-color: #fff3cd;">Payment Mode</th>
+                                                                <th style="background-color: #fff3cd;">Payment Mode
+                                                                </th>
                                                                 <th style="background-color: #fff3cd;">Ref. No.</th>
                                                                 <th style="background-color: #fff3cd;">Remarks</th>
                                                             @else
@@ -1214,7 +1270,8 @@
                                                         @else
                                                             <tr>
                                                                 <td colspan="{{ $isViewOnly && $isOpsDept ? '7' : '11' }}"
-                                                                    class="text-center text-muted py-4">No vendor payments
+                                                                    class="text-center text-muted py-4">No vendor
+                                                                    payments
                                                                     found</td>
                                                             </tr>
                                                         @endif
@@ -1225,7 +1282,7 @@
                                     @endif
 
                                     <!-- Voucher Management Section (Ops Only) -->
-                                    @if ($isOpsDept ?? false)
+                                    @if (($isOpsDept ?? false) && !in_array($userDept, ['Ticketing', 'Visa', 'Insurance', 'Insurance Department']))
                                         <div class="mb-4 border rounded-3 p-3 bg-light">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
@@ -1237,17 +1294,18 @@
                                                 </div>
                                                 <div class="btn-group" role="group">
                                                     <button type="button" class="btn btn-sm btn-success"
-                                                        onclick="createServiceVoucher()">
+                                                        id="createServiceVoucherBtn" onclick="createServiceVoucher()">
                                                         <i data-feather="file-plus" style="width: 14px; height: 14px;"></i>
                                                         Service Voucher
                                                     </button>
                                                     <button type="button" class="btn btn-sm btn-info"
-                                                        onclick="createItineraryVoucher()">
+                                                        id="createItineraryVoucherBtn" onclick="createItineraryVoucher()">
                                                         <i data-feather="map" style="width: 14px; height: 14px;"></i>
                                                         Itinerary
                                                     </button>
                                                     <button type="button" class="btn btn-sm btn-warning"
-                                                        data-bs-toggle="modal" data-bs-target="#accommodationVoucherModal">
+                                                        id="createAccommodationVoucherBtn" data-bs-toggle="modal"
+                                                        data-bs-target="#accommodationVoucherModal">
                                                         <i data-feather="home" style="width: 14px; height: 14px;"></i>
                                                         Hotel Voucher
                                                     </button>
@@ -1616,80 +1674,73 @@
             </div>
 
             <!-- Post Sales: Add/Edit Customer Payment Modal -->
-            <div class="modal fade" id="postSalesAddPaymentModal" tabindex="-1"
-                aria-labelledby="postSalesAddPaymentModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <form id="postSalesPaymentForm" action="{{ route('leads.payments.store', $lead->id) }}"
-                            method="POST">
-                            @csrf
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="postSalesAddPaymentModalLabel">Add Customer Payment</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+        @endif
+
+        <!-- Post Sales: Add/Edit Customer Payment Modal (Moved outside conditional for universal access) -->
+        <div class="modal fade" id="postSalesAddPaymentModal" tabindex="-1" aria-labelledby="postSalesAddPaymentModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form id="postSalesPaymentForm" action="{{ route('leads.payments.store', $lead->id) }}" method="POST">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="postSalesAddPaymentModalLabel">Add Customer Payment</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="_method" id="postSalesPaymentFormMethod" value="POST">
+                            <div class="mb-3">
+                                <label class="form-label">Amount <span class="text-danger">*</span></label>
+                                <input type="number" name="amount" class="form-control form-control-sm" step="0.01"
+                                    min="0" required>
                             </div>
-                            <div class="modal-body">
-                                <input type="hidden" name="_method" id="postSalesPaymentFormMethod" value="POST">
-                                <div class="mb-3">
-                                    <label class="form-label">Amount <span class="text-danger">*</span></label>
-                                    <input type="number" name="amount" class="form-control form-control-sm" step="0.01"
-                                        min="0" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Payment Method <span class="text-danger">*</span></label>
-                                    <select name="method" class="form-select form-select-sm" required>
-                                        <option value="">-- Select --</option>
-                                        <option value="Cash">Cash</option>
-                                        <option value="UPI">UPI</option>
-                                        <option value="NEFT">NEFT</option>
-                                        <option value="RTGS">RTGS</option>
-                                        <option value="WIB">WIB</option>
-                                        <option value="Online">Online</option>
-                                        <option value="Cheque">Cheque</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Paid On <span class="text-danger">*</span></label>
-                                    <input type="date" name="payment_date" class="form-control form-control-sm"
-                                        value="{{ date('Y-m-d') }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Due Date</label>
-                                    <input type="date" name="due_date" class="form-control form-control-sm">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Transaction ID</label>
-                                    <input type="text" name="reference" class="form-control form-control-sm"
-                                        maxlength="255">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Status <span class="text-danger">*</span></label>
-                                    <select name="status_display" class="form-select form-select-sm"
-                                        {{ $isPostSales ?? false ? 'disabled' : 'required' }}>
-                                        <option value="pending">Pending</option>
-                                        <option value="received">Received</option>
-                                        <option value="refunded">Refunded</option>
-                                    </select>
-                                    @if ($isPostSales ?? false)
-                                        <input type="hidden" name="status" id="hiddenPaymentStatus" value="pending">
-                                    @else
-                                        {{-- If not post sales, we need the select to have the name "status" --}}
-                                        <script>
-                                            document.currentScript.previousElementSibling.previousElementSibling.name = "status";
-                                        </script>
-                                    @endif
-                                </div>
+                            <div class="mb-3">
+                                <label class="form-label">Payment Mode <span class="text-danger">*</span></label>
+                                <select name="method" class="form-select form-select-sm" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="UPI">UPI</option>
+                                    <option value="NEFT">NEFT</option>
+                                    <option value="RTGS">RTGS</option>
+                                    <option value="WIB">WIB</option>
+                                    <option value="Online">Online</option>
+                                    <option value="Cheque">Cheque</option>
+                                </select>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-sm btn-secondary"
-                                    data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-sm btn-primary">Save Payment</button>
+                            <div class="mb-3">
+                                <label class="form-label">Paid On <span class="text-danger">*</span></label>
+                                <input type="date" name="payment_date" class="form-control form-control-sm"
+                                    value="{{ date('Y-m-d') }}" required>
                             </div>
-                        </form>
-                    </div>
+                            <div class="mb-3">
+                                <label class="form-label">Due Date</label>
+                                <input type="date" name="due_date" class="form-control form-control-sm">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Transaction ID</label>
+                                <input type="text" name="reference" class="form-control form-control-sm" maxlength="255">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <select name="{{ $isPostSales ?? false ? 'status_display' : 'status' }}"
+                                    class="form-select form-select-sm" {{ $isPostSales ?? false ? 'disabled' : 'required' }}>
+                                    <option value="pending">Pending</option>
+                                    <option value="received">Received</option>
+                                    <option value="refunded">Refunded</option>
+                                </select>
+                                @if ($isPostSales ?? false)
+                                    <input type="hidden" name="status" id="hiddenPaymentStatus" value="pending">
+                                @endif
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-sm btn-primary">Save Payment</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        @endif
+        </div>
 
         <!-- Add Destination Modal -->
         <div class="modal fade" id="addDestinationModal" tabindex="-1" aria-labelledby="addDestinationModalLabel"
@@ -2182,9 +2233,14 @@
                                     @if ($lead->bookingAccommodations && $lead->bookingAccommodations->count() > 0)
                                         @foreach ($lead->bookingAccommodations as $accommodation)
                                             <div class="list-group-item list-group-item-action accommodation-item"
+                                                id="acc_item_{{ $accommodation->id }}"
                                                 data-accommodation-id="{{ $accommodation->id }}" style="cursor: pointer;">
                                                 <div class="d-flex w-100 justify-content-between">
-                                                    <h6 class="mb-1">{{ $accommodation->stay_at }}</h6>
+                                                    <h6 class="mb-1">
+                                                        {{ $accommodation->stay_at }}
+                                                        <span class="badge bg-success ms-2 voucher-created-badge"
+                                                            style="display: none;">Voucher Created</span>
+                                                    </h6>
                                                     <small>{{ $accommodation->location }}</small>
                                                 </div>
                                                 <p class="mb-1">
@@ -3202,68 +3258,76 @@
                         }
                     }
 
-                    // Post Sales: handle edit payment button to populate modal
-                    document.addEventListener('click', function(e) {
-                        const editBtn = e.target.closest('.post-sales-edit-payment-btn');
-                        if (!editBtn) return;
+                    // Post Sales: handle edit payment button (Global function for onclick)
+                    window.editCustomerPayment = function(editBtn) {
+                        try {
+                            const form = document.getElementById('postSalesPaymentForm');
+                            if (!form) {
+                                console.error('Form #postSalesPaymentForm not found');
+                                return;
+                            }
 
-                        const form = document.getElementById('postSalesPaymentForm');
-                        if (!form) return;
+                            const paymentId = editBtn.getAttribute('data-payment-id');
+                            const amount = editBtn.getAttribute('data-amount') || '';
+                            let method = editBtn.getAttribute('data-method') || '';
+                            const paymentDate = editBtn.getAttribute('data-payment-date') || '';
+                            const dueDate = editBtn.getAttribute('data-due-date') || '';
+                            const reference = editBtn.getAttribute('data-reference') || '';
+                            const status = editBtn.getAttribute('data-status') || 'pending';
 
-                        const paymentId = editBtn.getAttribute('data-payment-id');
-                        const amount = editBtn.getAttribute('data-amount') || '';
-                        let method = editBtn.getAttribute('data-method') || '';
-                        const paymentDate = editBtn.getAttribute('data-payment-date') || '';
-                        const dueDate = editBtn.getAttribute('data-due-date') || '';
-                        const reference = editBtn.getAttribute('data-reference') || '';
-                        const status = editBtn.getAttribute('data-status') || 'pending';
+                            // Update form action to use update route
+                            form.action = '{{ route('leads.payments.update', [$lead->id, ':id']) }}'.replace(':id',
+                                paymentId);
 
-                        // Map old database values to new dropdown values
-                        const methodMap = {
-                            'Cash': 'Cash',
-                            'UPI': 'UPI',
-                            'NEFT': 'NEFT',
-                            'RTGS': 'RTGS',
-                            'WIB': 'WIB',
-                            'Online': 'Online',
-                            'Cheque': 'Cheque'
-                        };
+                            const methodInput = document.getElementById('postSalesPaymentFormMethod');
+                            if (methodInput) {
+                                methodInput.value = 'PUT';
+                            }
 
+                            form.querySelector('input[name=\"amount\"]').value = amount;
+                            const methodSelect = form.querySelector('select[name=\"method\"]');
+                            if (methodSelect) {
+                                methodSelect.value = method;
+                            }
+                            form.querySelector('input[name=\"payment_date\"]').value = paymentDate;
+                            form.querySelector('input[name=\"due_date\"]').value = dueDate;
+                            form.querySelector('input[name=\"reference\"]').value = reference;
+                            let statusSelect = form.querySelector('select[name="status"]');
+                            if (!statusSelect) {
+                                statusSelect = form.querySelector('select[name="status_display"]');
+                            }
+                            if (statusSelect) {
+                                statusSelect.value = status;
+                            }
 
-                        // Update form action to use update route
-                        form.action = '{{ route('leads.payments.update', [$lead->id, ':id']) }}'.replace(':id',
-                            paymentId);
-                        const methodInput = document.getElementById('postSalesPaymentFormMethod');
-                        if (methodInput) {
-                            methodInput.value = 'PUT';
+                            // Update hidden status input if it exists
+                            const hiddenStatus = document.getElementById('hiddenPaymentStatus');
+                            if (hiddenStatus) {
+                                hiddenStatus.value = status;
+                            }
+
+                            const modalTitle = document.getElementById('postSalesAddPaymentModalLabel');
+                            if (modalTitle) {
+                                modalTitle.textContent = 'Edit Customer Payment';
+                            }
+
+                            // Manually show modal
+                            const modalEl = document.getElementById('postSalesAddPaymentModal');
+                            if (modalEl) {
+                                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                                    modal.show();
+                                } else {
+                                    $(modalEl).modal('show');
+                                }
+                            } else {
+                                console.error('Modal element #postSalesAddPaymentModal not found');
+                            }
+                        } catch (error) {
+                            console.error('Error in editCustomerPayment:', error);
+                            alert('Failed to open edit modal. Check console for details.');
                         }
-
-                        form.querySelector('input[name=\"amount\"]').value = amount;
-                        const methodSelect = form.querySelector('select[name=\"method\"]');
-                        if (methodSelect) {
-                            methodSelect.value = method;
-                        }
-                        form.querySelector('input[name=\"payment_date\"]').value = paymentDate;
-                        form.querySelector('input[name=\"due_date\"]').value = dueDate;
-                        form.querySelector('input[name=\"reference\"]').value = reference;
-                        const statusSelect = form.querySelector(
-                            'select[class*="form-select"]'
-                        ); // Use class selector as name might be status or status_display
-                        if (statusSelect) {
-                            statusSelect.value = status;
-                        }
-
-                        // Update hidden status input if it exists (for Post Sales)
-                        const hiddenStatus = document.getElementById('hiddenPaymentStatus');
-                        if (hiddenStatus) {
-                            hiddenStatus.value = status;
-                        }
-
-                        const modalTitle = document.getElementById('postSalesAddPaymentModalLabel');
-                        if (modalTitle) {
-                            modalTitle.textContent = 'Edit Customer Payment';
-                        }
-                    });
+                    };
 
                     // Reset Post Sales payment modal on hide (back to Add mode)
                     document.getElementById('postSalesAddPaymentModal')?.addEventListener('hidden.bs.modal', function() {
@@ -3784,6 +3848,78 @@
 
                     // Function to update vouchers table
                     function updateVouchersTable(vouchers) {
+                        // Store vouchers globally for edit access
+                        window.loadedLeadVouchers = vouchers;
+
+                        // Check for existing vouchers to disable creation buttons
+                        const hasServiceVoucher = vouchers.some(v => v.voucher_type === 'service');
+                        const hasItineraryVoucher = vouchers.some(v => v.voucher_type === 'itinerary');
+
+                        // Handle Service Voucher Button
+                        const serviceBtn = document.getElementById('createServiceVoucherBtn');
+                        if (serviceBtn) {
+                            if (hasServiceVoucher) {
+                                serviceBtn.disabled = true;
+                                serviceBtn.innerHTML =
+                                    '<i data-feather="check" style="width: 14px; height: 14px;"></i> Service Created';
+                            } else {
+                                serviceBtn.disabled = false;
+                                serviceBtn.innerHTML =
+                                    '<i data-feather="file-plus" style="width: 14px; height: 14px;"></i> Service Voucher';
+                            }
+                        }
+
+                        // Handle Itinerary Button
+                        const itineraryBtn = document.getElementById('createItineraryVoucherBtn');
+                        if (itineraryBtn) {
+                            if (hasItineraryVoucher) {
+                                itineraryBtn.disabled = true;
+                                itineraryBtn.innerHTML =
+                                    '<i data-feather="check" style="width: 14px; height: 14px;"></i> Itinerary Created';
+                            } else {
+                                itineraryBtn.disabled = false;
+                                itineraryBtn.innerHTML = '<i data-feather="map" style="width: 14px; height: 14px;"></i> Itinerary';
+                            }
+                        }
+
+                        // Handle Hotel Voucher Button - Check if all accommodations have vouchers?
+                        // Update accommodation list UI to show created status
+
+                        // Reset all first
+                        document.querySelectorAll('.accommodation-item').forEach(item => {
+                            item.classList.remove('list-group-item-secondary', 'locked-accommodation');
+                            item.style.pointerEvents = 'auto'; // Default to enabled
+                            const badge = item.querySelector('.voucher-created-badge');
+                            if (badge) badge.style.display = 'none';
+                            delete item.dataset.hasVoucher;
+                        });
+
+                        // key: accommodation_id, value: voucher_id
+                        const accommodationVoucherMap = {};
+                        vouchers.forEach(v => {
+                            if (v.voucher_type === 'accommodation' && v.accommodation_id) {
+                                accommodationVoucherMap[v.accommodation_id] = v.id;
+
+                                const item = document.getElementById(`acc_item_${v.accommodation_id}`);
+                                if (item) {
+                                    // Mark as having voucher
+                                    item.dataset.hasVoucher = 'true';
+
+                                    // Visual indication
+                                    const badge = item.querySelector('.voucher-created-badge');
+                                    if (badge) badge.style.display = 'inline-block';
+
+                                    // We'll handle the actual disabling interaction in the click handler 
+                                    // based on whether we are in "Create" or "Edit" mode.
+                                    // For visual feedback of "disabled" state in Create mode:
+                                    // We can add a class, but we need to toggle it when modal opens? 
+                                    // Or just always make it look slightly different.
+                                    item.classList.add('list-group-item-light');
+                                }
+                            }
+                        });
+
+
                         const tbody = document.getElementById('vouchersTableBody');
                         if (!vouchers || vouchers.length === 0) {
                             tbody.innerHTML = `
@@ -3840,10 +3976,12 @@
                                             onclick="openDownloadModal(${voucher.id}, ${voucher.lead_id})" title="Download Voucher">
                                             <i data-feather="download" style="width: 14px; height: 14px;"></i>
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" 
-                                            onclick="deleteVoucher(${voucher.id})" title="Delete Voucher">
-                                            <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
-                                        </button>
+                                        ${voucher.voucher_type !== 'itinerary' ? `
+                                                                                                                                                                                                                                                                                                                                                                                <button type="button" class="btn btn-sm btn-outline-secondary ms-1" 
+                                                                                                                                                                                                                                                                                                                                                                                    onclick="editVoucher(${voucher.id})" title="Edit Voucher">
+                                                                                                                                                                                                                                                                                                                                                                                    <i data-feather="edit" style="width: 14px; height: 14px;"></i>
+                                                                                                                                                                                                                                                                                                                                                                                </button>
+                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
                                     </td>
                                 </tr>
                             `;
@@ -3858,6 +3996,30 @@
                         if (e.target.closest('.accommodation-item')) {
                             const item = e.target.closest('.accommodation-item');
                             const accommodationId = item.dataset.accommodationId;
+
+                            // Check if this hotel already has a voucher
+                            if (item.dataset.hasVoucher === 'true') {
+                                // If we are NOT editing (creating new), OR we are editing but somehow clicked a different hotel that already has a voucher
+                                // Actually, if we are editing, we usually shouldn't change the hotel to another one that already has a voucher either.
+                                // Let's simplify: If it has a voucher, you can't select it for a NEW voucher.
+                                // If you are editing, you are likely already on it.
+
+                                // Proper check:
+                                // If editingVoucherId is null, we are creating. BLOCK.
+                                // If editingVoucherId is SET, we check if the voucher currently being edited belongs to this hotel.
+                                // But honestly, simply blocking "hasVoucher" items when editingVoucherId is NULL is sufficient for the "Create" use case.
+
+                                if (!editingVoucherId) {
+                                    alert('A voucher has already been created for this hotel.');
+                                    return;
+                                }
+
+                                // If we are editing, and we click another hotel that HAS a voucher (e.g. trying to swap to another already-taken hotel),
+                                // we should probably block that too? 
+                                // But finding which voucher belongs to that hotel is extra work.
+                                // For now, the user request is "created hotel voucher make disable not able to create again".
+                                // So strictly for creation.
+                            }
 
                             // Remove active class from all items
                             document.querySelectorAll('.accommodation-item').forEach(i => {
@@ -3992,6 +4154,143 @@
                         });
                 };
 
+                let editingVoucherId = null;
+
+                window.editVoucher = function(voucherId) {
+                    const voucher = window.loadedLeadVouchers.find(v => v.id === voucherId);
+                    if (!voucher) return;
+
+                    editingVoucherId = voucherId;
+
+                    if (voucher.voucher_type === 'service') {
+                        document.getElementById('serviceVoucherNumber').value = voucher.voucher_number;
+                        document.getElementById('serviceEmergencyContact').value = voucher.emergency_contact_number || '';
+                        document.getElementById('serviceComments').value = voucher.comments || '';
+
+
+                        // Check if editor exists, if not wait for potential lazy init or init it
+                        if (serviceProvidedEditor) {
+                            serviceProvidedEditor.setData(voucher.service_provided || '');
+                        } else {
+                            // Try to initialize it if not already done, or wait a bit if the modal event handles it
+                            // Since we show modal immediately below, the 'shown.bs.modal' event will fire.
+                            // But we need to ensure data is set. similar to accommodation logic.
+                            setTimeout(() => {
+                                if (serviceProvidedEditor) {
+                                    serviceProvidedEditor.setData(voucher.service_provided || '');
+                                } else {
+                                    // Initialize manually if it didn't happen
+                                    ClassicEditor
+                                        .create(document.querySelector('#serviceProvided'), {
+                                            toolbar: ['bold', 'italic', 'bulletedList', 'numberedList', '|', 'undo',
+                                                'redo'
+                                            ],
+                                            placeholder: 'Enter services to be provided...'
+                                        })
+                                        .then(editor => {
+                                            serviceProvidedEditor = editor;
+                                            serviceProvidedEditor.setData(voucher.service_provided || '');
+                                        })
+                                        .catch(error => {
+                                            console.error('CKEditor initialization error:', error);
+                                        });
+                                }
+                            }, 200);
+                        }
+
+                        // Change modal title/button
+                        document.getElementById('serviceVoucherModalLabel').textContent = 'Edit Service Voucher';
+                        const btn = document.querySelector('#serviceVoucherModal .btn-success');
+                        if (btn) {
+                            btn.innerHTML = '<i data-feather="check" style="width: 14px; height: 14px;"></i> Update Voucher';
+                            btn.classList.replace('btn-success', 'btn-info');
+                        }
+
+                        const modal = new bootstrap.Modal(document.getElementById('serviceVoucherModal'));
+                        modal.show();
+                    } else if (voucher.voucher_type === 'accommodation') {
+                        document.getElementById('selectedAccommodationId').value = voucher.accommodation_id;
+                        document.getElementById('accommodationVoucherNumber').value = voucher.voucher_number;
+                        document.getElementById('accommodationEmergencyContact').value = voucher.emergency_contact_number || '';
+                        document.getElementById('accommodationComments').value = voucher.comments || '';
+
+                        // Highlight selected hotel
+                        document.querySelectorAll('.accommodation-item').forEach(i => {
+                            i.classList.remove('active');
+                            if (i.dataset.accommodationId == voucher.accommodation_id) {
+                                i.classList.add('active');
+                            }
+                        });
+
+                        // Select the hotel in the list and lock it? 
+                        // Or just hide the list and show the form directly.
+                        document.getElementById('accommodationVoucherForm').style.display = 'block';
+                        document.getElementById('submitAccommodationVoucherBtn').style.display = 'inline-block';
+
+                        // Wait for editor
+                        setTimeout(() => {
+                            if (!accommodationServiceEditor) {
+                                ClassicEditor
+                                    .create(document.querySelector('#accommodationServiceProvided'), {
+                                        toolbar: ['bold', 'italic', 'bulletedList', 'numberedList', '|',
+                                            'undo', 'redo'
+                                        ],
+                                        placeholder: 'Enter services to be provided for this hotel...'
+                                    })
+                                    .then(editor => {
+                                        accommodationServiceEditor = editor;
+                                        accommodationServiceEditor.setData(voucher.service_provided || '');
+                                    })
+                                    .catch(error => {
+                                        console.error('CKEditor initialization error:', error);
+                                    });
+                            } else {
+                                accommodationServiceEditor.setData(voucher.service_provided || '');
+                            }
+                        }, 200);
+
+                        // Change modal title/button
+                        document.getElementById('accommodationVoucherModalLabel').textContent = 'Edit Hotel Voucher';
+                        const btn = document.getElementById('submitAccommodationVoucherBtn');
+                        btn.innerHTML = '<i data-feather="check" style="width: 14px; height: 14px;"></i> Update Voucher';
+                        btn.classList.replace('btn-warning', 'btn-info');
+
+                        const modal = new bootstrap.Modal(document.getElementById('accommodationVoucherModal'));
+                        modal.show();
+
+
+                    } else if (voucher.voucher_type === 'itinerary') {
+                        // Itinerary editing disabled
+                        alert('Editing itinerary vouchers is not allowed.');
+                        return;
+                    }
+                };
+
+                // Reset modals on hide
+                document.getElementById('serviceVoucherModal')?.addEventListener('hidden.bs.modal', function() {
+                    editingVoucherId = null;
+                    document.getElementById('serviceVoucherModalLabel').textContent = 'Create Service Voucher';
+                    const btn = document.querySelector('#serviceVoucherModal .btn-info');
+                    if (btn) {
+                        btn.innerHTML = '<i data-feather="check" style="width: 14px; height: 14px;"></i> Create Voucher';
+                        btn.classList.replace('btn-info', 'btn-success');
+                    }
+                    if (serviceProvidedEditor) {
+                        serviceProvidedEditor.setData('');
+                    }
+                    document.getElementById('serviceVoucherForm').reset();
+                });
+
+                document.getElementById('accommodationVoucherModal')?.addEventListener('hidden.bs.modal', function() {
+                    editingVoucherId = null;
+                    document.getElementById('accommodationVoucherModalLabel').textContent = 'Create Hotel Voucher';
+                    const btn = document.getElementById('submitAccommodationVoucherBtn');
+                    btn.innerHTML = '<i data-feather="check" style="width: 14px; height: 14px;"></i> Create Voucher';
+                    btn.classList.replace('btn-info', 'btn-warning');
+                    // Other resets handled by existing listener
+                });
+
+
                 window.submitServiceVoucher = function() {
                     // Get data from CKEditor and form inputs
                     const voucherNumber = document.getElementById('serviceVoucherNumber').value.trim();
@@ -4004,10 +4303,14 @@
                         return;
                     }
 
+                    const url = editingVoucherId ?
+                        `{{ url('/leads') }}/{{ $lead->id }}/vouchers/${editingVoucherId}` :
+                        '{{ route('vouchers.create-service', $lead) }}';
 
+                    const method = editingVoucherId ? 'PUT' : 'POST';
 
-                    fetch('{{ route('vouchers.create-service', $lead) }}', {
-                            method: 'POST',
+                    fetch(url, {
+                            method: method,
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                                 'Content-Type': 'application/json',
@@ -4023,18 +4326,19 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                alert('Service voucher created successfully!');
+                                alert(editingVoucherId ? 'Service voucher updated successfully!' :
+                                    'Service voucher created successfully!');
                                 bootstrap.Modal.getInstance(document.getElementById('serviceVoucherModal')).hide();
                                 @if ($isOpsDept ?? false)
                                     loadVouchers();
                                 @endif
                             } else {
-                                alert('Error: ' + (data.message || 'Failed to create service voucher'));
+                                alert('Error: ' + (data.message || 'Failed to save service voucher'));
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            alert('An error occurred while creating the service voucher');
+                            alert('An error occurred while saving the service voucher');
                         });
                 };
 
@@ -4056,10 +4360,14 @@
                         return;
                     }
 
+                    const url = editingVoucherId ?
+                        `{{ url('/leads') }}/{{ $lead->id }}/vouchers/${editingVoucherId}` :
+                        '{{ route('vouchers.create-accommodation', $lead) }}';
 
+                    const method = editingVoucherId ? 'PUT' : 'POST';
 
-                    fetch('{{ route('vouchers.create-accommodation', $lead) }}', {
-                            method: 'POST',
+                    fetch(url, {
+                            method: method,
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                                 'Content-Type': 'application/json',
@@ -4076,49 +4384,23 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                alert('Hotel voucher created successfully!');
+                                alert(editingVoucherId ? 'Hotel voucher updated successfully!' :
+                                    'Hotel voucher created successfully!');
                                 bootstrap.Modal.getInstance(document.getElementById('accommodationVoucherModal')).hide();
                                 @if ($isOpsDept ?? false)
                                     loadVouchers();
                                 @endif
                             } else {
-                                alert('Error: ' + (data.message || 'Failed to create hotel voucher'));
+                                alert('Error: ' + (data.message || 'Failed to save hotel voucher'));
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            alert('An error occurred while creating the hotel voucher');
+                            alert('An error occurred while saving the hotel voucher');
                         });
                 };
 
-                window.deleteVoucher = function(voucherId) {
-                    if (!confirm('Are you sure you want to delete this voucher?')) {
-                        return;
-                    }
 
-                    fetch(`{{ url('/leads') }}/{{ $lead->id }}/vouchers/${voucherId}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                'Accept': 'application/json'
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert('Voucher deleted successfully!');
-                                @if ($isOpsDept ?? false)
-                                    loadVouchers();
-                                @endif
-                            } else {
-                                alert('Error: ' + (data.message || 'Failed to delete voucher'));
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred while deleting the voucher');
-                        });
-                };
 
                 window.openDownloadModal = function(voucherId, leadId) {
                     const input = document.getElementById('downloadVoucherId');

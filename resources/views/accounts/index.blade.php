@@ -164,16 +164,16 @@
                                                         ? $firstDestination->to_date->format('d/m/Y')
                                                         : '-';
 
-                                                // Determine booking type
+                                                $hasHotel = $lead->bookingDestinations->contains(fn($d) => $d->hotel_tt || $d->only_hotel);
+                                                $hasTT = $lead->bookingDestinations->contains(fn($d) => $d->hotel_tt || $d->only_tt);
+
                                                 $bookingType = '-';
-                                                if ($firstDestination) {
-                                                    if ($firstDestination->hotel_tt) {
-                                                        $bookingType = 'HTL + TPT';
-                                                    } elseif ($firstDestination->only_tt) {
-                                                        $bookingType = 'Only TPT';
-                                                    } elseif ($firstDestination->only_hotel) {
-                                                        $bookingType = 'Only HTL';
-                                                    }
+                                                if ($hasHotel && $hasTT) {
+                                                    $bookingType = 'HTL + TPT';
+                                                } elseif ($hasTT) {
+                                                    $bookingType = 'Only TPT';
+                                                } elseif ($hasHotel) {
+                                                    $bookingType = 'Only HTL';
                                                 }
                                             @endphp
                                             <tr data-lead-id="{{ $lead->id }}">

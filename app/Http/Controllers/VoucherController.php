@@ -328,10 +328,14 @@ class VoucherController extends Controller
 
         // Validate based on voucher type
         if ($voucher->voucher_type === 'service' || $voucher->voucher_type === 'accommodation') {
-            $validated = $request->validate([
+            $rules = [
                 'service_provided' => 'required|string',
                 'comments' => 'nullable|string',
-            ]);
+                'emergency_contact_number' => 'nullable|string|max:20',
+                'voucher_number' => 'required|string|max:50|unique:vouchers,voucher_number,' . $voucher->id,
+            ];
+
+            $validated = $request->validate($rules);
 
             try {
                 $voucher->update($validated);

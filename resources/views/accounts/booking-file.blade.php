@@ -378,7 +378,9 @@
                                                                     $displayPending = $vp->pending_amount ?? null;
                                                                 }
                                                             @endphp
-                                                            <td style="{{ $vp->pending_amount > 0 ? ';' : 'color: #ffc107 !important; font-weight: bold' }}">{{ $displayPending !== null ? number_format($displayPending, 2) : '-' }}
+                                                            <td
+                                                                style="{{ $vp->pending_amount > 0 ? ';' : 'color: #ffc107 !important; font-weight: bold' }}">
+                                                                {{ $displayPending !== null ? number_format($displayPending, 2) : '-' }}
                                                             </td>
                                                             <td>{{ $vp->payment_mode ?? '-' }}</td>
                                                             <td>{{ $vp->ref_no ?? '-' }}</td>
@@ -456,7 +458,7 @@
                                             <thead class="table-light">
                                                 <tr>
                                                     <th>Amount</th>
-                                                    <th>Method</th>
+                                                    <th>Payment Mode</th>
                                                     <th>Paid On</th>
                                                     <th>Due Date</th>
                                                     <th>Transaction ID</th>
@@ -723,7 +725,7 @@
                                     name="amount" step="0.01" min="0" required placeholder="0.00">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Method <span class="text-danger">*</span></label>
+                                <label class="form-label">Payment Mode <span class="text-danger">*</span></label>
                                 <select class="form-select form-select-sm" id="customerPaymentMethod" name="method"
                                     required>
                                     <option value="">-- Select --</option>

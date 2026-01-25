@@ -171,7 +171,25 @@
                                                         {{ $lead->salutation ? $lead->salutation . ' ' : '' }}{{ $lead->customer_name }}
                                                     </a>
                                                 </td>
-                                                <td>{{ $lead->primary_phone ?? $lead->phone }}</td>
+                                                <td>
+                                                    {{ $lead->primary_phone ?? $lead->phone }}
+                                                    @if ($lead->primary_phone || $lead->phone || $lead->secondary_phone || $lead->other_phone)
+                                                        <a href="#"
+                                                            class="btn btn-icon btn-flush-dark btn-rounded flush-soft-hover ms-1 send-sms-btn"
+                                                            data-lead-id="{{ $lead->id }}"
+                                                            data-phone="{{ $lead->primary_phone ?? $lead->phone }}"
+                                                            data-secondary-phone="{{ $lead->secondary_phone ?? '' }}"
+                                                            data-other-phone="{{ $lead->other_phone ?? '' }}"
+                                                            data-bs-toggle="tooltip" data-placement="top"
+                                                            title="Send SMS">
+                                                            <span class="icon">
+                                                                <span class="feather-icon">
+                                                                    <i data-feather="message-square"></i>
+                                                                </span>
+                                                            </span>
+                                                        </a>
+                                                    @endif
+                                                </td>
                                                 <td>{{ $lead->service ? $lead->service->name : '-' }}</td>
                                                 <td>{{ $lead->destination ? $lead->destination->name : '-' }}</td>
                                                 <td>
@@ -1215,6 +1233,70 @@
             </div>
         </div>
     @endif
+
+    <!-- Send SMS Modal -->
+    <div class="modal fade" id="sendSmsModal" tabindex="-1" aria-labelledby="sendSmsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold" id="sendSmsModalLabel">
+                        <i data-feather="message-square" class="me-2" style="width: 20px; height: 20px;"></i>
+                        Send SMS
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="sendSmsForm">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold mb-2">Select Phone Numbers</label>
+                            <div class="bg-light p-3 rounded border">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="selectAllNumbers">
+                                    <label class="form-check-label fw-semibold" for="selectAllNumbers">
+                                        Select All
+                                    </label>
+                                </div>
+                                <hr class="my-2">
+                                <div id="phoneNumbersList">
+                                    <!-- Phone numbers will be injected here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold mb-2">Select Message Template</label>
+                            <div class="list-group" id="messageTemplatesList"
+                                style="max-height: 200px; overflow-y: auto;">
+                                <!-- Mock Templates -->
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-1" type="radio" name="messageTemplate"
+                                        value="template1" checked>
+                                    <strong>Welcome Message:</strong> Hi, thanks for contacting Travel Shravel...
+                                </label>
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-1" type="radio" name="messageTemplate"
+                                        value="template2">
+                                    <strong>Follow Up:</strong> Just checking in regarding your travel plans...
+                                </label>
+                                <label class="list-group-item">
+                                    <input class="form-check-input me-1" type="radio" name="messageTemplate"
+                                        value="template3">
+                                    <strong>Quote Ready:</strong> Your quote is ready! Please check your email...
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light border-top">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="sendSmsSubmitBtn">
+                        <i data-feather="send" class="me-1" style="width: 16px; height: 16px;"></i>
+                        Send SMS
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @push('styles')
         <style>
@@ -2641,6 +2723,115 @@
                         safeFeatherReplace(bulkAssignModal);
                         // Update selected leads display
                         updateBulkActions();
+                    });
+                }
+
+                // Send SMS Functionality
+                const sendSmsModalEl = document.getElementById('sendSmsModal');
+                const sendSmsForm = document.getElementById('sendSmsForm');
+                const phoneNumbersList = document.getElementById('phoneNumbersList');
+                const selectAllNumbers = document.getElementById('selectAllNumbers');
+                const sendSmsSubmitBtn = document.getElementById('sendSmsSubmitBtn');
+                let sendSmsModalInstance = null;
+
+                if (sendSmsModalEl && typeof bootstrap !== 'undefined') {
+                    sendSmsModalInstance = new bootstrap.Modal(sendSmsModalEl);
+
+                    sendSmsModalEl.addEventListener('hidden.bs.modal', () => {
+                        if (sendSmsForm) sendSmsForm.reset();
+                        if (phoneNumbersList) phoneNumbersList.innerHTML = '';
+                        if (selectAllNumbers) selectAllNumbers.checked = false;
+                    });
+
+                    sendSmsModalEl.addEventListener('shown.bs.modal', () => {
+                        safeFeatherReplace(sendSmsModalEl);
+                    });
+                }
+
+                // Event delegation for send SMS button
+                document.addEventListener('click', function(event) {
+                    const button = event.target.closest('.send-sms-btn');
+                    if (!button) return;
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const phone = button.dataset.phone;
+                    const secondaryPhone = button.dataset.secondaryPhone;
+                    const otherPhone = button.dataset.otherPhone;
+
+                    // Populate numbers
+                    let numbers = [];
+                    if (phone && phone !== 'null') numbers.push({
+                        label: 'Primary',
+                        number: phone
+                    });
+                    if (secondaryPhone && secondaryPhone !== 'null') numbers.push({
+                        label: 'Secondary',
+                        number: secondaryPhone
+                    });
+                    if (otherPhone && otherPhone !== 'null') numbers.push({
+                        label: 'Emergency',
+                        number: otherPhone
+                    });
+
+                    if (phoneNumbersList) {
+                        if (numbers.length > 0) {
+                            phoneNumbersList.innerHTML = numbers.map((n, index) => `
+                        <div class="form-check mb-1">
+                            <input class="form-check-input phone-number-checkbox" type="checkbox" name="phone_numbers[]" value="${n.number}" id="phone_${index}">
+                            <label class="form-check-label" for="phone_${index}">
+                                ${n.number} <span class="text-muted small">(${n.label})</span>
+                            </label>
+                        </div>
+                    `).join('');
+                        } else {
+                            phoneNumbersList.innerHTML =
+                                '<p class="text-muted small mb-0">No phone numbers found.</p>';
+                        }
+                    }
+
+                    if (sendSmsModalInstance) {
+                        sendSmsModalInstance.show();
+                    }
+                });
+
+                if (selectAllNumbers) {
+                    selectAllNumbers.addEventListener('change', function() {
+                        const checkboxes = document.querySelectorAll('.phone-number-checkbox');
+                        checkboxes.forEach(cb => cb.checked = this.checked);
+                    });
+                }
+
+                if (sendSmsSubmitBtn) {
+                    sendSmsSubmitBtn.addEventListener('click', function() {
+                        const selectedNumbers = Array.from(document.querySelectorAll(
+                            '.phone-number-checkbox:checked')).map(cb => cb.value);
+                        const selectedTemplate = document.querySelector(
+                            'input[name="messageTemplate"]:checked')?.value;
+
+                        if (selectedNumbers.length === 0) {
+                            if (typeof showToast === 'function') {
+                                showToast('Please select at least one phone number.', 'error');
+                            } else {
+                                alert('Please select at least one phone number.');
+                            }
+                            return;
+                        }
+
+                        // Mock sending
+                        console.log('Sending SMS to:', selectedNumbers, 'Template:', selectedTemplate);
+
+                        // Simulate success
+                        if (sendSmsModalInstance) {
+                            sendSmsModalInstance.hide();
+                        }
+
+                        if (typeof showToast === 'function') {
+                            showToast('SMS sent successfully!', 'success');
+                        } else {
+                            alert('SMS sent successfully!');
+                        }
                     });
                 }
 
