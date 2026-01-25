@@ -31,9 +31,8 @@
                                             <div class="row g-3 align-items-end">
                                                 <div class="col-md-10">
                                                     <label for="service_name" class="form-label">Service Name</label>
-                                                    <input type="text" class="form-control form-control-sm" 
-                                                        id="service_name" name="name" 
-                                                        value="{{ old('name') }}" 
+                                                    <input type="text" class="form-control form-control-sm"
+                                                        id="service_name" name="name" value="{{ old('name') }}"
                                                         placeholder="Enter service name" required>
                                                 </div>
                                                 <div class="col-md-2">
@@ -71,18 +70,21 @@
                                                 <tr id="service-row-{{ $service->id }}">
                                                     <td>{{ $sno }}</td>
                                                     <td>
-                                                        <span class="service-name-display-{{ $service->id }}">{{ $service->name }}</span>
-                                                        <form action="{{ route('services.update', $service->id) }}" method="POST" 
+                                                        <span
+                                                            class="service-name-display-{{ $service->id }}">{{ $service->name }}</span>
+                                                        <form action="{{ route('services.update', $service->id) }}"
+                                                            method="POST"
                                                             class="service-edit-form-{{ $service->id }} d-none">
                                                             @csrf
                                                             @method('PUT')
                                                             <div class="input-group input-group-sm">
-                                                                <input type="text" name="name" class="form-control" 
+                                                                <input type="text" name="name" class="form-control"
                                                                     value="{{ $service->name }}" required>
                                                                 <button type="submit" class="btn btn-success btn-sm">
                                                                     <i class="bi bi-check"></i> Update
                                                                 </button>
-                                                                <button type="button" class="btn btn-secondary btn-sm cancel-edit" 
+                                                                <button type="button"
+                                                                    class="btn btn-secondary btn-sm cancel-edit"
                                                                     data-service-id="{{ $service->id }}">
                                                                     <i class="bi bi-x"></i> Cancel
                                                                 </button>
@@ -90,7 +92,8 @@
                                                         </form>
                                                     </td>
                                                     <td>
-                                                        <button type="button" class="btn btn-outline-warning btn-sm edit-service-btn" 
+                                                        <button type="button"
+                                                            class="btn btn-outline-warning btn-sm edit-service-btn"
                                                             data-service-id="{{ $service->id }}">
                                                             <i class="bi bi-pencil-square"></i> Edit
                                                         </button>
@@ -106,12 +109,12 @@
                                                     </td>
                                                 </tr>
                                                 @php
-                                                    $sno++
+                                                    $sno++;
                                                 @endphp
                                             @empty
                                                 <tr>
                                                     <td colspan="3" class="text-center text-muted">
-                                                        No services found.
+                                                        no records found
                                                     </td>
                                                 </tr>
                                             @endforelse
@@ -141,13 +144,14 @@
             document.querySelectorAll('.edit-service-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     const serviceId = this.getAttribute('data-service-id');
-                    const displaySpan = document.querySelector('.service-name-display-' + serviceId);
+                    const displaySpan = document.querySelector('.service-name-display-' +
+                    serviceId);
                     const editForm = document.querySelector('.service-edit-form-' + serviceId);
-                    
+
                     // Hide display, show form
                     if (displaySpan) displaySpan.classList.add('d-none');
                     if (editForm) editForm.classList.remove('d-none');
-                    
+
                     // Hide edit button, show cancel button is already in form
                     this.style.display = 'none';
                 });
@@ -157,14 +161,16 @@
             document.querySelectorAll('.cancel-edit').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     const serviceId = this.getAttribute('data-service-id');
-                    const displaySpan = document.querySelector('.service-name-display-' + serviceId);
+                    const displaySpan = document.querySelector('.service-name-display-' +
+                    serviceId);
                     const editForm = document.querySelector('.service-edit-form-' + serviceId);
-                    const editBtn = document.querySelector('.edit-service-btn[data-service-id="' + serviceId + '"]');
-                    
+                    const editBtn = document.querySelector('.edit-service-btn[data-service-id="' +
+                        serviceId + '"]');
+
                     // Show display, hide form
                     if (displaySpan) displaySpan.classList.remove('d-none');
                     if (editForm) editForm.classList.add('d-none');
-                    
+
                     // Show edit button
                     if (editBtn) editBtn.style.display = 'inline-block';
                 });

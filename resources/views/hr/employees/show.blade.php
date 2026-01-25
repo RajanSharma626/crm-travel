@@ -35,88 +35,88 @@
                                                     <div class="col-md-3">
                                                         <label class="form-label">Employee ID</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->employee_id }}" readonly>
+                                                            value="{{ $employee->employee_id }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Salutation</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->salutation }}" readonly>
+                                                            value="{{ $employee->salutation }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Name</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->name }}" readonly>
+                                                            value="{{ $employee->name }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Date of Birth</label>
                                                         <input type="date" class="form-control form-control-sm"
                                                             value="{{ $employee->dob ? \Carbon\Carbon::parse($employee->dob)->format('Y-m-d') : '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
 
                                                     <div class="col-md-3">
                                                         <label class="form-label">Marital Status</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->marital_status }}" readonly>
+                                                            value="{{ $employee->marital_status }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Department</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->department }}" readonly>
+                                                            value="{{ $employee->department }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Designation</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->designation }}" readonly>
+                                                            value="{{ $employee->designation }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Reporting Manager</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->reporting_manager }}" readonly>
+                                                            value="{{ $employee->reporting_manager }}" disabled>
                                                     </div>
 
                                                     <div class="col-md-3">
                                                         <label class="form-label">Blood Group</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->blood_group }}" readonly>
+                                                            value="{{ $employee->blood_group }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Branch / Location</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->branch_location }}" readonly>
+                                                            value="{{ $employee->branch_location }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Date of Joining</label>
                                                         <input type="date" class="form-control form-control-sm"
                                                             value="{{ $employee->doj ? \Carbon\Carbon::parse($employee->doj)->format('Y-m-d') : '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Date of Leaving</label>
                                                         <input type="date" class="form-control form-control-sm"
                                                             value="{{ $employee->dol ? \Carbon\Carbon::parse($employee->dol)->format('Y-m-d') : '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
 
                                                     <div class="col-md-3">
                                                         <label class="form-label">Employment Type</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->employment_type }}" readonly>
+                                                            value="{{ $employee->employment_type }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Employment Status</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->employment_status }}" readonly>
+                                                            value="{{ $employee->employment_status }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Starting Salary</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->starting_salary }}" readonly>
+                                                            value="{{ $employee->starting_salary }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Last Withdrawn Salary</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->last_withdrawn_salary }}" readonly>
+                                                            value="{{ $employee->last_withdrawn_salary }}" disabled>
                                                     </div>
                                                 </div>
                                             </div>
@@ -135,18 +135,18 @@
                                                     <div class="col-md-3">
                                                         <label class="form-label">User ID</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->user_id }}" readonly>
+                                                            value="{{ $employee->user_id }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Work E-mail</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->email }}" readonly>
+                                                            value="{{ $employee->email }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Role</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ $employee->role ?? $employee->getRoleNameAttribute() }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                 </div>
                                             </div>
@@ -171,88 +171,88 @@
                                                     <div class="col-md-3">
                                                         <label class="form-label">Previous Employer</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->previous_employer ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->previous_employer ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Contact Person</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->contact_person ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->contact_person ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Contact Number</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->contact_number ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->contact_number ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Reason for Leaving</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->reason_for_leaving ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->reason_for_leaving ?? '' }}" disabled>
                                                     </div>
 
                                                     <div class="col-md-3">
                                                         <label class="form-label">Highest Qualification</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ $basicInfo->highest_qualification ?? '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Specialization</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->specialization ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->specialization ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Year of Passing</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->year_of_passing ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->year_of_passing ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Work Experience</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->work_experience ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->work_experience ?? '' }}" disabled>
                                                     </div>
 
                                                     <div class="col-md-3">
                                                         <label class="form-label">Father / Mother's Name</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->father_mother_name ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->father_mother_name ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Father / Mother's Contact</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ $basicInfo->father_mother_contact_number ?? '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Nominee Name</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->nominee_name ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->nominee_name ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Nominee Contact</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ $basicInfo->nominee_contact_number ?? '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Emergency Contact</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->emergency_contact ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->emergency_contact ?? '' }}" disabled>
                                                     </div>
 
                                                     <div class="col-md-3">
                                                         <label class="form-label">Aadhar Number</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->aadhar_number ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->aadhar_number ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">PAN Number</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->pan_number ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->pan_number ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Passport Number</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->passport_number ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->passport_number ?? '' }}" disabled>
                                                     </div>
 
                                                 </div>
@@ -270,11 +270,11 @@
                                                 <div class="row g-3">
                                                     <div class="col-md-6">
                                                         <label class="form-label">Present Address</label>
-                                                        <textarea rows="2" class="form-control form-control-sm" readonly>{{ $basicInfo->present_address ?? '' }}</textarea>
+                                                        <textarea rows="2" class="form-control form-control-sm" disabled>{{ $basicInfo->present_address ?? '' }}</textarea>
                                                     </div>
                                                     <div class="col-md-6">
                                                         <label class="form-label">Permanent Address</label>
-                                                        <textarea rows="2" class="form-control form-control-sm" readonly>{{ $basicInfo->permanent_address ?? '' }}</textarea>
+                                                        <textarea rows="2" class="form-control form-control-sm" disabled>{{ $basicInfo->permanent_address ?? '' }}</textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -293,23 +293,23 @@
                                                     <div class="col-md-3">
                                                         <label class="form-label">Incentive Eligibility</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->incentive_eligibility ?? '' }}" readonly>
+                                                            value="{{ $employee->incentive_eligibility ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Incentive Type</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->incentive_type ?? '' }}" readonly>
+                                                            value="{{ $employee->incentive_type ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Monthly Target</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->monthly_target ?? '' }}" readonly>
+                                                            value="{{ $employee->monthly_target ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Incentive Payout Date</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ $employee->incentive_payout_date ? \Carbon\Carbon::parse($employee->incentive_payout_date)->format('Y-m-d') : '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                 </div>
                                             </div>
@@ -328,42 +328,42 @@
                                                     <div class="col-md-3">
                                                         <label class="form-label">Bank Name</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->bank_name ?? '' }}" readonly>
+                                                            value="{{ $employee->bank_name ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Account Number</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->account_number ?? '' }}" readonly>
+                                                            value="{{ $employee->account_number ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">IFSC Code</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->ifsc_code ?? '' }}" readonly>
+                                                            value="{{ $employee->ifsc_code ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Salary Structure</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->salary_structure ?? '' }}" readonly>
+                                                            value="{{ $employee->salary_structure ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">PF Number</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->pf_number ?? '' }}" readonly>
+                                                            value="{{ $employee->pf_number ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">ESIC Number</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->esic_number ?? '' }}" readonly>
+                                                            value="{{ $employee->esic_number ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">UAN Number</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $employee->uan_number ?? '' }}" readonly>
+                                                            value="{{ $employee->uan_number ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">PAN Card Number</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $basicInfo->pan_number ?? '' }}" readonly>
+                                                            value="{{ $basicInfo->pan_number ?? '' }}" disabled>
                                                     </div>
                                                 </div>
                                             </div>
@@ -383,71 +383,71 @@
                                                         <label class="form-label">Exit Initiated By</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ $exitClearance->exit_initiated_by ?? '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Resignation Date</label>
                                                         <input type="date" class="form-control form-control-sm"
                                                             value="{{ !empty($exitClearance->resignation_date) ? \Carbon\Carbon::parse($exitClearance->resignation_date)->format('Y-m-d') : '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Notice Period</label>
                                                         <input type="text" class="form-control form-control-sm"
-                                                            value="{{ $exitClearance->notice_period ?? '' }}" readonly>
+                                                            value="{{ $exitClearance->notice_period ?? '' }}" disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Last Working Day</label>
                                                         <input type="date" class="form-control form-control-sm"
                                                             value="{{ !empty($exitClearance->last_working_day) ? \Carbon\Carbon::parse($exitClearance->last_working_day)->format('Y-m-d') : '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
 
                                                     <div class="col-md-3">
                                                         <label class="form-label">Service Certificate Issued</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ isset($exitClearance->service_certificate_issued) ? ($exitClearance->service_certificate_issued ? 'Yes' : 'No') : '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Issuing Date</label>
                                                         <input type="date" class="form-control form-control-sm"
                                                             value="{{ !empty($exitClearance->issuing_date) ? \Carbon\Carbon::parse($exitClearance->issuing_date)->format('Y-m-d') : '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Credit Card Handed Over?</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ $exitClearance->credit_card_handover ?? '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Laptop Handed Over?</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ ($exitClearance->handed_over_laptop ?? '') == '1' ? 'Given' : $exitClearance->handed_over_laptop ?? '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">Mobile Handed Over?</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ ($exitClearance->handed_over_mobile ?? '') == '1' ? 'Given' : $exitClearance->handed_over_mobile ?? '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">ID Card Handed Over?</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ ($exitClearance->handed_over_id_card ?? '') == '1' ? 'Given' : $exitClearance->handed_over_id_card ?? '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-3">
                                                         <label class="form-label">All Dues Cleared?</label>
                                                         <input type="text" class="form-control form-control-sm"
                                                             value="{{ ($exitClearance->all_dues_cleared ?? '') == '1' ? 'Given' : $exitClearance->all_dues_cleared ?? '' }}"
-                                                            readonly>
+                                                            disabled>
                                                     </div>
                                                     <div class="col-md-12">
                                                         <label class="form-label">Exit Interview Notes</label>
-                                                        <textarea rows="3" class="form-control form-control-sm" readonly>{{ $exitClearance->exit_interview_notes ?? '' }}</textarea>
+                                                        <textarea rows="3" class="form-control form-control-sm" disabled>{{ $exitClearance->exit_interview_notes ?? '' }}</textarea>
                                                     </div>
                                                 </div>
                                             </div>

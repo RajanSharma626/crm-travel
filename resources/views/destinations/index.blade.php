@@ -32,10 +32,10 @@
                                     </div>
                                 @endif
 
-                                @if(isset($destinations) && $destinations->count() > 0)
-                                <div class="text-muted small mb-2 px-3">
-                                    Showing {{ $destinations->firstItem() ?? 0 }} out of {{ $destinations->total() }}
-                                </div>
+                                @if (isset($destinations) && $destinations->count() > 0)
+                                    <div class="text-muted small mb-2 px-3">
+                                        Showing {{ $destinations->firstItem() ?? 0 }} out of {{ $destinations->total() }}
+                                    </div>
                                 @endif
 
                                 <!-- Table -->
@@ -54,13 +54,15 @@
                                         <tbody>
                                             @forelse ($destinations as $index => $destination)
                                                 <tr>
-                                                    <td>{{ ($destinations->currentPage() - 1) * $destinations->perPage() + $loop->iteration }}</td>
+                                                    <td>{{ ($destinations->currentPage() - 1) * $destinations->perPage() + $loop->iteration }}
+                                                    </td>
                                                     <td>{{ $destination->country ?? '-' }}</td>
                                                     <td>{{ $destination->name }}</td>
                                                     <td>
-                                                        @if($destination->locations && $destination->locations->count() > 0)
-                                                            @foreach($destination->locations as $location)
-                                                                <span class="badge bg-primary me-1">{{ $location->name }}</span>
+                                                        @if ($destination->locations && $destination->locations->count() > 0)
+                                                            @foreach ($destination->locations as $location)
+                                                                <span
+                                                                    class="badge bg-primary me-1">{{ $location->name }}</span>
                                                             @endforeach
                                                         @else
                                                             <span class="text-muted">No locations</span>
@@ -71,7 +73,8 @@
                                                             class="btn btn-outline-warning btn-sm">
                                                             <i class="bi bi-pencil-square"></i> Edit
                                                         </a>
-                                                        <form action="{{ route('destinations.destroy', $destination->id) }}"
+                                                        <form
+                                                            action="{{ route('destinations.destroy', $destination->id) }}"
                                                             method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
@@ -85,7 +88,7 @@
                                             @empty
                                                 <tr>
                                                     <td colspan="5" class="text-center text-muted">
-                                                        No destinations found.
+                                                        no records found
                                                     </td>
                                                 </tr>
                                             @endforelse

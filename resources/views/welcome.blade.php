@@ -73,7 +73,7 @@
                                             </tr>
                                             {{-- @empty
                                                 <tr>
-                                                    <td colspan="8" class="text-center">No leads found.</td>
+                                                    <td colspan="8" class="text-center">no records found</td>
                                                 </tr>
                                                 @endforelse --}}
                                         </tbody>

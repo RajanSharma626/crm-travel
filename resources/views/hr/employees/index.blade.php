@@ -28,15 +28,18 @@
                                 <form method="GET" action="{{ route('hr.employees.index') }}" class="row g-3 mb-4">
                                     <div class="col-md-4 col-lg-3">
                                         <label for="search" class="form-label">Search</label>
-                                        <input type="text" name="search" id="search" class="form-control form-control-sm"
-                                            placeholder="Search by name, ID, email, department..." value="{{ request('search') }}">
+                                        <input type="text" name="search" id="search"
+                                            class="form-control form-control-sm"
+                                            placeholder="Search by name, ID, email, department..."
+                                            value="{{ request('search') }}">
                                     </div>
                                     <div class="col-md-3 col-lg-2">
                                         <label for="department" class="form-label">Department</label>
                                         <select name="department" id="department" class="form-select form-select-sm">
                                             <option value="">-- All Departments --</option>
                                             @foreach ($departments as $dept)
-                                                <option value="{{ $dept }}" @selected(request('department') === $dept)>{{ $dept }}</option>
+                                                <option value="{{ $dept }}" @selected(request('department') === $dept)>
+                                                    {{ $dept }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -54,21 +57,23 @@
                                         </button>
                                     </div>
                                     <div class="col-md-2 col-lg-2 align-self-end">
-                                        <a href="{{ route('hr.employees.create') }}" class="btn btn-primary btn-sm w-100">+ Add Employee</a>
+                                        <a href="{{ route('hr.employees.create') }}" class="btn btn-primary btn-sm w-100">+
+                                            Add Employee</a>
                                     </div>
                                     @if (request('search') || request('department') || request('status'))
                                         <div class="col-md-2 col-lg-2 align-self-end">
-                                            <a href="{{ route('hr.employees.index') }}" class="btn btn-outline-danger btn-sm w-100">
+                                            <a href="{{ route('hr.employees.index') }}"
+                                                class="btn btn-outline-danger btn-sm w-100">
                                                 Clear Filters
                                             </a>
                                         </div>
                                     @endif
                                 </form>
 
-                                @if(isset($employees) && $employees->count() > 0)
-                                <div class="text-muted small mb-2 px-3">
-                                    Showing {{ $employees->firstItem() ?? 0 }} out of {{ $employees->total() }}
-                                </div>
+                                @if (isset($employees) && $employees->count() > 0)
+                                    <div class="text-muted small mb-2 px-3">
+                                        Showing {{ $employees->firstItem() ?? 0 }} out of {{ $employees->total() }}
+                                    </div>
                                 @endif
 
                                 <table class="table table-striped small table-bordered w-100 mb-5">
@@ -105,7 +110,8 @@
                                                         <div class="d-flex">
                                                             <a href="{{ route('hr.employees.show', $employee) }}"
                                                                 class="btn btn-icon btn-flush-dark btn-rounded flush-soft-hover"
-                                                                data-bs-toggle="tooltip" data-placement="top" title="View Employee">
+                                                                data-bs-toggle="tooltip" data-placement="top"
+                                                                title="View Employee">
                                                                 <span class="icon">
                                                                     <span class="feather-icon">
                                                                         <i data-feather="eye"></i>
@@ -114,20 +120,23 @@
                                                             </a>
                                                             <a href="{{ route('hr.employees.edit', $employee) }}"
                                                                 class="btn btn-icon btn-flush-dark btn-rounded flush-soft-hover"
-                                                                data-bs-toggle="tooltip" data-placement="top" title="Edit Employee">
+                                                                data-bs-toggle="tooltip" data-placement="top"
+                                                                title="Edit Employee">
                                                                 <span class="icon">
                                                                     <span class="feather-icon">
                                                                         <i data-feather="edit"></i>
                                                                     </span>
                                                                 </span>
                                                             </a>
-                                                            <form action="{{ route('hr.employees.destroy', $employee) }}" method="POST"
-                                                                class="d-inline" onsubmit="return confirm('Are you sure you want to delete {{ $employee->name }}?')">
+                                                            <form action="{{ route('hr.employees.destroy', $employee) }}"
+                                                                method="POST" class="d-inline"
+                                                                onsubmit="return confirm('Are you sure you want to delete {{ $employee->name }}?')">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit"
                                                                     class="btn btn-icon btn-flush-dark btn-rounded flush-soft-hover"
-                                                                    data-bs-toggle="tooltip" data-placement="top" title="Delete Employee">
+                                                                    data-bs-toggle="tooltip" data-placement="top"
+                                                                    title="Delete Employee">
                                                                     <span class="icon">
                                                                         <span class="feather-icon">
                                                                             <i data-feather="trash"></i>
@@ -141,7 +150,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="8" class="text-center">No employees found</td>
+                                                <td colspan="8" class="text-center">no records found</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
@@ -179,4 +188,3 @@
         });
     </script>
 @endpush
-

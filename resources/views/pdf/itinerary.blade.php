@@ -809,26 +809,7 @@ foreach ($dayItineraries as $dit) {
                                             <strong>{{ $itinerary->location }}</strong><br>
                                         @endif
                                         @if ($itinerary->activity_tour_description)
-                                            @php
-                                                $activities = array_filter(
-                                                    array_map(
-                                                        'trim',
-                                                        explode(
-                                                            "\n",
-                                                            str_replace(
-                                                                ["\r\n", "\r"],
-                                                                "\n",
-                                                                $itinerary->activity_tour_description,
-                                                            ),
-                                                        ),
-                                                    ),
-                                                );
-                                            @endphp
-                                            @foreach ($activities as $activity)
-                                                @if (!empty($activity))
-                                                    <div class="activity-item">{{ $activity }}</div>
-                                                @endif
-                                            @endforeach
+                                            {!! $itinerary->activity_tour_description !!}
                                         @endif
                                     </div>
                                 @endforeach
@@ -847,7 +828,7 @@ foreach ($dayItineraries as $dit) {
             @else
                 <tr>
                     <td colspan="2" style="text-align: center; padding: 30px; font-size: 13px; color: #999;">
-                        <strong>No itinerary data available</strong>
+                        <strong>no records found</strong>
                     </td>
                 </tr>
             @endif

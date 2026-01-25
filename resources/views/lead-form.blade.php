@@ -370,7 +370,7 @@
                                                     @endforeach
                                                 @else
                                                     <tr>
-                                                        <td colspan="5" class="text-center">No Notes Found</td>
+                                                        <td colspan="5" class="text-center">no records found</td>
                                                     </tr>
                                                 @endif
                                             </tbody>

@@ -30,6 +30,8 @@ class DeliveryController extends Controller
             'travel_date' => $request->input('travel_date'),
             'stage' => $request->input('stage'),
             'next_days' => $request->input('next_days'),
+            'service' => $request->input('service'),
+            'destination' => $request->input('destination'),
         ];
 
         // Show leads that have operations with status 'completed' (vouchered) or have deliveries
@@ -108,6 +110,14 @@ class DeliveryController extends Controller
             $startDate = now()->startOfDay();
             $endDate = now()->addDays($days)->endOfDay();
             $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+        
+        if (!empty($filters['service'])) {
+            $leadsQuery->where('service_id', $filters['service']);
+        }
+
+        if (!empty($filters['destination'])) {
+            $leadsQuery->where('destination_id', $filters['destination']);
         }
 
         $leads = $leadsQuery->paginate(25);

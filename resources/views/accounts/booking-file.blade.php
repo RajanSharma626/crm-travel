@@ -378,7 +378,7 @@
                                                                     $displayPending = $vp->pending_amount ?? null;
                                                                 }
                                                             @endphp
-                                                            <td>{{ $displayPending !== null ? number_format($displayPending, 2) : '-' }}
+                                                            <td style="{{ $vp->pending_amount > 0 ? ';' : 'color: #ffc107 !important; font-weight: bold' }}">{{ $displayPending !== null ? number_format($displayPending, 2) : '-' }}
                                                             </td>
                                                             <td>{{ $vp->payment_mode ?? '-' }}</td>
                                                             <td>{{ $vp->ref_no ?? '-' }}</td>

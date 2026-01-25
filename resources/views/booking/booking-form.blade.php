@@ -401,7 +401,7 @@
                                                             <i data-feather="inbox"
                                                                 style="width: 24px; height: 24px; opacity: 0.5;"
                                                                 class="mb-2"></i>
-                                                            <div>No destination data available</div>
+                                                            <div>no records found</div>
                                                         </td>
                                                     </tr>
                                                 @endif
@@ -647,7 +647,7 @@
                                                             <i data-feather="inbox"
                                                                 style="width: 24px; height: 24px; opacity: 0.5;"
                                                                 class="mb-2"></i>
-                                                            <div>No arrival/departure data available</div>
+                                                            <div>no records found</div>
                                                         </td>
                                                     </tr>
                                                 @endif
@@ -774,7 +774,7 @@
                                                                 <i data-feather="inbox"
                                                                     style="width: 24px; height: 24px; opacity: 0.5;"
                                                                     class="mb-2"></i>
-                                                                <div>No accommodation data available</div>
+                                                                <div>no records found</div>
                                                             </td>
                                                         </tr>
                                                     @endif
@@ -828,34 +828,7 @@
                                                                 <td>{{ $bi->location }}</td>
                                                                 <td>
                                                                     @if ($bi->activity_tour_description)
-                                                                        @php
-                                                                            // Handle different line break formats (Windows \r\n, Unix \n, Mac \r)
-                                                                            $text = str_replace(
-                                                                                ["\r\n", "\r"],
-                                                                                "\n",
-                                                                                $bi->activity_tour_description,
-                                                                            );
-                                                                            $activities = array_filter(
-                                                                                array_map('trim', explode("\n", $text)),
-                                                                                function ($item) {
-                                                                                    return !empty($item);
-                                                                                },
-                                                                            );
-                                                                        @endphp
-                                                                        @if (count($activities) > 0)
-                                                                            <div class="mb-0"
-                                                                                style="padding-left: 0; margin-bottom: 0;">
-                                                                                @foreach ($activities as $activity)
-                                                                                    <div
-                                                                                        style="margin-bottom: 4px; padding-left: 0;">
-                                                                                        <span
-                                                                                            style="margin-right: 8px;">•</span>{{ $activity }}
-                                                                                    </div>
-                                                                                @endforeach
-                                                                            </div>
-                                                                        @else
-                                                                            {{ $bi->activity_tour_description }}
-                                                                        @endif
+                                                                        {!! $bi->activity_tour_description !!}
                                                                     @else
                                                                         -
                                                                     @endif
@@ -916,7 +889,7 @@
                                                                 <i data-feather="inbox"
                                                                     style="width: 24px; height: 24px; opacity: 0.5;"
                                                                     class="mb-2"></i>
-                                                                <div>No itinerary data available</div>
+                                                                <div>no records found</div>
                                                             </td>
                                                         </tr>
                                                     @endif
@@ -1185,7 +1158,11 @@
                                                                     data-location="{{ $vp->location ?? '' }}"
                                                                     data-purchase-cost="{{ $vp->purchase_cost ?? 0 }}"
                                                                     data-due-date="{{ $vp->due_date ? $vp->due_date->format('Y-m-d') : '' }}"
-                                                                    data-status="{{ $vp->status ?? 'Pending' }}">
+                                                                    data-status="{{ $vp->status ?? 'Pending' }}"
+                                                                    data-paid-amount="{{ $vp->paid_amount ?? 0 }}"
+                                                                    data-payment-mode="{{ $vp->payment_mode ?? '' }}"
+                                                                    data-ref-no="{{ $vp->ref_no ?? '' }}"
+                                                                    data-remarks="{{ $vp->remarks ?? '' }}">
                                                                     <td>{{ $vp->vendor_code ?? '-' }}</td>
                                                                     <td>{{ $vp->booking_type ?? '-' }}</td>
                                                                     <td>{{ $vp->location ?? '-' }}</td>
@@ -1197,7 +1174,8 @@
                                                                         <td style="background-color: #fff3cd;">
                                                                             {{ $vp->paid_amount ? number_format($vp->paid_amount, 2) : '-' }}
                                                                         </td>
-                                                                        <td style="background-color: #fff3cd;">
+                                                                        <td
+                                                                            style="{{ $vp->pending_amount > 0 ? 'background-color: #ffc107 !important; font-weight: bold;' : 'background-color: #fff3cd;' }}">
                                                                             {{ $vp->pending_amount ? number_format($vp->pending_amount, 2) : '-' }}
                                                                         </td>
                                                                         <td style="background-color: #fff3cd;">
@@ -1367,7 +1345,7 @@
                                                 <p class="text-muted text-center mb-0 py-4">
                                                     <i data-feather="message-circle" class="me-2"
                                                         style="width: 16px; height: 16px;"></i>
-                                                    No remarks available.
+                                                    no records found
                                                 </p>
                                             @endif
                                         </div>
@@ -2021,8 +1999,7 @@
                                     <label class="form-label">Activity/Tour Description</label>
                                     <textarea class="form-control form-control-sm" id="modalActivity" name="activity_tour_description"
                                         rows="5" placeholder="Enter each activity on a new line (press Enter for list items)"></textarea>
-                                    <small class="text-muted">Each line will be displayed as a list item in the itinerary
-                                        table.</small>
+
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Remarks</label>
@@ -2094,8 +2071,36 @@
                                         <select class="form-select form-select-sm" id="modalStatus" name="status"
                                             required>
                                             <option value="Pending" selected>Pending</option>
+                                            <option value="Paid">Paid</option>
                                             <option value="Cancelled">Cancelled</option>
                                         </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Paid Amount</label>
+                                        <input type="number" class="form-control form-control-sm" id="modalPaidAmount"
+                                            name="paid_amount" step="0.01" min="0">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Payment Mode</label>
+                                        <select class="form-select form-select-sm" id="modalPaymentMode"
+                                            name="payment_mode">
+                                            <option value="">-- Select --</option>
+                                            <option value="Cash">Cash</option>
+                                            <option value="Bank Transfer">Bank Transfer</option>
+                                            <option value="Cheque">Cheque</option>
+                                            <option value="Credit Card">Credit Card</option>
+                                            <option value="UPI">UPI</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Ref. No.</label>
+                                        <input type="text" class="form-control form-control-sm" id="modalRefNo"
+                                            name="ref_no">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Remarks</label>
+                                        <textarea class="form-control form-control-sm" id="modalRemarks" name="remarks" rows="2"></textarea>
                                     </div>
                                 </div>
                                 <div class="modal-footer mt-3">
@@ -2352,6 +2357,23 @@
                     updateBookingProfit();
 
                     // Destination table management
+                    let itineraryActivityEditor = null;
+
+                    // Init Itinerary Modal CKEditor
+                    if (document.querySelector('#modalActivity')) {
+                        ClassicEditor
+                            .create(document.querySelector('#modalActivity'), {
+                                toolbar: ['bold', 'italic', 'bulletedList', 'numberedList', '|', 'undo', 'redo'],
+                                placeholder: 'Enter activity description...'
+                            })
+                            .then(editor => {
+                                itineraryActivityEditor = editor;
+                            })
+                            .catch(error => {
+                                console.error('Itinerary CKEditor error:', error);
+                            });
+                    }
+
                     let destinationRowIndex = {{ $lead->bookingDestinations ? $lead->bookingDestinations->count() : 0 }};
 
                     // Function to load locations for input row destination
@@ -3013,9 +3035,12 @@
 
                             // Handle activity with list format - add bullet points for display
                             const activityText = editBtn.dataset.activity || '';
-                            // Format with bullet points for the textarea
-                            const formattedActivity = formatActivityWithBullets(activityText);
-                            document.getElementById('modalActivity').value = formattedActivity || '• ';
+
+                            if (itineraryActivityEditor) {
+                                itineraryActivityEditor.setData(activityText);
+                            } else {
+                                document.getElementById('modalActivity').value = activityText;
+                            }
 
                             document.getElementById('modalItineraryStayAt').value = editBtn.dataset.stayAt || '';
                             document.getElementById('modalRemarks').value = editBtn.dataset.remarks || '';
@@ -3024,10 +3049,10 @@
 
                     // Handle form submission - remove bullet points before submit
                     document.getElementById('addItineraryForm')?.addEventListener('submit', function(e) {
-                        // Remove bullet points from activity text before saving
-                        const activityText = document.getElementById('modalActivity').value;
-                        const cleanActivityText = removeBulletsFromText(activityText);
-                        document.getElementById('modalActivity').value = cleanActivityText;
+                        // Sync CKEditor data to textarea
+                        if (itineraryActivityEditor) {
+                            document.getElementById('modalActivity').value = itineraryActivityEditor.getData();
+                        }
                     });
 
                     // Reset form when modal is closed
@@ -3039,6 +3064,12 @@
                         document.getElementById('itineraryId').value = '';
                         document.getElementById('addItineraryModalLabel').textContent = 'Add Day-Wise Itinerary';
                         document.getElementById('submitItineraryModal').textContent = 'Add';
+
+                        if (itineraryActivityEditor) {
+                            itineraryActivityEditor.setData('');
+                        } else {
+                            document.getElementById('modalActivity').value = '';
+                        }
                     });
 
                     // Delete Handler
@@ -3608,6 +3639,10 @@
                             document.getElementById('modalPurchaseCost').value = row.dataset.purchaseCost || '';
                             document.getElementById('modalDueDate').value = row.dataset.dueDate || '';
                             document.getElementById('modalStatus').value = row.dataset.status || 'Pending';
+                            document.getElementById('modalPaidAmount').value = row.dataset.paidAmount || '';
+                            document.getElementById('modalPaymentMode').value = row.dataset.paymentMode || '';
+                            document.getElementById('modalRefNo').value = row.dataset.refNo || '';
+                            document.getElementById('modalRemarks').value = row.dataset.remarks || '';
                         }
                     });
 

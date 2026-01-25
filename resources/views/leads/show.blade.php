@@ -629,7 +629,7 @@
                                                 @empty
                                                     <div class="text-center py-5">
                                                         <i data-feather="clock" style="width: 48px; height: 48px; opacity: 0.3;" class="mb-2"></i>
-                                                        <p class="text-muted mb-0">No status history available.</p>
+                                                        <p class="text-muted mb-0">no records found</p>
                                                     </div>
                                                 @endforelse
                                             </div>

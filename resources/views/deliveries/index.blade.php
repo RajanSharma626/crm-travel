@@ -63,6 +63,30 @@
                                             @endif
                                         </select>
                                     </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="service" class="form-label">Service</label>
+                                        <select name="service" id="service" class="form-select form-select-sm">
+                                            <option value="">All Services</option>
+                                            @foreach ($services as $service)
+                                                <option value="{{ $service->id }}"
+                                                    {{ isset($filters['service']) && $filters['service'] == $service->id ? 'selected' : '' }}>
+                                                    {{ $service->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="destination" class="form-label">Destination</label>
+                                        <select name="destination" id="destination" class="form-select form-select-sm">
+                                            <option value="">All Destinations</option>
+                                            @foreach ($destinations as $destination)
+                                                <option value="{{ $destination->id }}"
+                                                    {{ isset($filters['destination']) && $filters['destination'] == $destination->id ? 'selected' : '' }}>
+                                                    {{ $destination->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     <div class="col-md-4 col-lg-3">
                                         <label for="search" class="form-label">Search</label>
                                         <input type="text" name="search" id="search"
@@ -96,7 +120,9 @@
                                             !empty($filters['delivery_status']) ||
                                             !empty($filters['travel_date']) ||
                                             !empty($filters['stage']) ||
-                                            !empty($filters['next_days']))
+                                            !empty($filters['next_days']) ||
+                                            !empty($filters['service']) ||
+                                            !empty($filters['destination']))
                                         <div class="col-md-3 col-lg-2 align-self-end ms-auto">
                                             <a href="{{ route('deliveries.index') }}"
                                                 class="btn btn-outline-danger w-100 btn-sm">Clear
@@ -209,7 +235,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="11" class="text-center">No deliveries found</td>
+                                                <td colspan="11" class="text-center">no records found</td>
                                             </tr>
                                         @endforelse
                                     </tbody>

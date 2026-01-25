@@ -184,6 +184,8 @@ class LeadController extends Controller
             'travel_date' => $request->input('travel_date'),
             'stage' => $request->input('stage'),
             'next_days' => $request->input('next_days'),
+            'service' => $request->input('service'),
+            'destination' => $request->input('destination'),
         ];
 
         // Only show booked leads
@@ -249,6 +251,14 @@ class LeadController extends Controller
             $startDate = now()->startOfDay();
             $endDate = now()->addDays($days)->endOfDay();
             $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
+        if (!empty($filters['service'])) {
+            $leadsQuery->where('service_id', $filters['service']);
+        }
+
+        if (!empty($filters['destination'])) {
+            $leadsQuery->where('destination_id', $filters['destination']);
         }
 
         $leads = $leadsQuery->paginate(25);
@@ -397,7 +407,7 @@ class LeadController extends Controller
             'state' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',
             'pin_code' => 'nullable|string|max:20',
-            'travel_date' => 'nullable|date',
+            'travel_date' => 'required|date',
             'return_date' => 'nullable|date',
             'adults' => 'required|integer|min:1',
             'children' => 'nullable|integer|min:0',
@@ -662,7 +672,7 @@ class LeadController extends Controller
                 'state' => 'nullable|string|max:255',
                 'country' => 'nullable|string|max:255',
                 'pin_code' => 'nullable|string|max:20',
-                'travel_date' => 'nullable|date',
+                'travel_date' => 'required|date',
                 'return_date' => 'nullable|date',
                 'adults' => 'required|integer|min:1',
                 'children' => 'nullable|integer|min:0',
@@ -1199,21 +1209,35 @@ class LeadController extends Controller
             return redirect()->back()->with('error', 'Unauthorized: only Accounts can modify paid vendor payments');
         }
 
-        $validated = $request->validate([
+        $rules = [
             'vendor_code' => 'required|string|max:255',
             'booking_type' => 'required|string|max:255',
             'location' => 'required|string|max:255',
             'purchase_cost' => 'required|numeric|min:0',
             'due_date' => 'required|date',
-            // Ops may only set Pending or Cancelled here; Paid can only be set by Accounts team
-            'status' => 'nullable|string|in:Pending,Cancelled',
-        ]);
+            'status' => 'nullable|string|in:Pending,Cancelled,Paid',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'payment_mode' => 'nullable|string|max:255',
+            'ref_no' => 'nullable|string|max:255',
+            'remarks' => 'nullable|string',
+        ];
+
+        // Restrict status for non-Accounts/Admin users if needed, but the check above (lines 1195) handles existing Paid status.
+        // If we want to prevent Ops from marking as Paid:
+        if (!$isAccounts && !$isAdmin) {
+             $rules['status'] = 'nullable|string|in:Pending,Cancelled';
+             // Ops shouldn't be updating paid_amount etc?
+        }
+
+        $validated = $request->validate($rules);
 
         $status = $validated['status'] ?? 'Pending';
-        
-        // If purchase cost changes, force status to Pending
-        if ($vendorPayment->purchase_cost != $validated['purchase_cost']) {
-            $status = 'Pending';
+        $paidAmount = $validated['paid_amount'] ?? $vendorPayment->paid_amount ?? 0;
+
+        // If purchase cost changes, and we are not explicitly engaged in payment update, we might want to reset status, but let's trust the input for now or keep existing logic.
+        // Existing logic: if purchase cost changes, force status to Pending (unless it's paid?)
+        if ($vendorPayment->purchase_cost != $validated['purchase_cost'] && !$isAccounts && !$isAdmin) {
+             $status = 'Pending';
         }
 
         $vendorPayment->update([
@@ -1223,7 +1247,11 @@ class LeadController extends Controller
             'purchase_cost' => $validated['purchase_cost'],
             'due_date' => $validated['due_date'],
             'status' => $status,
-            'pending_amount' => $validated['purchase_cost'] - ($vendorPayment->paid_amount ?? 0),
+            'paid_amount' => $paidAmount,
+            'pending_amount' => $validated['purchase_cost'] - $paidAmount,
+            'payment_mode' => $validated['payment_mode'] ?? $vendorPayment->payment_mode,
+            'ref_no' => $validated['ref_no'] ?? $vendorPayment->ref_no,
+            'remarks' => $validated['remarks'] ?? $vendorPayment->remarks,
         ]);
 
         if ($request->expectsJson()) {

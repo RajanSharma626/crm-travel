@@ -270,7 +270,7 @@
                                                             <i data-feather="inbox"
                                                                 style="width: 24px; height: 24px; opacity: 0.5;"
                                                                 class="mb-2"></i>
-                                                            <div>No destination data available</div>
+                                                            <div>no records found</div>
                                                         </td>
                                                     </tr>
                                                 @endif
@@ -336,7 +336,7 @@
                                                             <i data-feather="inbox"
                                                                 style="width: 24px; height: 24px; opacity: 0.5;"
                                                                 class="mb-2"></i>
-                                                            <div>No accommodation data available</div>
+                                                            <div>no records found</div>
                                                         </td>
                                                     </tr>
                                                 @endif
@@ -403,7 +403,7 @@
                                                             <i data-feather="inbox"
                                                                 style="width: 24px; height: 24px; opacity: 0.5;"
                                                                 class="mb-2"></i>
-                                                            <div>No arrival/departure data available</div>
+                                                            <div>no records found</div>
                                                         </td>
                                                     </tr>
                                                 @endif
@@ -442,33 +442,7 @@
                                                             <td>{{ $bi->location }}</td>
                                                             <td>
                                                                 @if ($bi->activity_tour_description)
-                                                                    @php
-                                                                        $text = str_replace(
-                                                                            ["\r\n", "\r"],
-                                                                            "\n",
-                                                                            $bi->activity_tour_description,
-                                                                        );
-                                                                        $activities = array_filter(
-                                                                            array_map('trim', explode("\n", $text)),
-                                                                            function ($item) {
-                                                                                return !empty($item);
-                                                                            },
-                                                                        );
-                                                                    @endphp
-                                                                    @if (count($activities) > 0)
-                                                                        <div class="mb-0"
-                                                                            style="padding-left: 0; margin-bottom: 0;">
-                                                                            @foreach ($activities as $activity)
-                                                                                <div
-                                                                                    style="margin-bottom: 4px; padding-left: 0;">
-                                                                                    <span
-                                                                                        style="margin-right: 8px;">•</span>{{ $activity }}
-                                                                                </div>
-                                                                            @endforeach
-                                                                        </div>
-                                                                    @else
-                                                                        {{ $bi->activity_tour_description }}
-                                                                    @endif
+                                                                    {!! $bi->activity_tour_description !!}
                                                                 @else
                                                                     -
                                                                 @endif
@@ -483,7 +457,7 @@
                                                             <i data-feather="inbox"
                                                                 style="width: 24px; height: 24px; opacity: 0.5;"
                                                                 class="mb-2"></i>
-                                                            <div>No itinerary data available</div>
+                                                            <div>no records found</div>
                                                         </td>
                                                     </tr>
                                                 @endif

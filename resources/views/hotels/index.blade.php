@@ -213,8 +213,7 @@
                                                 <div class="card-body text-center py-5">
                                                     <i data-feather="inbox"
                                                         style="width: 48px; height: 48px; color: #6c757d;"></i>
-                                                    <p class="text-muted mt-3 mb-0">No hotels found. Add your first hotel
-                                                        to get started!</p>
+                                                    <p class="text-muted mt-3 mb-0">no records found</p>
                                                 </div>
                                             </div>
                                         </div>

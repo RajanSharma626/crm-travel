@@ -21,6 +21,8 @@ class OperationController extends Controller
             'travel_date' => $request->input('travel_date'),
             'stage' => $request->input('stage'),
             'next_days' => $request->input('next_days'),
+            'service' => $request->input('service'),
+            'destination' => $request->input('destination'),
         ];
 
         // Show booked leads for Operations team
@@ -80,6 +82,14 @@ class OperationController extends Controller
             $startDate = now()->startOfDay();
             $endDate = now()->addDays($days)->endOfDay();
             $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
+        if (!empty($filters['service'])) {
+            $leadsQuery->where('service_id', $filters['service']);
+        }
+
+        if (!empty($filters['destination'])) {
+            $leadsQuery->where('destination_id', $filters['destination']);
         }
 
         $leads = $leadsQuery->paginate(25);
@@ -279,6 +289,8 @@ class OperationController extends Controller
             'travel_date' => $request->input('travel_date'),
             'stage' => $request->input('stage'),
             'next_days' => $request->input('next_days'),
+            'service' => $request->input('service'),
+            'destination' => $request->input('destination'),
         ];
         $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
@@ -323,6 +335,14 @@ class OperationController extends Controller
             $startDate = now()->startOfDay();
             $endDate = now()->addDays($days)->endOfDay();
             $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
+        if (!empty($filters['service'])) {
+            $leadsQuery->where('service_id', $filters['service']);
+        }
+
+        if (!empty($filters['destination'])) {
+            $leadsQuery->where('destination_id', $filters['destination']);
         }
 
         $leads = $leadsQuery->paginate(25);
@@ -386,6 +406,8 @@ class OperationController extends Controller
             'travel_date' => $request->input('travel_date'),
             'stage' => $request->input('stage'),
             'next_days' => $request->input('next_days'),
+            'service' => $request->input('service'),
+            'destination' => $request->input('destination'),
         ];
         $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
@@ -430,6 +452,14 @@ class OperationController extends Controller
             $startDate = now()->startOfDay();
             $endDate = now()->addDays($days)->endOfDay();
             $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+
+        if (!empty($filters['service'])) {
+            $leadsQuery->where('service_id', $filters['service']);
+        }
+
+        if (!empty($filters['destination'])) {
+            $leadsQuery->where('destination_id', $filters['destination']);
         }
 
         $leads = $leadsQuery->paginate(25);
@@ -493,6 +523,8 @@ class OperationController extends Controller
             'travel_date' => $request->input('travel_date'),
             'stage' => $request->input('stage'),
             'next_days' => $request->input('next_days'),
+            'service' => $request->input('service'),
+            'destination' => $request->input('destination'),
         ];
         $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
@@ -537,6 +569,14 @@ class OperationController extends Controller
             $startDate = now()->startOfDay();
             $endDate = now()->addDays($days)->endOfDay();
             $leadsQuery->whereBetween('travel_date', [$startDate, $endDate]);
+        }
+        
+        if (!empty($filters['service'])) {
+            $leadsQuery->where('service_id', $filters['service']);
+        }
+
+        if (!empty($filters['destination'])) {
+            $leadsQuery->where('destination_id', $filters['destination']);
         }
 
         $leads = $leadsQuery->paginate(25);
