@@ -133,7 +133,7 @@
                                     <thead>
                                         <tr>
                                             <th>Ref. No.</th>
-                                            <th>Lead Guest Name</th>
+                                            <th>Customer Name</th>
                                             <th>Destination</th>
                                             <th>Travel Date</th>
                                             <th>Date of Return</th>
@@ -164,8 +164,12 @@
                                                         ? $firstDestination->to_date->format('d/m/Y')
                                                         : '-';
 
-                                                $hasHotel = $lead->bookingDestinations->contains(fn($d) => $d->hotel_tt || $d->only_hotel);
-                                                $hasTT = $lead->bookingDestinations->contains(fn($d) => $d->hotel_tt || $d->only_tt);
+                                                $hasHotel = $lead->bookingDestinations->contains(
+                                                    fn($d) => $d->hotel_tt || $d->only_hotel,
+                                                );
+                                                $hasTT = $lead->bookingDestinations->contains(
+                                                    fn($d) => $d->hotel_tt || $d->only_tt,
+                                                );
 
                                                 $bookingType = '-';
                                                 if ($hasHotel && $hasTT) {

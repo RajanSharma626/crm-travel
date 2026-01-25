@@ -88542,7 +88542,7 @@ div.hopscotch-bubble .hopscotch-bubble-container .hopscotch-actions .hk-wrapper[
     }
 
     .hk-wrapper[data-layout="vertical"][data-layout-style="collapsed"][data-hover="active"] .hk-menu:hover {
-        width: 270px;
+        width: 220px;
     }
 
     .hk-wrapper[data-layout="vertical"][data-layout-style="collapsed"][data-hover="active"] .hk-menu:hover .menu-content-wrap>.callout {

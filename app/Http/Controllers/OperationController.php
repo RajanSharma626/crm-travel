@@ -26,7 +26,7 @@ class OperationController extends Controller
         ];
 
         // Show booked leads for Operations team
-        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
+        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'bookingDestinations', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }, 'bookingFileRemarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1)->with('user');
@@ -292,7 +292,7 @@ class OperationController extends Controller
             'service' => $request->input('service'),
             'destination' => $request->input('destination'),
         ];
-        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
+        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'bookingDestinations', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }, 'bookingFileRemarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1)->with('user');
@@ -409,7 +409,7 @@ class OperationController extends Controller
             'service' => $request->input('service'),
             'destination' => $request->input('destination'),
         ];
-        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
+        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'bookingDestinations', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }, 'bookingFileRemarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1)->with('user');
@@ -526,7 +526,7 @@ class OperationController extends Controller
             'service' => $request->input('service'),
             'destination' => $request->input('destination'),
         ];
-        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'remarks' => function ($q) {
+        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'operation', 'bookingDestinations', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }, 'bookingFileRemarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1)->with('user');

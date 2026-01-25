@@ -141,10 +141,14 @@
                                 <table class="table table-striped small table-bordered w-100 mb-5" id="deliveriesTable">
                                     <thead>
                                         <tr>
-                                            <th>Ref No.</th>
+                                            <th>Ref. No.</th>
                                             <th>Customer Name</th>
+                                            <th>Destination</th>
                                             <th>Travel Date</th>
-                                            <th>Status</th>
+                                            <th>Date of Return</th>
+                                            <th>Sales Person</th>
+                                            <th>Booking Type</th>
+                                            <th>Stage</th>
                                             <th>Remark</th>
                                             <th>Actions</th>
                                         </tr>
@@ -152,6 +156,39 @@
                                     <tbody>
                                         @forelse ($leads as $lead)
                                             @php
+                                                $firstDestination = $lead->bookingDestinations->first();
+                                                $destination = $firstDestination
+                                                    ? $firstDestination->destination
+                                                    : ($lead->destination
+                                                        ? $lead->destination->name
+                                                        : '-');
+                                                $travelDate =
+                                                    $firstDestination && $firstDestination->from_date
+                                                        ? $firstDestination->from_date->format('d/m/Y')
+                                                        : ($lead->travel_date
+                                                            ? $lead->travel_date->format('d/m/Y')
+                                                            : '-');
+                                                $returnDate =
+                                                    $firstDestination && $firstDestination->to_date
+                                                        ? $firstDestination->to_date->format('d/m/Y')
+                                                        : '-';
+
+                                                $hasHotel = $lead->bookingDestinations->contains(
+                                                    fn($d) => $d->hotel_tt || $d->only_hotel,
+                                                );
+                                                $hasTT = $lead->bookingDestinations->contains(
+                                                    fn($d) => $d->hotel_tt || $d->only_tt,
+                                                );
+
+                                                $bookingType = '-';
+                                                if ($hasHotel && $hasTT) {
+                                                    $bookingType = 'HTL + TPT';
+                                                } elseif ($hasTT) {
+                                                    $bookingType = 'Only TPT';
+                                                } elseif ($hasHotel) {
+                                                    $bookingType = 'Only HTL';
+                                                }
+
                                                 $delivery = $lead->delivery;
                                                 $deliveryStatus = $delivery ? $delivery->delivery_status : 'Pending';
                                             @endphp
@@ -163,10 +200,12 @@
                                                         {{ $lead->customer_name }}
                                                     </a>
                                                 </td>
-                                                <td>
-                                                    {{ $lead->travel_date ? \Carbon\Carbon::parse($lead->travel_date)->format('d M, Y') : '-' }}
+                                                <td>{{ $destination }}</td>
+                                                <td>{{ $travelDate }}</td>
+                                                <td>{{ $returnDate }}</td>
+                                                <td>{{ $lead->assigned_employee?->name ?? ($lead->assignedUser?->name ?? '-') }}
                                                 </td>
-
+                                                <td>{{ $bookingType }}</td>
                                                 @php
                                                     $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead);
                                                 @endphp
@@ -213,7 +252,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="11" class="text-center">no records found</td>
+                                                <td colspan="10" class="text-center">no records found</td>
                                             </tr>
                                         @endforelse
                                     </tbody>

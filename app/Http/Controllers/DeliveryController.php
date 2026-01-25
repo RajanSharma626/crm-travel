@@ -44,6 +44,7 @@ class DeliveryController extends Controller
             'delivery.operation',
             'delivery.files',
             'operation', 
+            'bookingDestinations',
             'remarks' => function ($q) {
                 $q->orderBy('created_at', 'desc')->limit(1);
             },

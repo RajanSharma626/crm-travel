@@ -27,7 +27,7 @@ class DocumentController extends Controller
         ];
 
         // Show booked leads for Post Sales team
-        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'documents', 'operation', 'remarks' => function ($q) {
+        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'documents', 'operation', 'bookingDestinations', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }, 'bookingFileRemarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1)->with('user');

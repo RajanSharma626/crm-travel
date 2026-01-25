@@ -189,7 +189,7 @@ class LeadController extends Controller
         ];
 
         // Only show booked leads
-        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'remarks' => function ($q) {
+        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'bookingDestinations', 'remarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1);
         }, 'bookingFileRemarks' => function ($q) {
             $q->orderBy('created_at', 'desc')->limit(1)->with('user');

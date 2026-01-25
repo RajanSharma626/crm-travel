@@ -122,21 +122,55 @@
                                 <table class="table table-striped small table-bordered w-100 mb-5" id="operationsTable">
                                     <thead>
                                         <tr>
-                                            <th>Ref No.</th>
+                                            <th>Ref. No.</th>
                                             <th>Customer Name</th>
-                                            <th>Phone</th>
-                                            <th>Status</th>
+                                            <th>Destination</th>
+                                            <th>Travel Date</th>
+                                            <th>Date of Return</th>
+                                            <th>Sales Person</th>
+                                            <th>Booking Type</th>
+                                            <th>Stage</th>
                                             <th>Remark</th>
-                                            <th>Created On</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse ($leads as $lead)
                                             @php
-                                                $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead);
+                                                $firstDestination = $lead->bookingDestinations->first();
+                                                $destination = $firstDestination
+                                                    ? $firstDestination->destination
+                                                    : ($lead->destination
+                                                        ? $lead->destination->name
+                                                        : '-');
+                                                $travelDate =
+                                                    $firstDestination && $firstDestination->from_date
+                                                        ? $firstDestination->from_date->format('d/m/Y')
+                                                        : ($lead->travel_date
+                                                            ? $lead->travel_date->format('d/m/Y')
+                                                            : '-');
+                                                $returnDate =
+                                                    $firstDestination && $firstDestination->to_date
+                                                        ? $firstDestination->to_date->format('d/m/Y')
+                                                        : '-';
+
+                                                $hasHotel = $lead->bookingDestinations->contains(
+                                                    fn($d) => $d->hotel_tt || $d->only_hotel,
+                                                );
+                                                $hasTT = $lead->bookingDestinations->contains(
+                                                    fn($d) => $d->hotel_tt || $d->only_tt,
+                                                );
+
+                                                $bookingType = '-';
+                                                if ($hasHotel && $hasTT) {
+                                                    $bookingType = 'HTL + TPT';
+                                                } elseif ($hasTT) {
+                                                    $bookingType = 'Only TPT';
+                                                } elseif ($hasHotel) {
+                                                    $bookingType = 'Only HTL';
+                                                }
                                             @endphp
-                                            <tr>
+                                            <tr data-lead-id="{{ $lead->id }}">
                                                 <td><strong>{{ $lead->tsq }}</strong></td>
                                                 <td>
                                                     <a href="{{ route($bookingFileRoute ?? 'operations.booking-file', $lead) }}"
@@ -144,8 +178,16 @@
                                                         {{ $lead->customer_name }}
                                                     </a>
                                                 </td>
-                                                <td>{{ $lead->primary_phone ?? $lead->phone }}</td>
+                                                <td>{{ $destination }}</td>
+                                                <td>{{ $travelDate }}</td>
+                                                <td>{{ $returnDate }}</td>
+                                                <td>{{ $lead->assigned_employee?->name ?? ($lead->assignedUser?->name ?? '-') }}
+                                                </td>
+                                                <td>{{ $bookingType }}</td>
 
+                                                @php
+                                                    $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead);
+                                                @endphp
                                                 <td>
                                                     <span class="badge {{ $stageInfo['badge_class'] }}">
                                                         {{ $stageInfo['stage'] }}
@@ -170,18 +212,15 @@
                                                         <span class="text-muted">-</span>
                                                     @endif
                                                 </td>
-                                                <td>{{ $lead->created_at->format('d M, Y') }}</td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <div class="d-flex">
                                                             <a href="{{ route($bookingFileRoute ?? 'operations.booking-file', $lead) }}"
                                                                 class="btn btn-icon btn-flush-dark btn-rounded flush-soft-hover text-primary"
                                                                 data-bs-toggle="tooltip" data-placement="top"
-                                                                title="Booking File">
-                                                                <span class="icon">
-                                                                    <span class="feather-icon">
-                                                                        <i data-feather="file-text"></i>
-                                                                    </span>
+                                                                title="Booking File"> <span class="icon"> <span
+                                                                        class="feather-icon"> <i
+                                                                            data-feather="file-text"></i> </span>
                                                                 </span>
                                                             </a>
                                                         </div>
@@ -190,7 +229,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="8" class="text-center">no records found</td>
+                                                <td colspan="10" class="text-center">no records found</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
