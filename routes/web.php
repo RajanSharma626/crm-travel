@@ -112,20 +112,20 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     });
 
     // Leads routes - IMPORTANT: Specific routes must come before wildcard routes
+    Route::get('/leads', [LeadController::class, 'index'])->name('leads.index');
+    Route::get('/bookings', [LeadController::class, 'bookings'])->name('bookings.index');
+    
+    // Kept empty middleware group for structure or future use if needed
     Route::middleware('permission:view leads')->group(function () {
-        Route::get('/leads', [LeadController::class, 'index'])->name('leads.index');
-        Route::get('/bookings', [LeadController::class, 'bookings'])->name('bookings.index');
     });
     Route::middleware('permission:create leads')->group(function () {
         Route::get('/leads/create', [LeadController::class, 'create'])->name('leads.create');
         Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
     });
+    Route::get('/bookings/{lead}/form', [LeadController::class, 'bookingForm'])->name('bookings.form');
     Route::middleware('permission:edit leads')->group(function () {
         Route::get('/leads/{lead}/edit', [LeadController::class, 'edit'])->name('leads.edit');
         Route::put('/leads/{lead}', [LeadController::class, 'update'])->name('leads.update');
-        Route::put('/leads/{lead}/sales-cost', [LeadController::class, 'updateSalesCost'])->name('leads.update-sales-cost');
-        Route::put('/leads/{lead}/stage', [LeadController::class, 'updateStages'])->name('leads.update-stage');
-        Route::get('/bookings/{lead}/form', [LeadController::class, 'bookingForm'])->name('bookings.form');
         
         // Vendor Payment routes (Ops only)
         Route::middleware('permission:edit bookings')->group(function () {
@@ -134,27 +134,12 @@ Route::middleware(['auth', 'check.active'])->group(function () {
             Route::delete('/bookings/{lead}/vendor-payment/{vendorPayment}', [LeadController::class, 'destroyVendorPayment'])->name('bookings.vendor-payment.destroy');
         });
 
-        // Booking Destination routes
-        Route::post('/leads/{lead}/booking-destinations', [LeadController::class, 'storeBookingDestination'])->name('leads.booking-destinations.store');
-        Route::put('/leads/{lead}/booking-destinations/{bookingDestination}', [LeadController::class, 'updateBookingDestination'])->name('leads.booking-destinations.update');
-        Route::delete('/leads/{lead}/booking-destinations/{bookingDestination}', [LeadController::class, 'destroyBookingDestination'])->name('leads.booking-destinations.destroy');
 
-        Route::post('/leads/{lead}/booking-arrival-departure', [LeadController::class, 'storeBookingArrivalDeparture'])->name('leads.booking-arrival-departure.store');
-        Route::put('/leads/{lead}/booking-arrival-departure/{arrivalDeparture}', [LeadController::class, 'updateBookingArrivalDeparture'])->name('leads.booking-arrival-departure.update');
-        Route::delete('/leads/{lead}/booking-arrival-departure/{arrivalDeparture}', [LeadController::class, 'destroyBookingArrivalDeparture'])->name('leads.booking-arrival-departure.destroy');
-
-        // Accommodation routes
-        Route::post('/leads/{lead}/booking-accommodations', [LeadController::class, 'storeBookingAccommodation'])->name('leads.booking-accommodations.store');
-        Route::put('/leads/{lead}/booking-accommodations/{accommodation}', [LeadController::class, 'updateBookingAccommodation'])->name('leads.booking-accommodations.update');
-        Route::delete('/leads/{lead}/booking-accommodations/{accommodation}', [LeadController::class, 'destroyBookingAccommodation'])->name('leads.booking-accommodations.destroy');
-
-        // Itinerary routes
-        Route::post('/leads/{lead}/booking-itineraries', [LeadController::class, 'storeBookingItinerary'])->name('leads.booking-itineraries.store');
-        Route::put('/leads/{lead}/booking-itineraries/{itinerary}', [LeadController::class, 'updateBookingItinerary'])->name('leads.booking-itineraries.update');
-        Route::delete('/leads/{lead}/booking-itineraries/{itinerary}', [LeadController::class, 'destroyBookingItinerary'])->name('leads.booking-itineraries.destroy');
     });
+    Route::get('/leads/{lead}', [LeadController::class, 'show'])->name('leads.show');
+    
+    // Kept empty middleware group
     Route::middleware('permission:view leads')->group(function () {
-        Route::get('/leads/{lead}', [LeadController::class, 'show'])->name('leads.show');
     });
     Route::middleware('permission:update lead status')->group(function () {
         Route::post('/leads/{lead}/status', [LeadController::class, 'updateStatus'])->name('leads.updateStatus');
@@ -183,24 +168,29 @@ Route::middleware(['auth', 'check.active'])->group(function () {
     });
 
     // Booking File Remarks
-    Route::middleware('permission:view remarks')->group(function () {
-        Route::get('/leads/{lead}/booking-file-remarks', [BookingFileRemarkController::class, 'index'])->name('leads.booking-file-remarks.index');
-    });
-    Route::middleware('permission:create remarks')->group(function () {
-        Route::post('/leads/{lead}/booking-file-remarks', [BookingFileRemarkController::class, 'store'])->name('leads.booking-file-remarks.store');
-    });
-    Route::middleware('permission:edit remarks')->group(function () {
-        Route::put('/leads/{lead}/booking-file-remarks/{bookingFileRemark}', [BookingFileRemarkController::class, 'update'])->name('leads.booking-file-remarks.update');
-    });
-    Route::middleware('permission:delete remarks')->group(function () {
-        Route::delete('/leads/{lead}/booking-file-remarks/{bookingFileRemark}', [BookingFileRemarkController::class, 'destroy'])->name('leads.booking-file-remarks.destroy');
-    });
+    // Booking File Remarks - Moved out of strict permission middleware to allow access based on association
+    Route::get('/leads/{lead}/booking-file-remarks', [BookingFileRemarkController::class, 'index'])->name('leads.booking-file-remarks.index');
+    Route::post('/leads/{lead}/booking-file-remarks', [BookingFileRemarkController::class, 'store'])->name('leads.booking-file-remarks.store');
+    Route::put('/leads/{lead}/booking-file-remarks/{bookingFileRemark}', [BookingFileRemarkController::class, 'update'])->name('leads.booking-file-remarks.update');
+    Route::delete('/leads/{lead}/booking-file-remarks/{bookingFileRemark}', [BookingFileRemarkController::class, 'destroy'])->name('leads.booking-file-remarks.destroy');
+    
+    // Kept empty middleware groups structure
+    Route::middleware('permission:view remarks')->group(function () {});
+    Route::middleware('permission:create remarks')->group(function () {});
+    Route::middleware('permission:edit remarks')->group(function () {});
+    Route::middleware('permission:delete remarks')->group(function () {});
 
     // Accounts & Payments
     // Accounts - Self-authorized or Accounts permission
         Route::get('/accounts', [PaymentController::class, 'index'])->name('accounts.index');
         Route::get('/accounts/{lead}/booking-file', [PaymentController::class, 'bookingFile'])->name('accounts.booking-file');
         Route::get('/accounts/leads', [PaymentController::class, 'accountsLeads'])->name('accounts.leads');
+        
+        // Accounts Routes
+        Route::post('/accounts/{lead}/account-summary', [PaymentController::class, 'storeAccountSummary'])->name('accounts.account-summary.store');
+        Route::put('/accounts/{lead}/account-summary/{accountSummary}', [PaymentController::class, 'updateAccountSummary'])->name('accounts.account-summary.update');
+        Route::delete('/accounts/{lead}/account-summary/{accountSummary}', [PaymentController::class, 'destroyAccountSummary'])->name('accounts.account-summary.destroy');
+        Route::put('/accounts/{lead}/vendor-payment/{vendorPayment}', [PaymentController::class, 'updateVendorPaymentAccounts'])->name('accounts.vendor-payment.update');
 
     Route::middleware('permission:view payments')->group(function () {
         Route::get('/api/accounts/dashboard', [PaymentController::class, 'dashboard'])->name('api.accounts.dashboard');
@@ -220,18 +210,13 @@ Route::middleware(['auth', 'check.active'])->group(function () {
         Route::get('/leads/{lead}/payments', [PaymentController::class, 'show'])->name('leads.payments.index');
     });
     Route::middleware('permission:create payments')->group(function () {
-        Route::post('/leads/{lead}/payments', [PaymentController::class, 'store'])->name('leads.payments.store');
         Route::post('/api/accounts/{lead}/add-payment', [PaymentController::class, 'addPayment'])->name('api.accounts.add-payment');
-        Route::post('/accounts/{lead}/account-summary', [PaymentController::class, 'storeAccountSummary'])->name('accounts.account-summary.store');
     });
     Route::middleware('permission:edit payments')->group(function () {
-        Route::put('/leads/{lead}/payments/{payment}', [PaymentController::class, 'update'])->name('leads.payments.update');
-        Route::put('/accounts/{lead}/account-summary/{accountSummary}', [PaymentController::class, 'updateAccountSummary'])->name('accounts.account-summary.update');
-        Route::put('/accounts/{lead}/vendor-payment/{vendorPayment}', [PaymentController::class, 'updateVendorPaymentAccounts'])->name('accounts.vendor-payment.update');
+        // Keep empty or other payment routes
     });
     Route::middleware('permission:delete payments')->group(function () {
-        Route::delete('/leads/{lead}/payments/{payment}', [PaymentController::class, 'destroy'])->name('leads.payments.destroy');
-        Route::delete('/accounts/{lead}/account-summary/{accountSummary}', [PaymentController::class, 'destroyAccountSummary'])->name('accounts.account-summary.destroy');
+        // Keep empty or other payment routes
     });
 
     // Cost Components
@@ -288,14 +273,39 @@ Route::middleware(['auth', 'check.active'])->group(function () {
         Route::get('/post-sales', [DocumentController::class, 'index'])->name('post-sales.index');
         Route::get('/post-sales/{lead}/booking-file', [DocumentController::class, 'bookingFile'])->name('post-sales.booking-file');
         Route::get('/post-sales/leads', [DocumentController::class, 'postSalesLeads'])->name('post-sales.leads');
-    Route::middleware('permission:upload documents')->group(function () {
+
+        // Document routes used by Post Sales
         Route::post('/leads/{lead}/documents', [DocumentController::class, 'store'])->name('leads.documents.store');
         Route::put('/leads/{lead}/documents/bulk-update', [DocumentController::class, 'bulkUpdate'])->name('leads.documents.bulk-update');
-
-        // Traveller document details (Post Sales)
         Route::post('/leads/{lead}/traveller-documents', [TravellerDocumentController::class, 'store'])->name('leads.traveller-documents.store');
         Route::delete('/leads/{lead}/traveller-documents/{travellerDocument}', [TravellerDocumentController::class, 'destroy'])->name('leads.traveller-documents.destroy');
-    });
+
+        // Customer Payment routes (Post Sales)
+        Route::post('/leads/{lead}/payments', [PaymentController::class, 'store'])->name('leads.payments.store');
+        Route::put('/leads/{lead}/payments/{payment}', [PaymentController::class, 'update'])->name('leads.payments.update');
+        Route::delete('/leads/{lead}/payments/{payment}', [PaymentController::class, 'destroy'])->name('leads.payments.destroy');
+        
+        // Stage Update (Post Sales)
+        Route::put('/leads/{lead}/stage', [LeadController::class, 'updateStages'])->name('leads.update-stage');
+        Route::put('/leads/{lead}/sales-cost', [LeadController::class, 'updateSalesCost'])->name('leads.update-sales-cost');
+
+        // Booking Component Routes (Destinations, Arrival/Departure, Accommodations, Itineraries)
+        Route::post('/leads/{lead}/booking-destinations', [LeadController::class, 'storeBookingDestination'])->name('leads.booking-destinations.store');
+        Route::put('/leads/{lead}/booking-destinations/{bookingDestination}', [LeadController::class, 'updateBookingDestination'])->name('leads.booking-destinations.update');
+        Route::delete('/leads/{lead}/booking-destinations/{bookingDestination}', [LeadController::class, 'destroyBookingDestination'])->name('leads.booking-destinations.destroy');
+
+        Route::post('/leads/{lead}/booking-arrival-departure', [LeadController::class, 'storeBookingArrivalDeparture'])->name('leads.booking-arrival-departure.store');
+        Route::put('/leads/{lead}/booking-arrival-departure/{arrivalDeparture}', [LeadController::class, 'updateBookingArrivalDeparture'])->name('leads.booking-arrival-departure.update');
+        Route::delete('/leads/{lead}/booking-arrival-departure/{arrivalDeparture}', [LeadController::class, 'destroyBookingArrivalDeparture'])->name('leads.booking-arrival-departure.destroy');
+
+        Route::post('/leads/{lead}/booking-accommodations', [LeadController::class, 'storeBookingAccommodation'])->name('leads.booking-accommodations.store');
+        Route::put('/leads/{lead}/booking-accommodations/{accommodation}', [LeadController::class, 'updateBookingAccommodation'])->name('leads.booking-accommodations.update');
+        Route::delete('/leads/{lead}/booking-accommodations/{accommodation}', [LeadController::class, 'destroyBookingAccommodation'])->name('leads.booking-accommodations.destroy');
+
+        Route::post('/leads/{lead}/booking-itineraries', [LeadController::class, 'storeBookingItinerary'])->name('leads.booking-itineraries.store');
+        Route::put('/leads/{lead}/booking-itineraries/{itinerary}', [LeadController::class, 'updateBookingItinerary'])->name('leads.booking-itineraries.update');
+        Route::delete('/leads/{lead}/booking-itineraries/{itinerary}', [LeadController::class, 'destroyBookingItinerary'])->name('leads.booking-itineraries.destroy');
+
     Route::middleware('permission:verify documents')->group(function () {
         Route::put('/leads/{lead}/documents/{document}', [DocumentController::class, 'update'])->name('leads.documents.update');
     });

@@ -181,7 +181,8 @@ class PaymentController extends Controller
             'payment_date' => 'required|date',
             'due_date' => 'nullable|date',
             'reference' => 'nullable|string|max:255',
-            'status' => 'required|in:pending,received,refunded',
+            'status' => 'required|in:pending,received,refunded,To Be Refund,Refund Passed',
+            'notes' => 'nullable|string',
         ]);
 
         $validated['created_by'] = $this->getCurrentUserId();
@@ -367,23 +368,13 @@ class PaymentController extends Controller
 
     public function update(Request $request, Lead $lead, Payment $payment)
     {
-        // Prevent Post Sales users from updating payments that have been marked as received by Accounts
-        $currentUser = $request->user();
-        $isPostSalesUser = $currentUser && ($currentUser->department === 'Post Sales' || $currentUser->hasRole('Post Sales') || $currentUser->hasRole('Post Sales Manager'));
-        if ($isPostSalesUser && $payment->status === 'received') {
-            if ($request->expectsJson() || $request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'Unauthorized: cannot modify payments marked as received'], 403);
-            }
-            return redirect()->back()->with('error', 'Unauthorized: cannot modify payments marked as received');
-        }
-
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0',
             'method' => 'required|in:Cash,UPI,NEFT,RTGS,WIB,Online,Cheque',
             'payment_date' => 'required|date',
             'due_date' => 'nullable|date',
             'reference' => 'nullable|string|max:255',
-            'status' => 'required|in:pending,received,refunded',
+            'status' => 'required|in:pending,received,refunded,To Be Refund,Refund Passed',
             'notes' => 'nullable|string',
         ]);
 
@@ -410,16 +401,6 @@ class PaymentController extends Controller
 
     public function destroy(Request $request, Lead $lead, Payment $payment)
     {
-        // Prevent Post Sales users from deleting payments that have been marked as received by Accounts
-        $currentUser = $request->user();
-        $isPostSalesUser = $currentUser && ($currentUser->department === 'Post Sales' || $currentUser->hasRole('Post Sales') || $currentUser->hasRole('Post Sales Manager'));
-        if ($isPostSalesUser && $payment->status === 'received') {
-            if ($request->expectsJson() || $request->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'Unauthorized: cannot delete payments marked as received'], 403);
-            }
-            return redirect()->back()->with('error', 'Unauthorized: cannot delete payments marked as received');
-        }
-
         $payment->delete();
         
         // Recalculate profit after deletion
@@ -529,7 +510,8 @@ class PaymentController extends Controller
         }
 
         // Only Accounts team (or Admin) may update status via this endpoint
-        if (! $request->user()->hasAnyRole(['Admin', 'Accounts', 'Accounts Manager'])) {
+        $user = $request->user();
+        if (! ($user->hasAnyRole(['Admin', 'Accounts', 'Accounts Manager']) || $user->department === 'Accounts')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',

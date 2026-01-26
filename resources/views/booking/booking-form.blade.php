@@ -87,6 +87,8 @@
                                         'Visa',
                                         'Insurance',
                                         'Insurance Department',
+                                        'Sales',
+                                        'Sales Manager',
                                     ];
                                     // $currentUser and $userDept already defined above
 
@@ -291,38 +293,36 @@
                                     @endif
                                 </form>
 
-                                @if (Auth::user()->department === 'Sales' || Auth::user()->hasRole('Sales') || Auth::user()->hasRole('Sales Manager'))
-                                    <!-- Remarks Section (Own Remarks Only) -->
-                                    <div class="mb-4 border rounded-3 p-3">
-                                        <h6 class="text-uppercase text-muted small fw-semibold mb-3">
-                                            <i data-feather="message-circle" class="me-1"
-                                                style="width: 14px; height: 14px;"></i>
-                                            My Remarks
-                                        </h6>
+                                <!-- Remarks Section (Own Remarks Only) -->
+                                <div class="mb-4 border rounded-3 p-3">
+                                    <h6 class="text-uppercase text-muted small fw-semibold mb-3">
+                                        <i data-feather="message-circle" class="me-1"
+                                            style="width: 14px; height: 14px;"></i>
+                                        Remarks
+                                    </h6>
 
-                                        <!-- Add Remark Form -->
-                                        <form id="addRemarkForm" method="POST"
-                                            action="{{ route('leads.booking-file-remarks.store', $lead) }}">
-                                            <input type="hidden" name="department"
-                                                value="{{ $isOpsDept ?? false ? 'Operations' : ($isPostSales ?? false ? 'Post Sales' : 'Sales') }}">
-                                            @csrf
-                                            <div class="row g-3 align-items-end">
-                                                <div class="col-md-9">
-                                                    <label class="form-label">Remark <span
-                                                            class="text-danger">*</span></label>
-                                                    <textarea name="remark" class="form-control form-control-sm" rows="2" required
-                                                        placeholder="Enter your remark..."></textarea>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <button type="submit" class="btn btn-sm btn-primary w-100">
-                                                        <i data-feather="save" style="width: 14px; height: 14px;"></i>
-                                                        Add Remark
-                                                    </button>
-                                                </div>
+                                    <!-- Add Remark Form -->
+                                    <form id="addRemarkForm" method="POST"
+                                        action="{{ route('leads.booking-file-remarks.store', $lead) }}">
+
+                                        @csrf
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-9">
+                                                <label class="form-label">Remark <span
+                                                        class="text-danger">*</span></label>
+                                                <textarea name="remark" class="form-control form-control-sm" rows="2" required
+                                                    placeholder="Enter your remark..."></textarea>
                                             </div>
-                                        </form>
-                                    </div>
-                                @endif
+                                            <div class="col-md-3">
+                                                <button type="submit" class="btn btn-sm btn-primary w-100">
+                                                    <i data-feather="save" style="width: 14px; height: 14px;"></i>
+                                                    Add Remark
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
 
                                 <!-- Destination Section -->
 
@@ -457,7 +457,18 @@
 
 
                                 {{-- Customer Payments (Post Sales editable, others view-only via accounts booking file) --}}
-                                @if ($isAllowedSectionViewer)
+                                @php
+                                    $currentUser = Auth::user();
+                                    $isSalesUser =
+                                        $currentUser &&
+                                        ($currentUser->department === 'Sales' ||
+                                            ($currentUser->getRoleNameAttribute() ?? '') === 'Sales' ||
+                                            ($currentUser->getRoleNameAttribute() ?? '') === 'Sales Manager' ||
+                                            (method_exists($currentUser, 'hasRole') &&
+                                                ($currentUser->hasRole('Sales') ||
+                                                    $currentUser->hasRole('Sales Manager'))));
+                                @endphp
+                                @if ($isAllowedSectionViewer && !$isSalesUser)
                                     <div class="mb-4 border rounded-3 p-3">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <h6 class="text-uppercase text-muted small fw-semibold mb-0">
@@ -465,7 +476,18 @@
                                                     style="width: 14px; height: 14px;"></i>
                                                 Customer Payments (Post Sales → Accounts)
                                             </h6>
-                                            @if (!$isViewOnly)
+                                            @php
+                                                $currentUser = Auth::user();
+                                                $isPostSalesUser =
+                                                    $currentUser &&
+                                                    ($currentUser->department === 'Post Sales' ||
+                                                        ($currentUser->getRoleNameAttribute() ?? '') === 'Post Sales' ||
+                                                        (method_exists($currentUser, 'hasRole') &&
+                                                            $currentUser->hasRole('Post Sales')) ||
+                                                        (method_exists($currentUser, 'hasRole') &&
+                                                            $currentUser->hasRole('Post Sales Manager')));
+                                            @endphp
+                                            @if (!$isViewOnly || $isPostSalesUser)
                                                 <button type="button" class="btn btn-sm btn-primary"
                                                     data-bs-toggle="modal" data-bs-target="#postSalesAddPaymentModal">
                                                     <i data-feather="plus" style="width: 14px; height: 14px;"></i>
@@ -483,7 +505,7 @@
                                                         <th>Due Date</th>
                                                         <th>Transaction ID</th>
                                                         <th>Status</th>
-                                                        @if (!$isViewOnly)
+                                                        @if (!$isViewOnly || ($isPostSalesUser ?? false))
                                                             <th class="text-center">Action</th>
                                                         @endif
                                                     </tr>
@@ -516,54 +538,38 @@
                                                                         {{ ucfirst($payment->status) }}
                                                                     </span>
                                                                 </td>
-                                                                @if (!$isViewOnly)
+                                                                @if (!$isViewOnly || ($isPostSalesUser ?? false))
                                                                     <td class="text-center">
-                                                                        @php
-                                                                            $currentUser = Auth::user();
-                                                                            $isPostSalesUser =
-                                                                                $currentUser &&
-                                                                                ($currentUser->department ===
-                                                                                    'Post Sales' ||
-                                                                                    ($currentUser->getRoleNameAttribute() ??
-                                                                                        '') ===
-                                                                                        'Post Sales' ||
-                                                                                    (method_exists(
-                                                                                        $currentUser,
-                                                                                        'hasRole',
-                                                                                    ) &&
-                                                                                        $currentUser->hasRole(
-                                                                                            'Post Sales',
-                                                                                        )) ||
-                                                                                    (method_exists(
-                                                                                        $currentUser,
-                                                                                        'hasRole',
-                                                                                    ) &&
-                                                                                        $currentUser->hasRole(
-                                                                                            'Post Sales Manager',
-                                                                                        )));
-                                                                        @endphp
-                                                                        @if (!($isPostSalesUser && $payment->status === 'received') && !$isViewOnly)
-                                                                            <button type="button"
-                                                                                class="btn btn-link p-0 me-2 post-sales-edit-payment-btn"
-                                                                                data-payment-id="{{ $payment->id }}"
-                                                                                data-amount="{{ $payment->amount }}"
-                                                                                data-method="{{ $payment->method }}"
-                                                                                data-payment-date="{{ $payment->payment_date ? $payment->payment_date->format('Y-m-d') : '' }}"
-                                                                                data-due-date="{{ $payment->due_date ? $payment->due_date->format('Y-m-d') : '' }}"
-                                                                                data-reference="{{ $payment->reference }}"
-                                                                                data-status="{{ $payment->status }}"
-                                                                                onclick="editCustomerPayment(this)"
-                                                                                title="Edit Payment">
-                                                                                <i data-feather="edit"
-                                                                                    style="width: 16px; height: 16px; color: #0d6efd;"></i>
-                                                                            </button>
-                                                                            <button type="button"
-                                                                                class="border-0 bg-transparent p-0 m-0 delete-customer-payment-btn"
-                                                                                data-payment-id="{{ $payment->id }}"
-                                                                                title="Delete Payment">
-                                                                                <i data-feather="trash-2"
-                                                                                    style="width: 16px; height: 16px; color: #dc3545; cursor: pointer; pointer-events: none;"></i>
-                                                                            </button>
+                                                                        @if ($payment->status != 'received')
+                                                                            <div
+                                                                                class="d-flex gap-1 justify-content-center">
+                                                                                <button type="button"
+                                                                                    class="btn btn-sm btn-outline-primary post-sales-edit-payment-btn"
+                                                                                    data-payment-id="{{ $payment->id }}"
+                                                                                    data-amount="{{ $payment->amount }}"
+                                                                                    data-method="{{ $payment->method }}"
+                                                                                    data-payment-date="{{ $payment->payment_date ? $payment->payment_date->format('Y-m-d') : '' }}"
+                                                                                    data-due-date="{{ $payment->due_date ? $payment->due_date->format('Y-m-d') : '' }}"
+                                                                                    data-reference="{{ $payment->reference }}"
+                                                                                    data-status="{{ $payment->status }}"
+                                                                                    data-notes="{{ $payment->notes ?? '' }}"
+                                                                                    onclick="editCustomerPayment(this)"
+                                                                                    title="Edit Payment">
+                                                                                    <i data-feather="edit"
+                                                                                        style="width: 14px; height: 14px;"></i>
+                                                                                </button>
+                                                                                @if ($isPostSalesUser ?? false)
+                                                                                    <button type="button"
+                                                                                        class="btn btn-sm btn-outline-danger delete-customer-payment-btn"
+                                                                                        data-payment-id="{{ $payment->id }}"
+                                                                                        title="Delete Payment">
+                                                                                        <i data-feather="trash-2"
+                                                                                            style="width: 14px; height: 14px;"></i>
+                                                                                    </button>
+                                                                                @endif
+                                                                            </div>
+                                                                        @else
+                                                                            <span class="text-muted">-</span>
                                                                         @endif
                                                                     </td>
                                                                 @endif
@@ -571,7 +577,7 @@
                                                         @endforeach
                                                     @else
                                                         <tr>
-                                                            <td colspan="{{ $isViewOnly ? '6' : '7' }}"
+                                                            <td colspan="{{ !$isViewOnly || ($isPostSalesUser ?? false) ? '7' : '6' }}"
                                                                 class="text-center text-muted py-3">No
                                                                 customer payments recorded</td>
                                                         </tr>
@@ -841,8 +847,7 @@
 
                                 <!-- Day-Wise Itinerary Section -->
                                 @if (!($isPostSales ?? false) && !in_array($userDept, ['Ticketing', 'Visa', 'Insurance', 'Insurance Department']))
-                                    <div class="mb-4 border rounded-3 p-3" id="dayWiseItinerarySection"
-                                        style="display: none;">
+                                    <div class="mb-4 border rounded-3 p-3" id="dayWiseItinerarySection">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <h6 class="text-uppercase text-muted small fw-semibold mb-0">
                                                 <i data-feather="calendar" class="me-1"
@@ -955,7 +960,11 @@
                                 @endif
 
                                 <!-- Traveller Document Details (Post Sales editable, Operations view-only) -->
-                                @if ($isAllowedSectionViewer)
+                                @if (
+                                    $isAllowedSectionViewer &&
+                                        !in_array($userDept, ['Sales', 'Sales Manager']) &&
+                                        !$currentUser->hasRole('Sales') &&
+                                        !$currentUser->hasRole('Sales Manager'))
                                     <div class="mb-4 border rounded-3 p-3">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <h6 class="text-uppercase text-muted small fw-semibold mb-0">
@@ -1362,13 +1371,10 @@
                                                     Auth::user()->hasRole('Admin') ||
                                                     Auth::user()->hasRole('Developer') ||
                                                     Auth::user()->department === 'Admin';
-                                                // If admin, show all remarks; otherwise, show only own remarks
-                                                $remarksQuery = $lead
-                                                    ->bookingFileRemarks()
-                                                    ->where('department', $currentDepartment);
-                                                if (!$isAdmin) {
-                                                    $remarksQuery->where('user_id', Auth::id());
-                                                }
+                                                // If admin, show all remarks; otherwise apply visibility rules
+                                                $remarksQuery = $lead->bookingFileRemarks();
+
+                                                // Show all remarks to everyone
                                                 $allRemarks = $remarksQuery->orderBy('created_at', 'desc')->get();
                                             @endphp
                                             @if ($allRemarks->count() > 0)
@@ -3274,6 +3280,7 @@
                             const dueDate = editBtn.getAttribute('data-due-date') || '';
                             const reference = editBtn.getAttribute('data-reference') || '';
                             const status = editBtn.getAttribute('data-status') || 'pending';
+                            const notes = editBtn.getAttribute('data-notes') || '';
 
                             // Update form action to use update route
                             form.action = '{{ route('leads.payments.update', [$lead->id, ':id']) }}'.replace(':id',
@@ -3298,6 +3305,12 @@
                             }
                             if (statusSelect) {
                                 statusSelect.value = status;
+                            }
+
+                            // Update notes field
+                            const notesField = form.querySelector('textarea[name="notes"]');
+                            if (notesField) {
+                                notesField.value = notes;
                             }
 
                             // Update hidden status input if it exists
@@ -3977,11 +3990,11 @@
                                             <i data-feather="download" style="width: 14px; height: 14px;"></i>
                                         </button>
                                         ${voucher.voucher_type !== 'itinerary' ? `
-                                                                                                                                                                                                                                                                                                                                                                                <button type="button" class="btn btn-sm btn-outline-secondary ms-1" 
-                                                                                                                                                                                                                                                                                                                                                                                    onclick="editVoucher(${voucher.id})" title="Edit Voucher">
-                                                                                                                                                                                                                                                                                                                                                                                    <i data-feather="edit" style="width: 14px; height: 14px;"></i>
-                                                                                                                                                                                                                                                                                                                                                                                </button>
-                                                                                                                                                                                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="button" class="btn btn-sm btn-outline-secondary ms-1" 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            onclick="editVoucher(${voucher.id})" title="Edit Voucher">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i data-feather="edit" style="width: 14px; height: 14px;"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
                                     </td>
                                 </tr>
                             `;

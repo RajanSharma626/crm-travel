@@ -41,6 +41,26 @@ class BookingFileRemarkController extends Controller
 
     public function store(Request $request, Lead $lead)
     {
+        // Authorization check
+        $user = Auth::user();
+        $isAuthorized = false;
+
+        // Admin/Developer
+        if ($user->hasRole('Admin') || $user->hasRole('Developer') || $user->department === 'Admin') {
+            $isAuthorized = true;
+        }
+        // Non-Sales Departments (Ops, Post Sales, Accounts, etc.) - generally allowed if they have access to the system
+        elseif ($user->department !== 'Sales' && $user->role !== 'Sales') {
+            $isAuthorized = true;
+        }
+        // Sales: Only assigned user or creator (checking string ID too just in case)
+        elseif ($lead->assigned_user_id == $user->id || $lead->created_by == $user->id) {
+            $isAuthorized = true;
+        }
+
+        if (!$isAuthorized) {
+             abort(403, 'You do not have permission to add remarks to this lead.');
+        }
         $validated = $request->validate([
             'remark' => 'required|string',
             'follow_up_at' => 'nullable|date',
@@ -100,6 +120,12 @@ class BookingFileRemarkController extends Controller
 
     public function update(Request $request, Lead $lead, BookingFileRemark $bookingFileRemark)
     {
+        // Check ownership or admin
+        $user = Auth::user();
+        if ($bookingFileRemark->user_id !== $user->id && !$user->hasRole('Admin') && !$user->hasRole('Developer') && $user->department !== 'Admin') {
+            abort(403, 'You can only edit your own remarks.');
+        }
+
         $validated = $request->validate([
             'remark' => 'required|string',
             'follow_up_at' => 'nullable|date',
@@ -115,6 +141,12 @@ class BookingFileRemarkController extends Controller
 
     public function destroy(Lead $lead, BookingFileRemark $bookingFileRemark)
     {
+        // Check ownership or admin
+        $user = Auth::user();
+        if ($bookingFileRemark->user_id !== $user->id && !$user->hasRole('Admin') && !$user->hasRole('Developer') && $user->department !== 'Admin') {
+             abort(403, 'You can only delete your own remarks.');
+        }
+
         $bookingFileRemark->delete();
         return redirect()->back()->with('success', 'Remark deleted successfully!');
     }

@@ -230,7 +230,34 @@
                                     </div>
                                 </div>
 
+                                <!-- Remarks Section -->
+                                <div class="mb-4 border rounded-3 p-3">
+                                    <h6 class="text-uppercase text-muted small fw-semibold mb-3">
+                                        <i data-feather="message-circle" class="me-1"
+                                            style="width: 14px; height: 14px;"></i>
+                                        Remarks
+                                    </h6>
 
+                                    <!-- Add Remark Form -->
+                                    <form id="addRemarkForm" method="POST"
+                                        action="{{ route('leads.booking-file-remarks.store', $lead) }}">
+                                        @csrf
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-9">
+                                                <label class="form-label">Remark <span
+                                                        class="text-danger">*</span></label>
+                                                <textarea name="remark" class="form-control form-control-sm" rows="2" required
+                                                    placeholder="Enter your remark..."></textarea>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="submit" class="btn btn-sm btn-primary w-100">
+                                                    <i data-feather="save" style="width: 14px; height: 14px;"></i>
+                                                    Add Remark
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
 
                                 <!-- Accounts Summary Box Section -->
                                 <div class="mb-4 border rounded-3 p-3">
@@ -452,6 +479,24 @@
                                                 style="width: 14px; height: 14px;"></i>
                                             Customer Payments (Post Sales → Accounts)
                                         </h6>
+                                        @php
+                                            $currentUser = Auth::user();
+                                            $isPostSalesUser =
+                                                $currentUser &&
+                                                ($currentUser->department === 'Post Sales' ||
+                                                    ($currentUser->getRoleNameAttribute() ?? '') === 'Post Sales' ||
+                                                    (method_exists($currentUser, 'hasRole') &&
+                                                        $currentUser->hasRole('Post Sales')) ||
+                                                    (method_exists($currentUser, 'hasRole') &&
+                                                        $currentUser->hasRole('Post Sales Manager')));
+                                        @endphp
+                                        @if ($isPostSalesUser)
+                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                data-bs-target="#addCustomerPaymentModal">
+                                                <i data-feather="plus" style="width: 14px; height: 14px;"></i>
+                                                Add Payment
+                                            </button>
+                                        @endif
                                     </div>
                                     <div class="table-responsive">
                                         <table class="table table-bordered table-sm mb-0" id="customerPaymentsTable">
@@ -512,7 +557,7 @@
                                                                                     'Post Sales Manager',
                                                                                 )));
                                                                 @endphp
-                                                                @if (!($isPostSalesUser && $payment->status === 'received'))
+                                                                <div class="d-flex gap-1 justify-content-center">
                                                                     <button type="button"
                                                                         class="btn btn-sm btn-outline-primary edit-customer-payment-btn"
                                                                         data-payment-id="{{ $payment->id }}"
@@ -521,7 +566,15 @@
                                                                         <i data-feather="edit"
                                                                             style="width: 14px; height: 14px;"></i>
                                                                     </button>
-                                                                @endif
+                                                                    @if ($isPostSalesUser)
+                                                                        <button type="button"
+                                                                            class="btn btn-sm btn-outline-danger delete-customer-payment-btn"
+                                                                            data-payment-id="{{ $payment->id }}">
+                                                                            <i data-feather="trash-2"
+                                                                                style="width: 14px; height: 14px;"></i>
+                                                                        </button>
+                                                                    @endif
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     @endforeach
@@ -537,6 +590,57 @@
                                 </div>
 
                                 {{-- Booking Profitability section removed as Profit Margin added to Accounts Summary --}}
+
+                                <!-- History Section (Remark History) -->
+                                <div class="mb-4 border rounded-3 p-3">
+                                    <h6 class="text-uppercase text-muted small fw-semibold mb-3">
+                                        <i data-feather="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                        History
+                                    </h6>
+                                    <div style="max-height: 400px; overflow-y: auto;">
+                                        @php
+                                            $lead->load('bookingFileRemarks.user');
+                                            // Show all remarks to everyone
+                                            $remarksQuery = $lead->bookingFileRemarks();
+                                            $allRemarks = $remarksQuery->orderBy('created_at', 'desc')->get();
+                                        @endphp
+                                        @if ($allRemarks->count() > 0)
+                                            <div class="timeline">
+                                                @foreach ($allRemarks as $remark)
+                                                    <div class="border rounded-3 p-3 mb-3 bg-white">
+                                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                                            <div class="d-flex align-items-start flex-grow-1">
+                                                                <div class="avatar avatar-rounded rounded-circle me-3 flex-shrink-0"
+                                                                    style="background-color: #007d88; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                                    <span class="text-white fw-bold"
+                                                                        style="font-size: 0.875rem;">
+                                                                        {{ strtoupper(substr($remark->user->name ?? 'U', 0, 1)) }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="flex-grow-1">
+                                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                                        <strong
+                                                                            class="text-dark">{{ $remark->user->name ?? 'Unknown' }}</strong>
+                                                                        <small
+                                                                            class="text-muted">{{ $remark->created_at->format('d M, Y h:i A') }}</small>
+                                                                    </div>
+                                                                    <p class="mb-0 text-dark" style="line-height: 1.6;">
+                                                                        {{ $remark->remark }}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-muted text-center mb-0 py-4">
+                                                <i data-feather="message-circle" class="me-2"
+                                                    style="width: 16px; height: 16px;"></i>
+                                                no records found
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
 
 
                             </div>
@@ -776,6 +880,81 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" form="editCustomerPaymentForm">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Payment Modal -->
+    <div class="modal fade" id="addCustomerPaymentModal" tabindex="-1" aria-labelledby="addCustomerPaymentModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCustomerPaymentModalLabel">Add Customer Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCustomerPaymentForm" method="POST"
+                        action="{{ route('leads.payments.store', $lead) }}">
+                        @csrf
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Amount <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control form-control-sm" id="addCustomerPaymentAmount"
+                                    name="amount" step="0.01" min="0" required placeholder="0.00">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Payment Mode <span class="text-danger">*</span></label>
+                                <select class="form-select form-select-sm" id="addCustomerPaymentMethod" name="method"
+                                    required>
+                                    <option value="">-- Select --</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="UPI">UPI</option>
+                                    <option value="NEFT">NEFT</option>
+                                    <option value="RTGS">RTGS</option>
+                                    <option value="WIB">WIB</option>
+                                    <option value="Online">Online</option>
+                                    <option value="Cheque">Cheque</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Paid On <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control form-control-sm" id="addCustomerPaymentDate"
+                                    name="payment_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Due Date</label>
+                                <input type="date" class="form-control form-control-sm" id="addCustomerPaymentDueDate"
+                                    name="due_date">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Transaction ID</label>
+                                <input type="text" class="form-control form-control-sm"
+                                    id="addCustomerPaymentReference" name="reference"
+                                    placeholder="Transaction Reference No.">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <select class="form-select form-select-sm" id="addCustomerPaymentStatus" name="status"
+                                    required>
+                                    <option value="pending">Pending</option>
+                                    <option value="received">Received</option>
+                                    <option value="To Be Refund">To Be Refund</option>
+                                    <option value="Refund Passed">Refund Passed</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Remarks</label>
+                                <textarea class="form-control form-control-sm" id="addCustomerPaymentNotes" name="notes" rows="2"
+                                    placeholder="Enter remarks"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="addCustomerPaymentForm">Save</button>
                 </div>
             </div>
         </div>
@@ -1048,6 +1227,49 @@
                         currentEditCustomerPaymentId = null;
                     });
                 }
+
+                // Reset add customer payment modal on close
+                const addCustomerPaymentModal = document.getElementById('addCustomerPaymentModal');
+                if (addCustomerPaymentModal) {
+                    addCustomerPaymentModal.addEventListener('hidden.bs.modal', function() {
+                        document.getElementById('addCustomerPaymentForm').reset();
+                        document.getElementById('addCustomerPaymentNotes').value = '';
+                    });
+                }
+
+                // Handle delete customer payment button click
+                document.addEventListener('click', async function(e) {
+                    if (e.target.closest('.delete-customer-payment-btn')) {
+                        const btn = e.target.closest('.delete-customer-payment-btn');
+                        const paymentId = btn.dataset.paymentId;
+
+                        if (!confirm('Are you sure you want to delete this customer payment?')) {
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`/leads/${leadId}/payments/${paymentId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]')?.content
+                                }
+                            });
+
+                            const data = await response.json();
+
+                            if (!response.ok) {
+                                throw new Error(data.message || 'Failed to delete customer payment');
+                            }
+
+                            // Reload page to show updated data
+                            window.location.reload();
+                        } catch (error) {
+                            alert(error.message || 'Failed to delete customer payment');
+                        }
+                    }
+                });
 
                 // Handle Stage Update Button
                 const updateStageBtn = document.getElementById('updateStageBtn');

@@ -212,6 +212,34 @@
                                     </div>
                                 </div>
 
+                                <!-- Remarks Section -->
+                                <div class="mb-4 border rounded-3 p-3">
+                                    <h6 class="text-uppercase text-muted small fw-semibold mb-3">
+                                        <i data-feather="message-circle" class="me-1"
+                                            style="width: 14px; height: 14px;"></i>
+                                        Remarks
+                                    </h6>
+
+                                    <!-- Add Remark Form -->
+                                    <form method="POST" action="{{ route('leads.booking-file-remarks.store', $lead) }}">
+                                        @csrf
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-9">
+                                                <label class="form-label">Remark <span
+                                                        class="text-danger">*</span></label>
+                                                <textarea name="remark" class="form-control form-control-sm" rows="2" required
+                                                    placeholder="Enter your remark..."></textarea>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button type="submit" class="btn btn-sm btn-primary w-100">
+                                                    <i data-feather="save" style="width: 14px; height: 14px;"></i>
+                                                    Add Remark
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                
                                 <!-- Destination Section (View Mode) -->
                                 <div class="mb-4 border rounded-3 p-3">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -463,6 +491,60 @@
                                                 @endif
                                             </tbody>
                                         </table>
+                                    </div>
+                                </div>
+
+                                
+
+                                <!-- History Section (Remark History) -->
+                                <div class="mb-4 border rounded-3 p-3">
+                                    <h6 class="text-uppercase text-muted small fw-semibold mb-3">
+                                        <i data-feather="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                        History
+                                    </h6>
+                                    <div style="max-height: 400px; overflow-y: auto;">
+                                        @php
+                                            $remarks = $lead
+                                                ->bookingFileRemarks()
+                                                ->with('user')
+                                                ->orderBy('created_at', 'desc')
+                                                ->get();
+                                        @endphp
+                                        @if ($remarks->count() > 0)
+                                            <div class="timeline">
+                                                @foreach ($remarks as $remark)
+                                                    <div class="border rounded-3 p-3 mb-3 bg-white">
+                                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                                            <div class="d-flex align-items-start flex-grow-1">
+                                                                <div class="avatar avatar-rounded rounded-circle me-3 flex-shrink-0"
+                                                                    style="background-color: #007d88; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                                    <span class="text-white fw-bold"
+                                                                        style="font-size: 0.875rem;">
+                                                                        {{ strtoupper(substr($remark->user->name ?? 'U', 0, 1)) }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="flex-grow-1">
+                                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                                        <strong
+                                                                            class="text-dark">{{ $remark->user->name ?? 'Unknown' }}</strong>
+                                                                        <small
+                                                                            class="text-muted">{{ $remark->created_at->format('d M, Y h:i A') }}</small>
+                                                                    </div>
+                                                                    <p class="mb-0 text-dark" style="line-height: 1.6;">
+                                                                        {{ $remark->remark }}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-muted text-center mb-0 py-4">
+                                                <i data-feather="message-circle" class="me-2"
+                                                    style="width: 16px; height: 16px;"></i>
+                                                no records found
+                                            </p>
+                                        @endif
                                     </div>
                                 </div>
 

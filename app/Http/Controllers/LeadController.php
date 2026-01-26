@@ -287,6 +287,34 @@ class LeadController extends Controller
 
     public function bookingForm(Lead $lead)
     {
+        // Check if user has permission to view this lead's booking file
+        $user = Auth::user();
+        $canAccess = false;
+
+        if ($this->canSeeAllLeads()) {
+            $canAccess = true;
+        } elseif ($this->isNonSalesDepartment()) {
+            // Non-Sales (Ops, Delivery, etc) can view leads if involved (e.g. booked)
+            // For now, allow view access to all leads for these departments as they might need to see details
+            $canAccess = true;
+        } elseif ($user->role === 'Sales' || $user->department === 'Sales') {
+            // Sales: Only assigned or created by
+            // Check legacy user_id
+            $currentUserId = $this->getCurrentUserId();
+            if ($lead->assigned_user_id == $user->id || $lead->assigned_user_id == $currentUserId || $lead->created_by == $user->id) {
+                $canAccess = true;
+            }
+        } else {
+            // Fallback for other roles/users: Must be assigned or creator
+            $currentUserId = $this->getCurrentUserId();
+            if ($lead->assigned_user_id == $user->id || $lead->assigned_user_id == $currentUserId || $lead->created_by == $user->id) {
+                $canAccess = true;
+            }
+        }
+
+        if (!$canAccess) {
+            abort(403, 'Unauthorized access to this booking file.');
+        }
         $lead->load([
             'service',
             'destination',
@@ -453,6 +481,34 @@ class LeadController extends Controller
 
     public function show(Request $request, Lead $lead)
     {
+        // Check if user has permission to view this lead
+        $user = Auth::user();
+        $canAccess = false;
+
+        if ($this->canSeeAllLeads()) {
+            $canAccess = true;
+        } elseif ($this->isNonSalesDepartment()) {
+            // Non-Sales (Ops, Delivery, etc) can view leads if involved (e.g. booked)
+            // For now, allow view access to all leads for these departments as they might need to see details
+            $canAccess = true;
+        } elseif ($user->role === 'Sales' || $user->department === 'Sales') {
+            // Sales: Only assigned or created by
+            // Check legacy user_id
+            $currentUserId = $this->getCurrentUserId();
+            if ($lead->assigned_user_id == $user->id || $lead->assigned_user_id == $currentUserId || $lead->created_by == $user->id) {
+                $canAccess = true;
+            }
+        } else {
+            // Fallback for other roles/users: Must be assigned or creator
+            $currentUserId = $this->getCurrentUserId();
+            if ($lead->assigned_user_id == $user->id || $lead->assigned_user_id == $currentUserId || $lead->created_by == $user->id) {
+                $canAccess = true;
+            }
+        }
+
+        if (!$canAccess) {
+            abort(403, 'Unauthorized access to this lead.');
+        }
         $lead->load([
             'service',
             'destination',

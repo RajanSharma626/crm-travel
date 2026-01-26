@@ -363,7 +363,8 @@ class DeliveryController extends Controller
     public function downloadVoucher(Lead $lead, Request $request)
     {
         // Check if user has permission to view deliveries
-        if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager'])) {
+        // Check if user has permission to view deliveries
+        if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager']) && Auth::user()->department !== 'Delivery') {
             abort(403, 'Unauthorized');
         }
 
@@ -429,7 +430,8 @@ class DeliveryController extends Controller
     public function downloadAccommodationVoucher(Request $request, Lead $lead, $accommodationId)
     {
         // Check if user has permission to view deliveries
-        if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager'])) {
+        // Check if user has permission to view deliveries
+        if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager']) && Auth::user()->department !== 'Delivery') {
             abort(403, 'Unauthorized');
         }
 

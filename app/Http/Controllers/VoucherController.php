@@ -231,7 +231,7 @@ class VoucherController extends Controller
     public function downloadVoucher(Lead $lead, Voucher $voucher, Request $request)
     {
         // Check if user has permission
-        if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager', 'Operations', 'Operation', 'Operation Manager'])) {
+        if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager', 'Operations', 'Operation', 'Operation Manager']) && Auth::user()->department !== 'Delivery' && Auth::user()->department !== 'Operations') {
             abort(403, 'Unauthorized');
         }
 
