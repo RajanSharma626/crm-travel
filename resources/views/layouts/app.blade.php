@@ -389,17 +389,21 @@
                                 </a>
                             </li>
 
-                            <!-- Incentives -->
-                            {{-- <li class="nav-item mb-2 {{ request()->is('incentives*') ? 'active' : '' }}">
-                                <a class="nav-link" href="{{ route('incentives.index') }}">
-                                    <span class="nav-icon-wrap">
-                                        <span class="svg-icon">
-                                            <i data-feather="dollar-sign" class="small"></i>
+
+                            <!-- Incentives Tab - Visible to Admin and HR only (Hidden for Customer Care) -->
+                            @if (($isAdmin || Auth::user()->hasRole('HR') || Auth::user()->department === 'HR') && !$isCustomerCare)
+                                <li class="nav-item mb-2 {{ request()->is('incentives*') ? 'active' : '' }}">
+                                    <a class="nav-link" href="{{ route('incentives.index') }}">
+                                        <span class="nav-icon-wrap">
+                                            <span class="svg-icon">
+                                                <i data-feather="dollar-sign" class="small"></i>
+                                            </span>
                                         </span>
-                                    </span>
-                                    <span class="nav-link-text">Incentives</span>
-                                </a>
-                            </li> --}}
+                                        <span class="nav-link-text">Incentives</span>
+                                    </a>
+                                </li>
+                            @endif
+
 
                             <!-- Reports -->
                             {{-- <li class="nav-item mb-2 {{ request()->is('reports*') ? 'active' : '' }}">

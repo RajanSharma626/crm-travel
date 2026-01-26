@@ -86,14 +86,19 @@ class LeadController extends Controller
             'destination_id' => $request->input('destination_id'),
         ];
 
-        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'remarks' => function ($q) {
-            $q->orderBy('created_at', 'desc')->limit(1);
-        }])->orderBy('created_at', 'desc');
+        $leadsQuery = Lead::with([
+            'service',
+            'destination',
+            'assignedUser',
+            'remarks' => function ($q) {
+                $q->orderBy('created_at', 'desc')->limit(1);
+            }
+        ])->orderBy('created_at', 'desc');
 
         // If current user is not Customer Care, show only 'booked' leads by default
         $currentUser = Auth::user();
         $isCustomerCare = $currentUser && ($currentUser->hasRole('Customer Care') || $currentUser->department === 'Customer Care');
-        if (! $isCustomerCare) {
+        if (!$isCustomerCare) {
             $leadsQuery->where('status', 'booked');
         }
 
@@ -113,10 +118,10 @@ class LeadController extends Controller
             }
         } else {
             // Other users: Use existing logic (filter by assigned user if not admin/manager)
-        if (!$this->canSeeAllLeads()) {
-            $userId = $this->getCurrentUserId();
-            if ($userId) {
-                $leadsQuery->where('assigned_user_id', $userId);
+            if (!$this->canSeeAllLeads()) {
+                $userId = $this->getCurrentUserId();
+                if ($userId) {
+                    $leadsQuery->where('assigned_user_id', $userId);
                 }
             }
         }
@@ -189,11 +194,18 @@ class LeadController extends Controller
         ];
 
         // Only show booked leads
-        $leadsQuery = Lead::with(['service', 'destination', 'assignedUser', 'bookingDestinations', 'remarks' => function ($q) {
-            $q->orderBy('created_at', 'desc')->limit(1);
-        }, 'bookingFileRemarks' => function ($q) {
-            $q->orderBy('created_at', 'desc')->limit(1)->with('user');
-        }])
+        $leadsQuery = Lead::with([
+            'service',
+            'destination',
+            'assignedUser',
+            'bookingDestinations',
+            'remarks' => function ($q) {
+                $q->orderBy('created_at', 'desc')->limit(1);
+            },
+            'bookingFileRemarks' => function ($q) {
+                $q->orderBy('created_at', 'desc')->limit(1)->with('user');
+            }
+        ])
             ->where('status', 'booked')
             ->orderBy('created_at', 'desc');
 
@@ -578,7 +590,7 @@ class LeadController extends Controller
                     'follow_up_date' => $nextFollowUpRemark->follow_up_at ? $nextFollowUpRemark->follow_up_at->format('d M, Y') : null,
                     'follow_up_time' => $nextFollowUpRemark->follow_up_at ? $nextFollowUpRemark->follow_up_at->format('h:i A') : null,
                     'remark' =>
-                    strlen($nextFollowUpRemark->remark) > 120 ? substr($nextFollowUpRemark->remark, 0, 120) . '...' : $nextFollowUpRemark->remark,
+                        strlen($nextFollowUpRemark->remark) > 120 ? substr($nextFollowUpRemark->remark, 0, 120) . '...' : $nextFollowUpRemark->remark,
                 ];
             }
 
@@ -985,8 +997,13 @@ class LeadController extends Controller
 
     public function destroy(Lead $lead)
     {
-        $lead->delete();
+        if (Auth::user()->role == 'Admin') {
+            $lead->delete();
+        } else {
+            abort(403);
+        }
         return redirect()->route('leads.index')->with('success', 'Lead deleted successfully!');
+
     }
 
     public function updateStatus(Request $request, Lead $lead)
@@ -1086,8 +1103,8 @@ class LeadController extends Controller
             // In the view, the value is $emp->id (User id). 
             // The existing logic tried to map it, let's keep it safe or simplify if we know it's User ID.
             // Assuming $employeeId IS the User ID we want.
-            $userId = $employeeId; 
-            
+            $userId = $employeeId;
+
             // Legacy mapping check (just in case the 'employee' was a different record type in past)
             $employee = User::find($employeeId);
             if ($employee && $employee->user_id) {
@@ -1111,7 +1128,7 @@ class LeadController extends Controller
             'post_sales_assignee' => 'post_sales_user_id',
             'operations_assignee' => 'operations_user_id',
             'ticketing_assignee' => 'ticketing_user_id',
-            'visa_assignee'  => 'visa_user_id',
+            'visa_assignee' => 'visa_user_id',
             'insurance_assignee' => 'insurance_user_id',
             'accounts_assignee' => 'accounts_user_id',
             'delivery_assignee' => 'delivery_user_id',
@@ -1244,7 +1261,7 @@ class LeadController extends Controller
         }
 
         // Only Operations team (or Admin) should update via this endpoint
-        if (! $request->user()->hasAnyRole(['Admin', 'Operation', 'Operation Manager'])) {
+        if (!$request->user()->hasAnyRole(['Admin', 'Operation', 'Operation Manager'])) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -1281,8 +1298,8 @@ class LeadController extends Controller
         // Restrict status for non-Accounts/Admin users if needed, but the check above (lines 1195) handles existing Paid status.
         // If we want to prevent Ops from marking as Paid:
         if (!$isAccounts && !$isAdmin) {
-             $rules['status'] = 'nullable|string|in:Pending,Cancelled';
-             // Ops shouldn't be updating paid_amount etc?
+            $rules['status'] = 'nullable|string|in:Pending,Cancelled';
+            // Ops shouldn't be updating paid_amount etc?
         }
 
         $validated = $request->validate($rules);
@@ -1293,7 +1310,7 @@ class LeadController extends Controller
         // If purchase cost changes, and we are not explicitly engaged in payment update, we might want to reset status, but let's trust the input for now or keep existing logic.
         // Existing logic: if purchase cost changes, force status to Pending (unless it's paid?)
         if ($vendorPayment->purchase_cost != $validated['purchase_cost'] && !$isAccounts && !$isAdmin) {
-             $status = 'Pending';
+            $status = 'Pending';
         }
 
         $vendorPayment->update([
@@ -1490,9 +1507,9 @@ class LeadController extends Controller
         $bookingDestination = $lead->bookingDestinations()->create([
             'destination' => $validated['destination'],
             'location' => $validated['location'],
-            'only_hotel' => (bool)$finalOnlyHotel,
-            'only_tt' => (bool)$finalOnlyTT,
-            'hotel_tt' => (bool)$finalHotelTT,
+            'only_hotel' => (bool) $finalOnlyHotel,
+            'only_tt' => (bool) $finalOnlyTT,
+            'hotel_tt' => (bool) $finalHotelTT,
             'from_date' => $validated['from_date'],
             'to_date' => $validated['to_date'],
             'no_of_days' => $noOfDays,
@@ -1556,9 +1573,9 @@ class LeadController extends Controller
         $bookingDestination->update([
             'destination' => $validated['destination'],
             'location' => $validated['location'],
-            'only_hotel' => (bool)$finalOnlyHotel,
-            'only_tt' => (bool)$finalOnlyTT,
-            'hotel_tt' => (bool)$finalHotelTT,
+            'only_hotel' => (bool) $finalOnlyHotel,
+            'only_tt' => (bool) $finalOnlyTT,
+            'hotel_tt' => (bool) $finalHotelTT,
             'from_date' => $validated['from_date'],
             'to_date' => $validated['to_date'],
             'no_of_days' => $noOfDays,

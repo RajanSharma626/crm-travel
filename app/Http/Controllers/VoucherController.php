@@ -22,7 +22,7 @@ class VoucherController extends Controller
             ->with(['accommodation', 'createdBy'])
             ->latest()
             ->get();
-        
+
         return response()->json([
             'success' => true,
             'vouchers' => $vouchers
@@ -36,9 +36,9 @@ class VoucherController extends Controller
     public function createServiceVoucher(Request $request, Lead $lead)
     {
         // Check if user is operations
-        if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager'])) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        // if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager']) || Auth::user()->department == "Operation") {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
 
         $validated = $request->validate([
             'voucher_number' => 'nullable|string|max:50|unique:vouchers,voucher_number',
@@ -102,9 +102,9 @@ class VoucherController extends Controller
     public function createItineraryVoucher(Request $request, Lead $lead)
     {
         // Check if user is operations
-        if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager'])) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        // if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager']) || !Auth::user()->department == "Operation") {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
 
         try {
             DB::beginTransaction();
@@ -159,9 +159,9 @@ class VoucherController extends Controller
     public function createAccommodationVoucher(Request $request, Lead $lead)
     {
         // Check if user is operations
-        if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager'])) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        // if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager']) || !Auth::user()->department == "Operation") {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
 
         $validated = $request->validate([
             'voucher_number' => 'nullable|string|max:50|unique:vouchers,voucher_number',
@@ -231,9 +231,9 @@ class VoucherController extends Controller
     public function downloadVoucher(Lead $lead, Voucher $voucher, Request $request)
     {
         // Check if user has permission
-        if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager', 'Operations', 'Operation', 'Operation Manager']) && Auth::user()->department !== 'Delivery' && Auth::user()->department !== 'Operations') {
-            abort(403, 'Unauthorized');
-        }
+        // if (!Auth::user()->hasAnyRole(['Admin', 'Delivery', 'Delivery Manager', 'Operations', 'Operation', 'Operation Manager']) && Auth::user()->department !== 'Delivery' && Auth::user()->department !== 'Operations') {
+        //     abort(403, 'Unauthorized');
+        // }
 
         // Verify voucher belongs to lead
         if ($voucher->lead_id !== $lead->id) {
@@ -276,7 +276,7 @@ class VoucherController extends Controller
             $accommodation = $voucher->accommodation;
             $pdf = Pdf::loadView('pdf.destination-voucher', compact('lead', 'logoBase64', 'voucher', 'accommodation', 'withCompanyDetails'));
             $pdf->setPaper('A4', 'portrait');
-            
+
             $location = $accommodation->location ?? 'Accommodation';
             $locationSlug = str_replace(' ', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $location));
             return $pdf->download($locationSlug . '_' . $lead->tsq . '_' . $voucher->voucher_number . '.pdf');
@@ -294,7 +294,7 @@ class VoucherController extends Controller
     public function show(Lead $lead, Voucher $voucher)
     {
         // Check if user is operations or admin
-        if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager'])) {
+        if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager']) || !Auth::user()->department == "Operation") {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -317,7 +317,7 @@ class VoucherController extends Controller
     public function update(Request $request, Lead $lead, Voucher $voucher)
     {
         // Check if user is operations or admin
-        if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager'])) {
+        if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager']) || !Auth::user()->department == "Operation") {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -362,7 +362,7 @@ class VoucherController extends Controller
     public function destroy(Lead $lead, Voucher $voucher)
     {
         // Check if user is operations or admin
-        if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager'])) {
+        if (!Auth::user()->hasAnyRole(['Admin', 'Operations', 'Operation', 'Operation Manager']) || !Auth::user()->department == "Operation") {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 

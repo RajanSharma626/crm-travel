@@ -9,13 +9,29 @@
                         <header class="contact-header">
                             <div class="w-100 align-items-center justify-content-between d-flex contactapp-title link-dark">
                                 <h1>Incentives</h1>
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-primary" data-bs-toggle="modal"
+                                        data-bs-target="#addIncentiveModal">
+                                        <i data-feather="plus" class="me-1"></i> Add Incentive
+                                    </button>
+                                </div>
                             </div>
                         </header>
 
                         <div class="contact-body">
                             <div data-simplebar class="nicescroll-bar">
                                 @if (session('success'))
-                                    <div class="alert alert-success">{{ session('success') }}</div>
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        {{ session('success') }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                @endif
+
+                                @if (session('error'))
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        {{ session('error') }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
                                 @endif
 
                                 @if (isset($incentives) && $incentives->count() > 0)
@@ -24,65 +40,83 @@
                                     </div>
                                 @endif
 
-                                <table class="table table-striped table-bordered w-100 mb-5" id="incentivesTable">
-                                    <thead>
-                                        <tr>
-                                            <th>TSQ</th>
-                                            <th>Customer</th>
-                                            <th>Salesperson</th>
-                                            <th>Profit Amount</th>
-                                            <th>Incentive Amount</th>
-                                            <th>Status</th>
-                                            <th>Payout Date</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($incentives as $incentive)
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered w-100 mb-5" id="incentivesTable">
+                                        <thead>
                                             <tr>
-                                                <td><strong>{{ $incentive->lead->tsq }}</strong></td>
-                                                <td>{{ $incentive->lead->customer_name }}</td>
-                                                <td>{{ $incentive->salesperson->name }}</td>
-                                                <td>₹{{ number_format($incentive->profit_amount, 2) }}</td>
-                                                <td><strong
-                                                        class="text-success">₹{{ number_format($incentive->incentive_amount, 2) }}</strong>
-                                                </td>
-                                                <td>
-                                                    <span
-                                                        class="badge bg-{{ $incentive->status == 'paid' ? 'success' : ($incentive->status == 'approved' ? 'primary' : 'warning') }}">
-                                                        {{ ucfirst($incentive->status) }}
-                                                    </span>
-                                                </td>
-                                                <td>{{ $incentive->payout_date ? $incentive->payout_date->format('d M, Y') : 'N/A' }}
-                                                </td>
-                                                <td>
-                                                    <a href="{{ route('leads.show', $incentive->lead->id) }}"
-                                                        class="btn btn-sm btn-outline-primary">View Lead</a>
-                                                    @can('approve incentives')
-                                                        @if ($incentive->status == 'pending')
-                                                            <form action="{{ route('incentives.approve', $incentive->id) }}"
-                                                                method="POST" class="d-inline">
+                                                <th>Emp Code</th>
+                                                <th>Department</th>
+                                                <th>Month</th>
+                                                <th>Target Files</th>
+                                                <th>Achieved Target</th>
+                                                <th>%age Achieved</th>
+                                                <th>Incentive Payable</th>
+                                                <th>Status</th>
+                                                <th>Payout</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($incentives as $incentive)
+                                                <tr>
+                                                    <td><strong>{{ $incentive->emp_code ?? 'N/A' }}</strong></td>
+                                                    <td>{{ $incentive->department ?? 'N/A' }}</td>
+                                                    <td>{{ $incentive->month ?? 'N/A' }}</td>
+                                                    <td>{{ $incentive->target_files ?? 0 }}</td>
+                                                    <td>{{ $incentive->achieved_target ?? 0 }}</td>
+                                                    <td>{{ $incentive->percentage_achieved ? number_format($incentive->percentage_achieved, 2) . '%' : '0%' }}
+                                                    </td>
+                                                    <td>₹{{ number_format($incentive->incentive_payable ?? 0, 2) }}</td>
+                                                    <td>
+                                                        <span
+                                                            class="badge bg-{{ $incentive->status == 'approved' ? 'success' : 'warning' }}">
+                                                            {{ ucfirst($incentive->status ?? 'pending') }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span
+                                                            class="badge bg-{{ $incentive->payout_status == 'done' ? 'success' : 'secondary' }}">
+                                                            {{ ucfirst($incentive->payout_status ?? 'pending') }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group" role="group">
+                                                            <button
+                                                                class="btn btn-sm btn-outline-primary edit-incentive-btn"
+                                                                data-id="{{ $incentive->id }}"
+                                                                data-emp-code="{{ $incentive->emp_code }}"
+                                                                data-department="{{ $incentive->department }}"
+                                                                data-month="{{ $incentive->month }}"
+                                                                data-target-files="{{ $incentive->target_files }}"
+                                                                data-achieved-target="{{ $incentive->achieved_target }}"
+                                                                data-percentage-achieved="{{ $incentive->percentage_achieved }}"
+                                                                data-incentive-payable="{{ $incentive->incentive_payable }}"
+                                                                data-status="{{ $incentive->status }}"
+                                                                data-payout-status="{{ $incentive->payout_status }}">
+                                                                <i data-feather="edit-2"></i>
+                                                            </button>
+                                                            <form
+                                                                action="{{ route('incentives.destroy', $incentive->id) }}"
+                                                                method="POST" class="d-inline"
+                                                                onsubmit="return confirm('Are you sure you want to delete this incentive?');">
                                                                 @csrf
+                                                                @method('DELETE')
                                                                 <button type="submit"
-                                                                    class="btn btn-sm btn-success">Approve</button>
+                                                                    class="btn btn-sm btn-outline-danger">
+                                                                    <i data-feather="trash-2"></i>
+                                                                </button>
                                                             </form>
-                                                        @endif
-                                                    @endcan
-                                                    @can('mark incentives paid')
-                                                        @if ($incentive->status == 'approved')
-                                                            <button class="btn btn-sm btn-primary mark-paid-btn"
-                                                                data-incentive="{{ $incentive->id }}">Mark Paid</button>
-                                                        @endif
-                                                    @endcan
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="8" class="text-center">no records found</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="10" class="text-center">No records found</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
 
                                 <div class="d-flex justify-content-center">
                                     {{ $incentives->links('pagination::bootstrap-5') }}
@@ -96,48 +130,283 @@
         @include('layouts.footer')
     </div>
 
-    <!-- Mark Paid Modal -->
-    <div class="modal fade" id="markPaidModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+    <!-- Add Incentive Modal -->
+    <div class="modal fade" id="addIncentiveModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <form id="markPaidForm" method="POST">
+                <form action="{{ route('incentives.store') }}" method="POST">
                     @csrf
                     <div class="modal-header">
-                        <h5 class="modal-title">Mark Incentive as Paid</h5>
+                        <h5 class="modal-title">Add New Incentive</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Payout Date</label>
-                            <input type="date" name="payout_date" class="form-control" value="{{ date('Y-m-d') }}"
-                                required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Employee Code <span class="text-danger">*</span></label>
+                                <input type="text" name="emp_code" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Department <span class="text-danger">*</span></label>
+                                <select name="department" class="form-select" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Post Sales">Post Sales</option>
+                                    <option value="Operation">Operation</option>
+                                    <option value="Ticketing">Ticketing</option>
+                                    <option value="Visa">Visa</option>
+                                    <option value="Insurance">Insurance</option>
+                                    <option value="Accounts">Accounts</option>
+                                    <option value="Delivery">Delivery</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Customer Care">Customer Care</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Notes (Optional)</label>
-                            <textarea name="notes" class="form-control" rows="2"></textarea>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Month <span class="text-danger">*</span></label>
+                                <select name="month" class="form-select" required>
+                                    <option value="">Select Month</option>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Target Files <span class="text-danger">*</span></label>
+                                <input type="number" name="target_files" class="form-control" min="0" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Achieved Target <span class="text-danger">*</span></label>
+                                <input type="number" name="achieved_target" class="form-control" min="0"
+                                    required id="achieved_target_add">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Percentage Achieved (%)</label>
+                                <input type="number" name="percentage_achieved" class="form-control" step="0.01"
+                                    min="0" max="100" id="percentage_achieved_add" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Incentive Payable (₹) <span class="text-danger">*</span></label>
+                                <input type="number" name="incentive_payable" class="form-control" step="0.01"
+                                    min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <select name="status" class="form-select" required>
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Payout Status <span class="text-danger">*</span></label>
+                                <select name="payout_status" class="form-select" required>
+                                    <option value="pending">Pending</option>
+                                    <option value="done">Done</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Mark as Paid</button>
+                        <button type="submit" class="btn btn-primary">Add Incentive</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <script>
-        $(document).ready(function() {
-            $('#incentivesTable').DataTable({
-                scrollX: true,
-                autoWidth: false,
-            });
+    <!-- Edit Incentive Modal -->
+    <div class="modal fade" id="editIncentiveModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <form id="editIncentiveForm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Incentive</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Employee Code <span class="text-danger">*</span></label>
+                                <input type="text" name="emp_code" id="edit_emp_code" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Department <span class="text-danger">*</span></label>
+                                <select name="department" id="edit_department" class="form-select" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Post Sales">Post Sales</option>
+                                    <option value="Operation">Operation</option>
+                                    <option value="Ticketing">Ticketing</option>
+                                    <option value="Visa">Visa</option>
+                                    <option value="Insurance">Insurance</option>
+                                    <option value="Accounts">Accounts</option>
+                                    <option value="Delivery">Delivery</option>
+                                    <option value="HR">HR</option>
+                                    <option value="Customer Care">Customer Care</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Month <span class="text-danger">*</span></label>
+                                <select name="month" id="edit_month" class="form-select" required>
+                                    <option value="">Select Month</option>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Target Files <span class="text-danger">*</span></label>
+                                <input type="number" name="target_files" id="edit_target_files" class="form-control"
+                                    min="0" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Achieved Target <span class="text-danger">*</span></label>
+                                <input type="number" name="achieved_target" id="edit_achieved_target"
+                                    class="form-control" min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Percentage Achieved (%)</label>
+                                <input type="number" name="percentage_achieved" id="edit_percentage_achieved"
+                                    class="form-control" step="0.01" min="0" max="100" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Incentive Payable (₹) <span class="text-danger">*</span></label>
+                                <input type="number" name="incentive_payable" id="edit_incentive_payable"
+                                    class="form-control" step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <select name="status" id="edit_status" class="form-select" required>
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Payout Status <span class="text-danger">*</span></label>
+                                <select name="payout_status" id="edit_payout_status" class="form-select" required>
+                                    <option value="pending">Pending</option>
+                                    <option value="done">Done</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Incentive</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-            $('.mark-paid-btn').on('click', function() {
-                const incentiveId = $(this).data('incentive');
-                $('#markPaidForm').attr('action', '/incentives/' + incentiveId + '/mark-paid');
-                $('#markPaidModal').modal('show');
+    @push('scripts')
+        {{-- <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"> --}}
+
+        <script>
+            $(document).ready(function() {
+                // DataTables disabled - using simple table with Laravel pagination
+                // $('#incentivesTable').DataTable({
+                //     scrollX: true,
+                //     autoWidth: false,
+                //     paging: false,
+                //     info: false,
+                //     searching: true,
+                //     order: [
+                //         [2, 'desc']
+                //     ], // Sort by month by default
+                // });
+
+
+
+                // Auto-calculate percentage achieved on add form
+                $('input[name="target_files"], input[name="achieved_target"]').on('input', function() {
+                    const form = $(this).closest('form');
+                    const targetFiles = parseFloat(form.find('input[name="target_files"]').val()) || 0;
+                    const achievedTarget = parseFloat(form.find('input[name="achieved_target"]').val()) || 0;
+
+                    if (targetFiles > 0) {
+                        const percentage = (achievedTarget / targetFiles) * 100;
+                        form.find('input[name="percentage_achieved"]').val(percentage.toFixed(2));
+                    } else {
+                        form.find('input[name="percentage_achieved"]').val('0.00');
+                    }
+                });
+
+                // Edit button click handler
+                $('.edit-incentive-btn').on('click', function() {
+                    const id = $(this).data('id');
+                    const empCode = $(this).data('emp-code');
+                    const department = $(this).data('department');
+                    const month = $(this).data('month');
+                    const targetFiles = $(this).data('target-files');
+                    const achievedTarget = $(this).data('achieved-target');
+                    const percentageAchieved = $(this).data('percentage-achieved');
+                    const incentivePayable = $(this).data('incentive-payable');
+                    const status = $(this).data('status');
+                    const payoutStatus = $(this).data('payout-status');
+
+                    // Set form action
+                    $('#editIncentiveForm').attr('action', '/incentives/' + id);
+
+                    // Populate form fields
+                    $('#edit_emp_code').val(empCode);
+                    $('#edit_department').val(department);
+                    $('#edit_month').val(month);
+                    $('#edit_target_files').val(targetFiles);
+                    $('#edit_achieved_target').val(achievedTarget);
+                    $('#edit_percentage_achieved').val(percentageAchieved);
+                    $('#edit_incentive_payable').val(incentivePayable);
+                    $('#edit_status').val(status);
+                    $('#edit_payout_status').val(payoutStatus);
+
+                    // Show modal
+                    $('#editIncentiveModal').modal('show');
+                });
+
+                // Initialize feather icons
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
             });
-        });
-    </script>
+        </script>
+    @endpush
 @endsection

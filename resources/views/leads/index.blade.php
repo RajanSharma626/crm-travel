@@ -1263,26 +1263,18 @@
                             </div>
                         </div>
 
+
                         <div class="mb-3">
                             <label class="form-label fw-bold mb-2">Select Message Template</label>
                             <div class="list-group" id="messageTemplatesList"
                                 style="max-height: 200px; overflow-y: auto;">
-                                <!-- Mock Templates -->
-                                <label class="list-group-item">
-                                    <input class="form-check-input me-1" type="radio" name="messageTemplate"
-                                        value="template1" checked>
-                                    <strong>Welcome Message:</strong> Hi, thanks for contacting Travel Shravel...
-                                </label>
-                                <label class="list-group-item">
-                                    <input class="form-check-input me-1" type="radio" name="messageTemplate"
-                                        value="template2">
-                                    <strong>Follow Up:</strong> Just checking in regarding your travel plans...
-                                </label>
-                                <label class="list-group-item">
-                                    <input class="form-check-input me-1" type="radio" name="messageTemplate"
-                                        value="template3">
-                                    <strong>Quote Ready:</strong> Your quote is ready! Please check your email...
-                                </label>
+                                <!-- Templates will be loaded dynamically -->
+                                <div class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted small mb-0 mt-2">Loading templates...</p>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -2732,7 +2724,9 @@
                 const phoneNumbersList = document.getElementById('phoneNumbersList');
                 const selectAllNumbers = document.getElementById('selectAllNumbers');
                 const sendSmsSubmitBtn = document.getElementById('sendSmsSubmitBtn');
+                const messageTemplatesList = document.getElementById('messageTemplatesList');
                 let sendSmsModalInstance = null;
+                let currentLeadIdForSms = null;
 
                 if (sendSmsModalEl && typeof bootstrap !== 'undefined') {
                     sendSmsModalInstance = new bootstrap.Modal(sendSmsModalEl);
@@ -2741,11 +2735,38 @@
                         if (sendSmsForm) sendSmsForm.reset();
                         if (phoneNumbersList) phoneNumbersList.innerHTML = '';
                         if (selectAllNumbers) selectAllNumbers.checked = false;
+                        currentLeadIdForSms = null;
                     });
 
                     sendSmsModalEl.addEventListener('shown.bs.modal', () => {
                         safeFeatherReplace(sendSmsModalEl);
+                        // Load templates when modal is shown
+                        loadSmsTemplates();
                     });
+                }
+
+                // Load SMS templates from API
+                function loadSmsTemplates() {
+                    if (!messageTemplatesList) return;
+
+                    fetch('{{ route('leads.sms.templates') }}')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && data.templates) {
+                                messageTemplatesList.innerHTML = data.templates.map((template, index) => `
+                                    <label class="list-group-item">
+                                        <input class="form-check-input me-1" type="radio" name="messageTemplate" 
+                                            value="${template.key}" ${index === 0 ? 'checked' : ''}>
+                                        <strong>${escapeHtml(template.name)}:</strong> ${escapeHtml(template.message)}
+                                    </label>
+                                `).join('');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading SMS templates:', error);
+                            messageTemplatesList.innerHTML =
+                                '<p class="text-danger small mb-0">Failed to load templates</p>';
+                        });
                 }
 
                 // Event delegation for send SMS button
@@ -2756,9 +2777,12 @@
                     event.preventDefault();
                     event.stopPropagation();
 
+                    const leadId = button.dataset.leadId;
                     const phone = button.dataset.phone;
                     const secondaryPhone = button.dataset.secondaryPhone;
                     const otherPhone = button.dataset.otherPhone;
+
+                    currentLeadIdForSms = leadId;
 
                     // Populate numbers
                     let numbers = [];
@@ -2819,19 +2843,84 @@
                             return;
                         }
 
-                        // Mock sending
-                        console.log('Sending SMS to:', selectedNumbers, 'Template:', selectedTemplate);
-
-                        // Simulate success
-                        if (sendSmsModalInstance) {
-                            sendSmsModalInstance.hide();
+                        if (!selectedTemplate) {
+                            if (typeof showToast === 'function') {
+                                showToast('Please select a message template.', 'error');
+                            } else {
+                                alert('Please select a message template.');
+                            }
+                            return;
                         }
 
-                        if (typeof showToast === 'function') {
-                            showToast('SMS sent successfully!', 'success');
-                        } else {
-                            alert('SMS sent successfully!');
+                        if (!currentLeadIdForSms) {
+                            if (typeof showToast === 'function') {
+                                showToast('Lead ID not found.', 'error');
+                            } else {
+                                alert('Lead ID not found.');
+                            }
+                            return;
                         }
+
+                        // Disable button and show loading
+                        sendSmsSubmitBtn.disabled = true;
+                        const originalText = sendSmsSubmitBtn.innerHTML;
+                        sendSmsSubmitBtn.innerHTML =
+                            '<span class="spinner-border spinner-border-sm me-1"></span> Sending...';
+
+                        // Send SMS via API
+                        fetch('{{ route('leads.sms.send') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                        ?.content || ''
+                                },
+                                body: JSON.stringify({
+                                    lead_id: currentLeadIdForSms,
+                                    phone_numbers: selectedNumbers,
+                                    template_key: selectedTemplate
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                // Re-enable button
+                                sendSmsSubmitBtn.disabled = false;
+                                sendSmsSubmitBtn.innerHTML = originalText;
+
+                                if (data.success) {
+                                    // Close modal
+                                    if (sendSmsModalInstance) {
+                                        sendSmsModalInstance.hide();
+                                    }
+
+                                    // Show success message
+                                    if (typeof showToast === 'function') {
+                                        showToast('SMS sent successfully!', 'success');
+                                    } else {
+                                        alert('SMS sent successfully!');
+                                    }
+                                } else {
+                                    // Show error message
+                                    if (typeof showToast === 'function') {
+                                        showToast(data.message || 'Failed to send SMS', 'error');
+                                    } else {
+                                        alert(data.message || 'Failed to send SMS');
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error sending SMS:', error);
+
+                                // Re-enable button
+                                sendSmsSubmitBtn.disabled = false;
+                                sendSmsSubmitBtn.innerHTML = originalText;
+
+                                if (typeof showToast === 'function') {
+                                    showToast('Failed to send SMS. Please try again.', 'error');
+                                } else {
+                                    alert('Failed to send SMS. Please try again.');
+                                }
+                            });
                     });
                 }
 

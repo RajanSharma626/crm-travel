@@ -19,6 +19,60 @@ class IncentiveController extends Controller
         return view('incentives.index', compact('incentives'));
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'emp_code' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+            'month' => 'required|string|max:255',
+            'target_files' => 'required|integer|min:0',
+            'achieved_target' => 'required|integer|min:0',
+            'percentage_achieved' => 'nullable|numeric|min:0|max:100',
+            'incentive_payable' => 'required|numeric|min:0',
+            'status' => 'required|in:pending,approved',
+            'payout_status' => 'required|in:pending,done',
+        ]);
+
+        // Calculate percentage if not provided
+        if (!isset($validated['percentage_achieved']) && $validated['target_files'] > 0) {
+            $validated['percentage_achieved'] = ($validated['achieved_target'] / $validated['target_files']) * 100;
+        }
+
+        Incentive::create($validated);
+
+        return redirect()->route('incentives.index')->with('success', 'Incentive added successfully!');
+    }
+
+    public function update(Request $request, Incentive $incentive)
+    {
+        $validated = $request->validate([
+            'emp_code' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+            'month' => 'required|string|max:255',
+            'target_files' => 'required|integer|min:0',
+            'achieved_target' => 'required|integer|min:0',
+            'percentage_achieved' => 'nullable|numeric|min:0|max:100',
+            'incentive_payable' => 'required|numeric|min:0',
+            'status' => 'required|in:pending,approved',
+            'payout_status' => 'required|in:pending,done',
+        ]);
+
+        // Calculate percentage if not provided
+        if (!isset($validated['percentage_achieved']) && $validated['target_files'] > 0) {
+            $validated['percentage_achieved'] = ($validated['achieved_target'] / $validated['target_files']) * 100;
+        }
+
+        $incentive->update($validated);
+
+        return redirect()->route('incentives.index')->with('success', 'Incentive updated successfully!');
+    }
+
+    public function destroy(Incentive $incentive)
+    {
+        $incentive->delete();
+        return redirect()->route('incentives.index')->with('success', 'Incentive deleted successfully!');
+    }
+
     public function calculate(Lead $lead)
     {
         // Only calculate if lead is booked
@@ -64,7 +118,7 @@ class IncentiveController extends Controller
 
         $incentive->update([
             'status' => 'approved',
-            'approved_by' => $this->getCurrentUserId(),
+            'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);
 
@@ -84,6 +138,7 @@ class IncentiveController extends Controller
 
         $incentive->update([
             'status' => 'paid',
+            'payout_status' => 'done',
             'payout_date' => $validated['payout_date'],
             'notes' => $validated['notes'] ?? null,
         ]);

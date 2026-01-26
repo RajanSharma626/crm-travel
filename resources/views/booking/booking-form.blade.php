@@ -89,6 +89,7 @@
                                         'Insurance Department',
                                         'Sales',
                                         'Sales Manager',
+                                        'Operation',
                                     ];
                                     // $currentUser and $userDept already defined above
 
@@ -1901,13 +1902,30 @@
                             <input type="hidden" name="accommodation_id" id="accommodationId" value="">
                             <div class="row g-3">
                                 <div class="col-md-4">
+                                    <label class="form-label">Country</label>
+                                    <select class="form-select form-select-sm" id="modalAccCountrySelect" name="country">
+                                        <option value="">-- Select Country --</option>
+                                        @php
+                                            $uniqueCountries = $destinations
+                                                ->pluck('country')
+                                                ->unique()
+                                                ->filter()
+                                                ->values();
+                                        @endphp
+                                        @foreach ($uniqueCountries as $country)
+                                            <option value="{{ $country }}">{{ $country }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
                                     <label class="form-label">Destination</label>
                                     <select class="form-select form-select-sm" id="modalAccDestinationSelect"
                                         name="destination">
                                         <option value="">-- Select Destination --</option>
                                         @foreach ($destinations as $dest)
                                             <option value="{{ $dest->name }}"
-                                                data-destination-id="{{ $dest->id }}">{{ $dest->name }}</option>
+                                                data-destination-id="{{ $dest->id }}"
+                                                data-country="{{ $dest->country }}">{{ $dest->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -2857,6 +2875,30 @@
                         }
                     }
 
+                    // Filter destinations based on country
+                    document.getElementById('modalAccCountrySelect')?.addEventListener('change', function() {
+                        const selectedCountry = this.value;
+                        const destSelect = document.getElementById('modalAccDestinationSelect');
+                        const options = destSelect.querySelectorAll('option');
+
+                        // Reset destination selection
+                        destSelect.value = '';
+                        // Also clear locations
+                        document.getElementById('modalAccLocationSelect').innerHTML =
+                            '<option value="">-- Select Location --</option>';
+
+                        options.forEach(opt => {
+                            if (opt.value === '') return; // Skip placeholder
+
+                            const optCountry = opt.getAttribute('data-country');
+                            if (!selectedCountry || optCountry === selectedCountry) {
+                                opt.style.display = '';
+                            } else {
+                                opt.style.display = 'none';
+                            }
+                        });
+                    });
+
                     document.getElementById('modalAccDestinationSelect')?.addEventListener('change', function() {
                         loadAccLocationsForDestination(this);
                     });
@@ -2880,8 +2922,24 @@
                             document.getElementById('submitAccommodationModal').textContent = 'Update';
 
                             // Populate fields
-                            document.getElementById('modalAccDestinationSelect').value = editBtn.dataset
-                                .destination;
+                            const destinationName = editBtn.dataset.destination;
+
+                            // Find corresponding country for this destination
+                            const destOption = Array.from(document.getElementById('modalAccDestinationSelect')
+                                    .options)
+                                .find(opt => opt.value === destinationName);
+
+                            if (destOption) {
+                                const country = destOption.getAttribute('data-country');
+                                if (country) {
+                                    const countrySelect = document.getElementById('modalAccCountrySelect');
+                                    countrySelect.value = country;
+                                    // Trigger change to filter destinations
+                                    countrySelect.dispatchEvent(new Event('change'));
+                                }
+                            }
+
+                            document.getElementById('modalAccDestinationSelect').value = destinationName;
                             editingAccLocationValue = editBtn.dataset.location;
                             document.getElementById('modalStayAt').value = editBtn.dataset.stayAt || '';
                             document.getElementById('modalCheckinDate').value = editBtn.dataset.checkinDate || '';
@@ -2910,6 +2968,16 @@
                     document.getElementById('addAccommodationModal')?.addEventListener('hidden.bs.modal', function() {
                         editingAccommodationId = null;
                         editingAccLocationValue = null;
+
+                        // Reset country and destination filter
+                        const countrySelect = document.getElementById('modalAccCountrySelect');
+                        if (countrySelect) {
+                            countrySelect.value = '';
+                            const destSelect = document.getElementById('modalAccDestinationSelect');
+                            const options = destSelect.querySelectorAll('option');
+                            options.forEach(opt => opt.style.display = '');
+                        }
+
                         const form = document.getElementById('addAccommodationForm');
                         form.action = `{{ route('leads.booking-accommodations.store', $lead) }}`;
                         document.getElementById('accommodationFormMethod').value = 'POST';
@@ -3990,11 +4058,11 @@
                                             <i data-feather="download" style="width: 14px; height: 14px;"></i>
                                         </button>
                                         ${voucher.voucher_type !== 'itinerary' ? `
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="button" class="btn btn-sm btn-outline-secondary ms-1" 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            onclick="editVoucher(${voucher.id})" title="Edit Voucher">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i data-feather="edit" style="width: 14px; height: 14px;"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <button type="button" class="btn btn-sm btn-outline-secondary ms-1" 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        onclick="editVoucher(${voucher.id})" title="Edit Voucher">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i data-feather="edit" style="width: 14px; height: 14px;"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ` : ''}
                                     </td>
                                 </tr>
                             `;

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('visa_stage')->default('Pending')->nullable()->after('ticketing_stage');
             $table->string('insurance_stage')->default('Pending')->nullable()->after('visa_stage');
             $table->string('delivery_stage')->default('Pending')->nullable()->after('insurance_stage');
+            $table->string('accounts_stage')->default('Pending')->nullable()->after('delivery_stage');
         });
     }
 
@@ -26,7 +27,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('leads', function (Blueprint $table) {
-            $table->dropColumn(['operations_stage', 'ticketing_stage', 'visa_stage', 'insurance_stage', 'delivery_stage']);
+            $table->dropColumn(['operations_stage', 'ticketing_stage', 'visa_stage', 'insurance_stage', 'delivery_stage', 'accounts_stage']);
         });
     }
 };

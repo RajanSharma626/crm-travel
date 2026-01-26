@@ -44,6 +44,7 @@ abstract class Controller extends BaseController
             // Sales stages (default to Post Sales stages if no specific stages defined)
             'Sales' => ['Pending', 'In Progress', 'Received', 'Briefing', 'Closed'],
             'Sales Manager' => ['Pending', 'In Progress', 'Received', 'Briefing', 'Closed'],
+            'Accounts' => ['Pending', 'In Progress', 'Done'],
         ];
 
         // Map department/role to stage type
@@ -60,6 +61,7 @@ abstract class Controller extends BaseController
             'Delivery Manager' => 'delivery_stage',
             'Sales' => 'sales_stage',
             'Sales Manager' => 'sales_stage',
+            'Accounts' => 'accounts_stage',
         ];
 
         $stageKey = $stageMap[$department] ?? 'sales_stage';
