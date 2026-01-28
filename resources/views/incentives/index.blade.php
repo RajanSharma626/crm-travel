@@ -10,10 +10,23 @@
                             <div class="w-100 align-items-center justify-content-between d-flex contactapp-title link-dark">
                                 <h1>Incentives</h1>
                                 <div class="d-flex align-items-center">
-                                    <button class="btn btn-primary" data-bs-toggle="modal"
-                                        data-bs-target="#addIncentiveModal">
-                                        <i data-feather="plus" class="me-1"></i> Add Incentive
-                                    </button>
+                                    <form method="GET" action="{{ route('incentives.index') }}" class="d-flex gap-2 align-items-center">
+                                        <select name="month" class="form-select form-select-sm">
+                                            @php
+                                                $months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                                                $currentFull = now()->format('F');
+                                                $selectedMonth = request()->has('month') ? request('month') : $currentFull;
+                                            @endphp
+                                            @foreach($months as $m)
+                                                <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>{{ $m }}</option>
+                                            @endforeach
+                                        </select>
+
+                                        <button type="submit" class="btn btn-outline-primary btn-sm">Filter</button>
+                                        @if(request()->has('month'))
+                                            <a href="{{ route('incentives.index') }}" class="btn btn-danger btn-sm">Clear</a>
+                                        @endif
+                                    </form>
                                 </div>
                             </div>
                         </header>
@@ -57,57 +70,27 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse($incentives as $incentive)
+                                            @forelse($salesUsers ?? [] as $user)
                                                 <tr>
-                                                    <td><strong>{{ $incentive->emp_code ?? 'N/A' }}</strong></td>
-                                                    <td>{{ $incentive->department ?? 'N/A' }}</td>
-                                                    <td>{{ $incentive->month ?? 'N/A' }}</td>
-                                                    <td>{{ $incentive->target_files ?? 0 }}</td>
-                                                    <td>{{ $incentive->achieved_target ?? 0 }}</td>
-                                                    <td>{{ $incentive->percentage_achieved ? number_format($incentive->percentage_achieved, 2) . '%' : '0%' }}
-                                                    </td>
-                                                    <td>₹{{ number_format($incentive->incentive_payable ?? 0, 2) }}</td>
+                                                    <td><strong>{{ $user->employee_id ?? $user->id ?? 'N/A' }}</strong></td>
+                                                    <td>{{ $user->department ?? 'N/A' }}</td>
                                                     <td>
-                                                        <span
-                                                            class="badge bg-{{ $incentive->status == 'approved' ? 'success' : 'warning' }}">
-                                                            {{ ucfirst($incentive->status ?? 'pending') }}
-                                                        </span>
+                                                        @php
+                                                            try {
+                                                                $displayMonth = request()->has('month') ? \Carbon\Carbon::parse(request('month'))->format('M') : now()->format('M');
+                                                            } catch (\Exception $e) {
+                                                                $displayMonth = now()->format('M');
+                                                            }
+                                                        @endphp
+                                                        {{ $displayMonth }}
                                                     </td>
-                                                    <td>
-                                                        <span
-                                                            class="badge bg-{{ $incentive->payout_status == 'done' ? 'success' : 'secondary' }}">
-                                                            {{ ucfirst($incentive->payout_status ?? 'pending') }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="btn-group" role="group">
-                                                            <button
-                                                                class="btn btn-sm btn-outline-primary edit-incentive-btn"
-                                                                data-id="{{ $incentive->id }}"
-                                                                data-emp-code="{{ $incentive->emp_code }}"
-                                                                data-department="{{ $incentive->department }}"
-                                                                data-month="{{ $incentive->month }}"
-                                                                data-target-files="{{ $incentive->target_files }}"
-                                                                data-achieved-target="{{ $incentive->achieved_target }}"
-                                                                data-percentage-achieved="{{ $incentive->percentage_achieved }}"
-                                                                data-incentive-payable="{{ $incentive->incentive_payable }}"
-                                                                data-status="{{ $incentive->status }}"
-                                                                data-payout-status="{{ $incentive->payout_status }}">
-                                                                <i data-feather="edit-2"></i>
-                                                            </button>
-                                                            <form
-                                                                action="{{ route('incentives.destroy', $incentive->id) }}"
-                                                                method="POST" class="d-inline"
-                                                                onsubmit="return confirm('Are you sure you want to delete this incentive?');">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit"
-                                                                    class="btn btn-sm btn-outline-danger">
-                                                                    <i data-feather="trash-2"></i>
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
                                                 </tr>
                                             @empty
                                                 <tr>
@@ -118,9 +101,7 @@
                                     </table>
                                 </div>
 
-                                <div class="d-flex justify-content-center">
-                                    {{ $incentives->links('pagination::bootstrap-5') }}
-                                </div>
+                                {{-- Pagination removed when listing sales users --}}
                             </div>
                         </div>
                     </div>
@@ -130,107 +111,7 @@
         @include('layouts.footer')
     </div>
 
-    <!-- Add Incentive Modal -->
-    <div class="modal fade" id="addIncentiveModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <form action="{{ route('incentives.store') }}" method="POST">
-                    @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add New Incentive</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Employee Code <span class="text-danger">*</span></label>
-                                <input type="text" name="emp_code" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Department <span class="text-danger">*</span></label>
-                                <select name="department" class="form-select" required>
-                                    <option value="">Select Department</option>
-                                    <option value="Sales">Sales</option>
-                                    <option value="Post Sales">Post Sales</option>
-                                    <option value="Operation">Operation</option>
-                                    <option value="Ticketing">Ticketing</option>
-                                    <option value="Visa">Visa</option>
-                                    <option value="Insurance">Insurance</option>
-                                    <option value="Accounts">Accounts</option>
-                                    <option value="Delivery">Delivery</option>
-                                    <option value="HR">HR</option>
-                                    <option value="Customer Care">Customer Care</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Month <span class="text-danger">*</span></label>
-                                <select name="month" class="form-select" required>
-                                    <option value="">Select Month</option>
-                                    <option value="January">January</option>
-                                    <option value="February">February</option>
-                                    <option value="March">March</option>
-                                    <option value="April">April</option>
-                                    <option value="May">May</option>
-                                    <option value="June">June</option>
-                                    <option value="July">July</option>
-                                    <option value="August">August</option>
-                                    <option value="September">September</option>
-                                    <option value="October">October</option>
-                                    <option value="November">November</option>
-                                    <option value="December">December</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Target Files <span class="text-danger">*</span></label>
-                                <input type="number" name="target_files" class="form-control" min="0" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Achieved Target <span class="text-danger">*</span></label>
-                                <input type="number" name="achieved_target" class="form-control" min="0"
-                                    required id="achieved_target_add">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Percentage Achieved (%)</label>
-                                <input type="number" name="percentage_achieved" class="form-control" step="0.01"
-                                    min="0" max="100" id="percentage_achieved_add" readonly>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Incentive Payable (₹) <span class="text-danger">*</span></label>
-                                <input type="number" name="incentive_payable" class="form-control" step="0.01"
-                                    min="0" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Status <span class="text-danger">*</span></label>
-                                <select name="status" class="form-select" required>
-                                    <option value="pending">Pending</option>
-                                    <option value="approved">Approved</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Payout Status <span class="text-danger">*</span></label>
-                                <select name="payout_status" class="form-select" required>
-                                    <option value="pending">Pending</option>
-                                    <option value="done">Done</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Incentive</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    {{-- Add Incentive modal removed; Add button hidden per request --}}
 
     <!-- Edit Incentive Modal -->
     <div class="modal fade" id="editIncentiveModal" tabindex="-1">

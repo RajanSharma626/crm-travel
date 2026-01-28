@@ -8,15 +8,27 @@ use App\Models\IncentiveRule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class IncentiveController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $incentives = Incentive::with(['lead', 'salesperson', 'incentiveRule'])
-            ->latest()
-            ->paginate(25);
-        return view('incentives.index', compact('incentives'));
+        $query = Incentive::with(['lead', 'salesperson', 'incentiveRule'])->latest();
+
+        // Filter by month
+        if ($request->filled('month')) {
+            $query->where('month', $request->input('month'));
+        }
+
+        $incentives = $query->paginate(25)->withQueryString();
+
+        // Also provide sales users list for the table view
+        $salesUsers = User::where('department', 'Sales')
+            ->orderBy('name')
+            ->get();
+
+        return view('incentives.index', compact('incentives', 'salesUsers'));
     }
 
     public function store(Request $request)
