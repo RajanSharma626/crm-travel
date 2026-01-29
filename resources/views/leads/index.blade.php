@@ -5,7 +5,9 @@
         $canEditLeads =
             Auth::user()->can('edit leads') ||
             Auth::user()->hasRole('Customer Care') ||
-            Auth::user()->department === 'Customer Care';
+            Auth::user()->department === 'Customer Care' ||
+            Auth::user()->hasRole('Sales') ||
+            Auth::user()->department === 'Sales';
         $canDeleteLeads =
             Auth::user()->hasRole('Admin') ||
             Auth::user()->hasRole('Developer') ||

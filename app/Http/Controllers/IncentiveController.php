@@ -5,30 +5,43 @@ namespace App\Http\Controllers;
 use App\Models\Lead;
 use App\Models\Incentive;
 use App\Models\IncentiveRule;
+use App\Models\IncentivePerformance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 
 class IncentiveController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Incentive::with(['lead', 'salesperson', 'incentiveRule'])->latest();
+        // Try loading from `incentives` table first; if it doesn't exist, fall back to
+        // `incentive_performances` table (IncentivePerformance).
+        try {
+            $query = Incentive::with(['lead', 'salesperson', 'incentiveRule'])->latest();
 
-        // Filter by month
-        if ($request->filled('month')) {
-            $query->where('month', $request->input('month'));
+            if ($request->filled('month')) {
+                $query->where('month', $request->input('month'));
+            }
+
+            $incentives = $query->paginate(25)->withQueryString();
+        } catch (QueryException $e) {
+            // Fallback to incentive performances if incentives table missing
+            $query = IncentivePerformance::with('user')->latest();
+            if ($request->filled('month')) {
+                $query->where('month', $request->input('month'));
+            }
+            $incentives = $query->paginate(25)->withQueryString();
         }
 
-        $incentives = $query->paginate(25)->withQueryString();
-
-        // Also provide sales users list for the table view
-        $salesUsers = User::where('department', 'Sales')
+        // Provide users who have incentive performance records
+        $usersWithIncentive = User::whereHas('incentivePerformance')
+            ->with('incentivePerformance')
             ->orderBy('name')
             ->get();
 
-        return view('incentives.index', compact('incentives', 'salesUsers'));
+        return view('incentives.index', compact('incentives', 'usersWithIncentive'));
     }
 
     public function store(Request $request)

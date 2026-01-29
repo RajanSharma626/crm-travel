@@ -143,6 +143,11 @@ class HRController extends Controller
             'handed_over_mobile' => 'nullable|string|max:50',
             'handed_over_id_card' => 'nullable|string|max:50',
             'all_dues_cleared' => 'nullable|string|max:50',
+            // Incentive & performance
+            'incentive_eligibility' => 'nullable|string|in:Yes,No',
+            'incentive_type' => 'nullable|string|in:Fixed,Percentage',
+            'monthly_target' => 'nullable|string|max:255',
+            'incentive_payout_date' => 'nullable|date',
         ]);
 
         // Generate employee_id if not provided
@@ -195,6 +200,18 @@ class HRController extends Controller
         ];
         $user->exitClearance()->create($exitClearanceData);
 
+        // Create incentive performance record if any incentive fields provided
+        $incentiveData = [
+            'incentive_eligibility' => ($request->input('incentive_eligibility') === 'Yes'),
+            'incentive_type' => $request->input('incentive_type') ?? null,
+            'monthly_target' => $request->input('monthly_target') ?? null,
+            'incentive_payout_date' => $request->input('incentive_payout_date') ?? null,
+        ];
+        // Only create if any related field is set
+        if ($incentiveData['incentive_type'] || $incentiveData['monthly_target'] || $request->has('incentive_eligibility')) {
+            $user->incentivePerformance()->create($incentiveData);
+        }
+
         // Sync Spatie role
         if ($user->role) {
             try {
@@ -225,8 +242,7 @@ class HRController extends Controller
     public function edit(User $employee)
     {
         $this->checkAccess();
-
-        $employee->load('exitClearance');
+        $employee->load('exitClearance', 'incentivePerformance');
 
         return view('hr.employees.edit', compact('employee'));
     }
@@ -292,6 +308,11 @@ class HRController extends Controller
             'handed_over_mobile' => 'nullable|string|max:50',
             'handed_over_id_card' => 'nullable|string|max:50',
             'all_dues_cleared' => 'nullable|string|max:50',
+            // Incentive & performance
+            'incentive_eligibility' => 'nullable|string|in:Yes,No',
+            'incentive_type' => 'nullable|string|in:Fixed,Percentage',
+            'monthly_target' => 'nullable|string|max:255',
+            'incentive_payout_date' => 'nullable|date',
         ]);
 
         // Hash password if provided, otherwise remove from array to keep existing password
@@ -343,6 +364,17 @@ class HRController extends Controller
             'all_dues_cleared' => in_array($validated['all_dues_cleared'] ?? null, ['Given', 'Returned', '1']),
         ];
         $employee->exitClearance()->updateOrCreate(['user_id' => $employee->id], $exitClearanceData);
+
+        // Update incentive performance
+        $incentiveData = [
+            'incentive_eligibility' => ($request->input('incentive_eligibility') === 'Yes'),
+            'incentive_type' => $request->input('incentive_type') ?? null,
+            'monthly_target' => $request->input('monthly_target') ?? null,
+            'incentive_payout_date' => $request->input('incentive_payout_date') ?? null,
+        ];
+        if ($incentiveData['incentive_type'] || $incentiveData['monthly_target'] || $request->has('incentive_eligibility')) {
+            $employee->incentivePerformance()->updateOrCreate(['user_id' => $employee->id], $incentiveData);
+        }
 
         // Sync Spatie role
         if ($employee->role) {

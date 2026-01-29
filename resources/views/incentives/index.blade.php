@@ -70,7 +70,8 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse($salesUsers ?? [] as $user)
+                                            @forelse($usersWithIncentive ?? [] as $user)
+                                                @php $perf = $user->incentivePerformance ?? null; @endphp
                                                 <tr>
                                                     <td><strong>{{ $user->employee_id ?? $user->id ?? 'N/A' }}</strong></td>
                                                     <td>{{ $user->department ?? 'N/A' }}</td>
@@ -84,7 +85,17 @@
                                                         @endphp
                                                         {{ $displayMonth }}
                                                     </td>
-                                                    <td></td>
+                                                    <td>
+                                                        @if($perf && $perf->monthly_target)
+                                                            @if(strtolower($perf->incentive_type) === 'fixed' || $perf->incentive_type === 'Fixed')
+                                                                ₹{{ number_format((float)$perf->monthly_target, 2) }}
+                                                            @elseif(strtolower($perf->incentive_type) === 'percentage' || $perf->incentive_type === 'Percentage')
+                                                                {{ rtrim(rtrim(number_format((float)$perf->monthly_target, 2), '0'), '.') }}%
+                                                            @else
+                                                                {{ $perf->monthly_target }}
+                                                            @endif
+                                                        @endif
+                                                    </td>
                                                     <td></td>
                                                     <td></td>
                                                     <td></td>

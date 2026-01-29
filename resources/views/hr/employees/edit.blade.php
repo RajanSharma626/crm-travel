@@ -482,18 +482,21 @@
                                                         & Performance</h6>
                                                 </div>
                                                 <div class="card-body py-3">
+                                                    @php
+                                                        $incPerf = $employee->incentivePerformance ?? null;
+                                                        $incElig = old('incentive_eligibility', $incPerf ? ($incPerf->incentive_eligibility ? 'Yes' : 'No') : null);
+                                                        $incType = old('incentive_type', $incPerf?->incentive_type);
+                                                        $incMonthly = old('monthly_target', $incPerf?->monthly_target);
+                                                        $incPayout = old('incentive_payout_date', $incPerf?->incentive_payout_date ? \Carbon\Carbon::parse($incPerf->incentive_payout_date)->format('Y-m-d') : '');
+                                                    @endphp
                                                     <div class="row g-3">
                                                         <div class="col-md-3">
                                                             <label class="form-label">Incentive Eligibility</label>
                                                             <select name="incentive_eligibility"
                                                                 class="form-control form-control-sm">
                                                                 <option value="">Select</option>
-                                                                <option value="Yes"
-                                                                    {{ old('incentive_eligibility', $employee->incentive_eligibility) == 'Yes' ? 'selected' : '' }}>
-                                                                    Yes</option>
-                                                                <option value="No"
-                                                                    {{ old('incentive_eligibility', $employee->incentive_eligibility) == 'No' ? 'selected' : '' }}>
-                                                                    No</option>
+                                                                <option value="Yes" {{ $incElig == 'Yes' ? 'selected' : '' }}>Yes</option>
+                                                                <option value="No" {{ $incElig == 'No' ? 'selected' : '' }}>No</option>
                                                             </select>
                                                         </div>
                                                         <div class="col-md-3">
@@ -501,26 +504,24 @@
                                                             <select name="incentive_type"
                                                                 class="form-control form-control-sm">
                                                                 <option value="">Select Type</option>
-                                                                <option value="Fixed"
-                                                                    {{ old('incentive_type', $employee->incentive_type) == 'Fixed' ? 'selected' : '' }}>
-                                                                    Fixed</option>
-                                                                <option value="Percentage"
-                                                                    {{ old('incentive_type', $employee->incentive_type) == 'Percentage' ? 'selected' : '' }}>
-                                                                    Percentage</option>
+                                                                <option value="Fixed" {{ $incType == 'Fixed' ? 'selected' : '' }}>Fixed</option>
+                                                                <option value="Percentage" {{ $incType == 'Percentage' ? 'selected' : '' }}>Percentage</option>
                                                             </select>
                                                         </div>
                                                         <div class="col-md-3">
                                                             <label class="form-label">Monthly Target</label>
-                                                            <input type="text" name="monthly_target"
-                                                                class="form-control form-control-sm"
-                                                                value="{{ old('monthly_target', $employee->monthly_target) }}">
+                                                            <div class="d-flex gap-2 align-items-center">
+                                                                <input type="number" step="0.01" name="monthly_target_amount" id="monthly_target_amount" class="form-control form-control-sm" placeholder="Amount" value="{{ old('monthly_target_amount', $incType == 'Fixed' ? $incMonthly : '') }}" style="display:none;">
+                                                                <input type="number" step="0.01" name="monthly_target_percentage" id="monthly_target_percentage" class="form-control form-control-sm" placeholder="Percentage" value="{{ old('monthly_target_percentage', $incType == 'Percentage' ? $incMonthly : '') }}" style="display:none;">
+                                                                <input type="hidden" name="monthly_target" id="monthly_target" value="{{ $incMonthly }}">
+                                                            </div>
+                                                            <small class="text-muted" id="monthly_target_help"></small>
                                                         </div>
                                                         <div class="col-md-3">
                                                             <label class="form-label">Incentive Payout Date</label>
-                                                            <input type="text" name="incentive_payout_date"
+                                                            <input type="date" name="incentive_payout_date"
                                                                 class="form-control form-control-sm"
-                                                                value="{{ old('incentive_payout_date', $employee->incentive_payout_date) }}"
-                                                                placeholder="e.g. 21 of every month">
+                                                                value="{{ $incPayout }}">
                                                         </div>
 
                                                     </div>
@@ -779,6 +780,52 @@
                     // Sync on page load (for existing values)
                     panCardNumberInput.value = panNumberInput.value;
                 }
+                
+                // Incentive type dependent inputs (edit)
+                const incentiveTypeSelectEdit = document.querySelector('select[name="incentive_type"]');
+                const amtInputEdit = document.getElementById('monthly_target_amount');
+                const pctInputEdit = document.getElementById('monthly_target_percentage');
+                const hiddenTargetEdit = document.getElementById('monthly_target');
+                const helpEdit = document.getElementById('monthly_target_help');
+
+                function updateMonthlyTargetInputsEdit() {
+                    const val = incentiveTypeSelectEdit?.value;
+                    if (val === 'Fixed') {
+                        amtInputEdit.style.display = '';
+                        pctInputEdit.style.display = 'none';
+                        helpEdit.textContent = 'Enter fixed amount';
+                        if ((!amtInputEdit.value || amtInputEdit.value === '') && hiddenTargetEdit.value) {
+                            amtInputEdit.value = hiddenTargetEdit.value;
+                        }
+                        hiddenTargetEdit.value = amtInputEdit.value || '';
+                    } else if (val === 'Percentage') {
+                        amtInputEdit.style.display = 'none';
+                        pctInputEdit.style.display = '';
+                        helpEdit.textContent = 'Enter percentage (e.g., 5 for 5%)';
+                        if ((!pctInputEdit.value || pctInputEdit.value === '') && hiddenTargetEdit.value) {
+                            pctInputEdit.value = hiddenTargetEdit.value;
+                        }
+                        hiddenTargetEdit.value = pctInputEdit.value || '';
+                    } else {
+                        amtInputEdit.style.display = 'none';
+                        pctInputEdit.style.display = 'none';
+                        helpEdit.textContent = '';
+                        hiddenTargetEdit.value = '';
+                    }
+                }
+
+                if (incentiveTypeSelectEdit) {
+                    incentiveTypeSelectEdit.addEventListener('change', updateMonthlyTargetInputsEdit);
+                }
+                if (amtInputEdit) {
+                    amtInputEdit.addEventListener('input', function() { hiddenTargetEdit.value = this.value; });
+                }
+                if (pctInputEdit) {
+                    pctInputEdit.addEventListener('input', function() { hiddenTargetEdit.value = this.value; });
+                }
+
+                // Initialize on load
+                updateMonthlyTargetInputsEdit();
             });
         </script>
     @endpush

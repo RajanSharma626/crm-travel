@@ -498,16 +498,18 @@
                                                         </div>
                                                         <div class="col-md-3">
                                                             <label class="form-label">Monthly Target</label>
-                                                            <input type="text" name="monthly_target"
-                                                                class="form-control form-control-sm"
-                                                                value="{{ old('monthly_target') }}">
+                                                            <div class="d-flex gap-2 align-items-center">
+                                                                <input type="number" step="0.01" name="monthly_target_amount" id="monthly_target_amount" class="form-control form-control-sm" placeholder="Amount" value="{{ old('monthly_target_amount') }}" style="display:none;">
+                                                                <input type="number" step="0.01" name="monthly_target_percentage" id="monthly_target_percentage" class="form-control form-control-sm" placeholder="Percentage" value="{{ old('monthly_target_percentage') }}" style="display:none;">
+                                                                <input type="hidden" name="monthly_target" id="monthly_target" value="{{ old('monthly_target') }}">
+                                                            </div>
+                                                            <small class="text-muted" id="monthly_target_help"></small>
                                                         </div>
                                                         <div class="col-md-3">
                                                             <label class="form-label">Incentive Payout Date</label>
                                                             <input type="date" name="incentive_payout_date"
                                                                 class="form-control form-control-sm"
-                                                                value="{{ old('incentive_payout_date') }}"
-                                                                placeholder="e.g. 21 of every month">
+                                                                value="{{ old('incentive_payout_date') }}">
                                                         </div>
 
                                                     </div>
@@ -765,6 +767,54 @@
                     // Sync on page load (for old values)
                     panCardNumberInput.value = panNumberInput.value;
                 }
+                
+                // Incentive type dependent inputs (create)
+                const incentiveTypeSelect = document.querySelector('select[name="incentive_type"]');
+                const amtInput = document.getElementById('monthly_target_amount');
+                const pctInput = document.getElementById('monthly_target_percentage');
+                const hiddenTarget = document.getElementById('monthly_target');
+                const help = document.getElementById('monthly_target_help');
+
+                function updateMonthlyTargetInputs() {
+                    const val = incentiveTypeSelect?.value;
+                    if (val === 'Fixed') {
+                        amtInput.style.display = '';
+                        pctInput.style.display = 'none';
+                        help.textContent = 'Enter fixed amount';
+                        // copy amt into hidden
+                        // if amt input empty but hidden has value (old), populate it
+                        if ((!amtInput.value || amtInput.value === '') && hiddenTarget.value) {
+                            amtInput.value = hiddenTarget.value;
+                        }
+                        hiddenTarget.value = amtInput.value || '';
+                    } else if (val === 'Percentage') {
+                        amtInput.style.display = 'none';
+                        pctInput.style.display = '';
+                        help.textContent = 'Enter percentage (e.g., 5 for 5%)';
+                        if ((!pctInput.value || pctInput.value === '') && hiddenTarget.value) {
+                            pctInput.value = hiddenTarget.value;
+                        }
+                        hiddenTarget.value = pctInput.value || '';
+                    } else {
+                        amtInput.style.display = 'none';
+                        pctInput.style.display = 'none';
+                        help.textContent = '';
+                        hiddenTarget.value = '';
+                    }
+                }
+
+                if (incentiveTypeSelect) {
+                    incentiveTypeSelect.addEventListener('change', updateMonthlyTargetInputs);
+                }
+                if (amtInput) {
+                    amtInput.addEventListener('input', function() { hiddenTarget.value = this.value; });
+                }
+                if (pctInput) {
+                    pctInput.addEventListener('input', function() { hiddenTarget.value = this.value; });
+                }
+
+                // Initialize on load
+                updateMonthlyTargetInputs();
             });
         </script>
     @endpush
