@@ -600,13 +600,38 @@
                                     <div style="max-height: 400px; overflow-y: auto;">
                                         @php
                                             $lead->load('bookingFileRemarks.user');
-                                            // Show all remarks to everyone
+                                            // Check if user is admin
+                                            $isAdmin =
+                                                Auth::user()->hasRole('Admin') ||
+                                                Auth::user()->hasRole('Developer') ||
+                                                Auth::user()->department === 'Admin';
+                                            // If admin, show all remarks; otherwise apply visibility rules:
+                                            // - Sales users: show only their own remarks
+                                            // - Other departments: show Sales remarks + their own remarks
                                             $remarksQuery = $lead->bookingFileRemarks();
-                                            $allRemarks = $remarksQuery->orderBy('created_at', 'desc')->get();
+                                            $currentUser = Auth::user();
+
+                                            if ($isAdmin) {
+                                                $visibleRemarks = $remarksQuery->orderBy('created_at', 'desc')->get();
+                                            } else {
+                                                $currentDept = $currentUser->department ?? '';
+                                                if ($currentDept === 'Sales') {
+                                                    // Sales users see only their own remarks
+                                                    $visibleRemarks = $remarksQuery->where('user_id', $currentUser->id)
+                                                        ->orderBy('created_at', 'desc')->get();
+                                                } else {
+                                                    // Other departments see remarks made by Sales + their own remarks
+                                                    $visibleRemarks = $remarksQuery->where(function ($q) use ($currentUser) {
+                                                        $q->whereHas('user', function ($uq) {
+                                                            $uq->where('department', 'Sales');
+                                                        })->orWhere('user_id', $currentUser->id);
+                                                    })->orderBy('created_at', 'desc')->get();
+                                                }
+                                            }
                                         @endphp
-                                        @if ($allRemarks->count() > 0)
+                                        @if ($visibleRemarks->count() > 0)
                                             <div class="timeline">
-                                                @foreach ($allRemarks as $remark)
+                                                @foreach ($visibleRemarks as $remark)
                                                     <div class="border rounded-3 p-3 mb-3 bg-white">
                                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                                             <div class="d-flex align-items-start flex-grow-1">

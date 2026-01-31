@@ -11,12 +11,40 @@ class BookingFileRemarkController extends Controller
 {
     public function index(Request $request, Lead $lead)
     {
-        $department = $request->input('department', Auth::user()->department ?? 'Sales');
-        $remarks = $lead->bookingFileRemarks()
-            ->where('department', $department)
-            ->with('user')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $currentUser = Auth::user();
+        
+        // Check if user is admin
+        $isAdmin = $currentUser->hasRole('Admin') || 
+                   $currentUser->hasRole('Developer') || 
+                   $currentUser->department === 'Admin';
+        
+        // Apply visibility rules
+        $remarksQuery = $lead->bookingFileRemarks()->with('user');
+        
+        if ($isAdmin) {
+            // Admins see all remarks
+            $remarks = $remarksQuery->orderBy('created_at', 'desc')->get();
+        } else {
+            $currentDept = $currentUser->department ?? '';
+            
+            if ($currentDept === 'Sales') {
+                // Sales users see only their own remarks
+                $remarks = $remarksQuery
+                    ->where('user_id', $currentUser->id)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                // Other departments see remarks made by Sales + their own remarks
+                $remarks = $remarksQuery
+                    ->where(function ($q) use ($currentUser) {
+                        $q->whereHas('user', function ($uq) {
+                            $uq->where('department', 'Sales');
+                        })->orWhere('user_id', $currentUser->id);
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            }
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -36,7 +64,7 @@ class BookingFileRemarkController extends Controller
             ]);
         }
 
-        return view('booking-file-remarks.index', compact('lead', 'remarks', 'department'));
+        return view('booking-file-remarks.index', compact('lead', 'remarks'));
     }
 
     public function store(Request $request, Lead $lead)
