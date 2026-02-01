@@ -21,6 +21,7 @@ class BookingArrivalDeparture extends Model
         'departure_time',
         'arrival_date',
         'arrival_time',
+        'status',
     ];
 
     protected $casts = [

@@ -308,13 +308,17 @@
 
                                         @csrf
                                         <div class="row g-3 align-items-end">
-                                            <div class="col-md-9">
+                                            <div class="col-md-7">
                                                 <label class="form-label">Remark <span
                                                         class="text-danger">*</span></label>
                                                 <textarea name="remark" class="form-control form-control-sm" rows="2" required
                                                     placeholder="Enter your remark..."></textarea>
                                             </div>
                                             <div class="col-md-3">
+                                                <label class="form-label">Follow-up Date</label>
+                                                <input type="datetime-local" name="follow_up_at" class="form-control form-control-sm">
+                                            </div>
+                                            <div class="col-md-2">
                                                 <button type="submit" class="btn btn-sm btn-primary w-100">
                                                     <i data-feather="save" style="width: 14px; height: 14px;"></i>
                                                     Add Remark
@@ -468,8 +472,21 @@
                                             (method_exists($currentUser, 'hasRole') &&
                                                 ($currentUser->hasRole('Sales') ||
                                                     $currentUser->hasRole('Sales Manager'))));
+                                    
+                                    // Only show to Admin, Post Sales, and Accounts departments
+                                    $canViewCustomerPayments = $currentUser && (
+                                        $currentUser->hasRole('Admin') ||
+                                        $currentUser->hasRole('Developer') ||
+                                        $currentUser->department === 'Admin' ||
+                                        $currentUser->department === 'Post Sales' ||
+                                        $currentUser->department === 'Accounts' ||
+                                        (method_exists($currentUser, 'hasRole') && 
+                                            ($currentUser->hasRole('Post Sales') || 
+                                             $currentUser->hasRole('Post Sales Manager') ||
+                                             $currentUser->hasRole('Accounts')))
+                                    );
                                 @endphp
-                                @if ($isAllowedSectionViewer && !$isSalesUser)
+                                @if ($canViewCustomerPayments && $isAllowedSectionViewer && !$isSalesUser)
                                     <div class="mb-4 border rounded-3 p-3">
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <h6 class="text-uppercase text-muted small fw-semibold mb-0">
@@ -599,7 +616,11 @@
                                                     style="width: 14px; height: 14px;"></i>
                                                 Arrival/Departure Details
                                             </h6>
-                                            @if (!$isViewOnly)
+                                            @php
+                                                // Allow Ticketing department to add/edit Arrival/Departure
+                                                $canEditArrivalDeparture = !$isViewOnly || $currentUser->department === 'Ticketing' || $currentUser->hasRole('Ticketing');
+                                            @endphp
+                                            @if ($canEditArrivalDeparture)
                                                 <button type="button" class="btn btn-sm btn-primary"
                                                     data-bs-toggle="modal" data-bs-target="#addArrivalDepartureModal">
                                                     <i data-feather="plus" style="width: 14px; height: 14px;"></i>
@@ -612,14 +633,15 @@
                                                 id="arrivalDepartureTable">
                                                 <thead class="table-light">
                                                     <tr>
-                                                        <th style="width: 12%;" rowspan="2">Mode</th>
-                                                        <th style="width: 15%;" rowspan="2">Info</th>
-                                                        <th style="width: 12%;" rowspan="2">From City</th>
-                                                        <th style="width: 12%;" rowspan="2">To City</th>
-                                                        <th colspan="2" style="width: 18%;">Dep Date & Time</th>
-                                                        <th colspan="2" style="width: 18%;">Arrival Date & Time
+                                                        <th style="width: 10%;" rowspan="2">Mode</th>
+                                                        <th style="width: 13%;" rowspan="2">Info</th>
+                                                        <th style="width: 10%;" rowspan="2">From City</th>
+                                                        <th style="width: 10%;" rowspan="2">To City</th>
+                                                        <th colspan="2" style="width: 16%;">Dep Date & Time</th>
+                                                        <th colspan="2" style="width: 16%;">Arrival Date & Time
                                                         </th>
-                                                        @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) && !$isViewOnly)
+                                                        <th style="width: 12%;" rowspan="2" class="text-center">Status</th>
+                                                        @if ($canEditArrivalDeparture)
                                                             <th style="width: 13%;" rowspan="2" class="text-center">
                                                                 Action</th>
                                                         @endif
@@ -651,38 +673,52 @@
                                                                 <td>
                                                                     {{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}
                                                                 </td>
-                                                                @if (!($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) && !$isViewOnly)
+                                                                <td class="text-center">
+                                                                    @php
+                                                                        $status = $transport->status ?? 'pending';
+                                                                        $statusColor = match($status) {
+                                                                            'issued' => 'success',
+                                                                            'booked' => 'info',
+                                                                            'pending' => 'warning',
+                                                                            default => 'secondary'
+                                                                        };
+                                                                    @endphp
+                                                                    <span class="badge bg-{{ $statusColor }}">
+                                                                        {{ ucfirst($status) }}
+                                                                    </span>
+                                                                </td>
+                                                                @if ($canEditArrivalDeparture)
                                                                     <td class="text-center">
-                                                                        @if (!$isViewOnly)
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                width="16" height="16"
-                                                                                viewBox="0 0 24 24" fill="none"
-                                                                                stroke="currentColor" stroke-width="2"
-                                                                                stroke-linecap="round"
-                                                                                stroke-linejoin="round"
-                                                                                class="editArrivalDepartureRow"
-                                                                                data-id="{{ $transport->id }}"
-                                                                                data-mode="{{ $transport->mode }}"
-                                                                                data-info="{{ $transport->info }}"
-                                                                                data-from-city="{{ $transport->from_city }}"
-                                                                                data-to-city="{{ $transport->to_city }}"
-                                                                                data-departure-date="{{ $transport->departure_date ? $transport->departure_date->format('Y-m-d') : '' }}"
-                                                                                data-departure-time="{{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}"
-                                                                                data-arrival-date="{{ $transport->arrival_date ? $transport->arrival_date->format('Y-m-d') : '' }}"
-                                                                                data-arrival-time="{{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}"
-                                                                                data-bs-toggle="modal"
-                                                                                data-bs-target="#addArrivalDepartureModal"
-                                                                                style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
-                                                                                <path
-                                                                                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                                                </path>
-                                                                                <path
-                                                                                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                                                </path>
-                                                                            </svg>
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                width="16" height="16"
-                                                                                viewBox="0 0 24 24" fill="none"
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16" height="16"
+                                                                            viewBox="0 0 24 24" fill="none"
+                                                                            stroke="currentColor" stroke-width="2"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"
+                                                                            class="editArrivalDepartureRow"
+                                                                            data-id="{{ $transport->id }}"
+                                                                            data-mode="{{ $transport->mode }}"
+                                                                            data-info="{{ $transport->info }}"
+                                                                            data-from-city="{{ $transport->from_city }}"
+                                                                            data-to-city="{{ $transport->to_city }}"
+                                                                            data-departure-date="{{ $transport->departure_date ? $transport->departure_date->format('Y-m-d') : '' }}"
+                                                                            data-departure-time="{{ $transport->departure_time ? substr($transport->departure_time, 0, 5) : '' }}"
+                                                                            data-arrival-date="{{ $transport->arrival_date ? $transport->arrival_date->format('Y-m-d') : '' }}"
+                                                                            data-arrival-time="{{ $transport->arrival_time ? substr($transport->arrival_time, 0, 5) : '' }}"
+                                                                            data-status="{{ $transport->status ?? 'pending' }}"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#addArrivalDepartureModal"
+                                                                            style="width: 16px; height: 16px; color: #0d6efd; cursor: pointer; margin-right: 8px;">
+                                                                            <path
+                                                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                                            </path>
+                                                                            <path
+                                                                                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                                            </path>
+                                                                        </svg>
+                                                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16" height="16"
+                                                                            viewBox="0 0 24 24" fill="none"
                                                                                 stroke="currentColor" stroke-width="2"
                                                                                 stroke-linecap="round"
                                                                                 stroke-linejoin="round"
@@ -695,14 +731,13 @@
                                                                                     d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
                                                                                 </path>
                                                                             </svg>
-                                                                        @endif
                                                                     </td>
                                                                 @endif
                                                             </tr>
                                                         @endforeach
                                                     @else
                                                         <tr>
-                                                            <td colspan="{{ !($isViewOnly && ($isOpsDept || ($isPostSales ?? false) || ($isRestrictedView ?? false))) || (auth()->check() && auth()->user()->department === 'Ticketing') ? '9' : '8' }}"
+                                                            <td colspan="{{ $canEditArrivalDeparture ? '10' : '9' }}"
                                                                 class="text-center text-muted py-4">
                                                                 <i data-feather="inbox"
                                                                     style="width: 24px; height: 24px; opacity: 0.5;"
@@ -1418,6 +1453,14 @@
                                                                         </div>
                                                                         <p class="mb-0 text-dark" style="line-height: 1.6;">
                                                                             {{ $remark->remark }}</p>
+                                                                        @if($remark->follow_up_at)
+                                                                            <div class="mt-2">
+                                                                                <small class="text-primary">
+                                                                                    <i data-feather="calendar" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                                                    Follow-up: {{ \Carbon\Carbon::parse($remark->follow_up_at)->format('d M, Y h:i A') }}
+                                                                                </small>
+                                                                            </div>
+                                                                        @endif
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1890,6 +1933,22 @@
                                     <label class="form-label">Arrival Date & Time <span class="text-danger">*</span></label>
                                     <input type="datetime-local" class="form-control form-control-sm" id="modalArrivalAt"
                                         required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Status</label>
+                                    @php
+                                        $isTicketingUser = $currentUser->department === 'Ticketing' || $currentUser->hasRole('Ticketing');
+                                    @endphp
+                                    @if($isTicketingUser)
+                                        <select class="form-select form-select-sm" id="modalStatus" name="status">
+                                            <option value="pending" selected>Pending</option>
+                                            <option value="booked">Booked</option>
+                                            <option value="issued">Issued</option>
+                                        </select>
+                                    @else
+                                        <input type="text" class="form-control form-control-sm" id="modalStatusDisplay" readonly disabled style="background-color: #f8f9fa; cursor: not-allowed;">
+                                        <input type="hidden" id="modalStatus" name="status" value="pending">
+                                    @endif
                                 </div>
                             </div>
                             <div class="modal-footer mt-3">
@@ -2724,6 +2783,19 @@
                             document.getElementById('modalInfo').value = editBtn.dataset.info || '';
                             document.getElementById('modalFromCity').value = editBtn.dataset.fromCity || '';
                             document.getElementById('modalToCity').value = editBtn.dataset.toCity || '';
+                            
+                            // Handle status field (different for Ticketing vs others)
+                            const statusValue = editBtn.dataset.status || 'pending';
+                            const modalStatus = document.getElementById('modalStatus');
+                            const modalStatusDisplay = document.getElementById('modalStatusDisplay');
+                            
+                            if (modalStatus) {
+                                modalStatus.value = statusValue;
+                            }
+                            if (modalStatusDisplay) {
+                                // Capitalize first letter for display
+                                modalStatusDisplay.value = statusValue.charAt(0).toUpperCase() + statusValue.slice(1);
+                            }
 
                             // Handle datetime-local values (YYYY-MM-DDTHH:MM)
                             const depDate = editBtn.dataset.departureDate || '';

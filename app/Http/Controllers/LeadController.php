@@ -1377,6 +1377,7 @@ class LeadController extends Controller
             'departure_time' => 'nullable|string|max:255',
             'arrival_date' => 'required|date',
             'arrival_time' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:pending,booked,issued',
         ]);
 
         $arrivalDeparture = $lead->bookingArrivalDepartures()->create([
@@ -1388,6 +1389,7 @@ class LeadController extends Controller
             'departure_time' => $validated['departure_time'] ?? null,
             'arrival_date' => $validated['arrival_date'],
             'arrival_time' => $validated['arrival_time'] ?? null,
+            'status' => $validated['status'] ?? 'pending',
         ]);
 
         if ($request->expectsJson()) {
@@ -1418,26 +1420,29 @@ class LeadController extends Controller
         }
 
         $validated = $request->validate([
-            'mode' => 'required|string|max:255',
+            'mode' => 'nullable|string|max:255',
             'info' => 'nullable|string|max:255',
-            'from_city' => 'required|string|max:255',
-            'to_city' => 'required|string|max:255',
-            'departure_date' => 'required|date',
+            'from_city' => 'nullable|string|max:255',
+            'to_city' => 'nullable|string|max:255',
+            'departure_date' => 'nullable|date',
             'departure_time' => 'nullable|string|max:255',
-            'arrival_date' => 'required|date',
+            'arrival_date' => 'nullable|date',
             'arrival_time' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:pending,booked,issued',
         ]);
 
-        $arrivalDeparture->update([
-            'mode' => $validated['mode'],
-            'info' => $validated['info'] ?? null,
-            'from_city' => $validated['from_city'],
-            'to_city' => $validated['to_city'],
-            'departure_date' => $validated['departure_date'],
-            'departure_time' => $validated['departure_time'] ?? null,
-            'arrival_date' => $validated['arrival_date'],
-            'arrival_time' => $validated['arrival_time'] ?? null,
-        ]);
+        $updateData = [];
+        if (isset($validated['mode'])) $updateData['mode'] = $validated['mode'];
+        if (isset($validated['info'])) $updateData['info'] = $validated['info'];
+        if (isset($validated['from_city'])) $updateData['from_city'] = $validated['from_city'];
+        if (isset($validated['to_city'])) $updateData['to_city'] = $validated['to_city'];
+        if (isset($validated['departure_date'])) $updateData['departure_date'] = $validated['departure_date'];
+        if (isset($validated['departure_time'])) $updateData['departure_time'] = $validated['departure_time'];
+        if (isset($validated['arrival_date'])) $updateData['arrival_date'] = $validated['arrival_date'];
+        if (isset($validated['arrival_time'])) $updateData['arrival_time'] = $validated['arrival_time'];
+        if (isset($validated['status'])) $updateData['status'] = $validated['status'];
+
+        $arrivalDeparture->update($updateData);
 
         if ($request->expectsJson()) {
             return response()->json([

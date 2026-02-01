@@ -224,13 +224,17 @@
                                     <form method="POST" action="{{ route('leads.booking-file-remarks.store', $lead) }}">
                                         @csrf
                                         <div class="row g-3 align-items-end">
-                                            <div class="col-md-9">
+                                            <div class="col-md-7">
                                                 <label class="form-label">Remark <span
                                                         class="text-danger">*</span></label>
                                                 <textarea name="remark" class="form-control form-control-sm" rows="2" required
                                                     placeholder="Enter your remark..."></textarea>
                                             </div>
                                             <div class="col-md-3">
+                                                <label class="form-label">Follow-up Date</label>
+                                                <input type="datetime-local" name="follow_up_at" class="form-control form-control-sm">
+                                            </div>
+                                            <div class="col-md-2">
                                                 <button type="submit" class="btn btn-sm btn-primary w-100">
                                                     <i data-feather="save" style="width: 14px; height: 14px;"></i>
                                                     Add Remark
@@ -556,6 +560,14 @@
                                                                     </div>
                                                                     <p class="mb-0 text-dark" style="line-height: 1.6;">
                                                                         {{ $remark->remark }}</p>
+                                                                    @if($remark->follow_up_at)
+                                                                        <div class="mt-2">
+                                                                            <small class="text-primary">
+                                                                                <i data-feather="calendar" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                                                Follow-up: {{ \Carbon\Carbon::parse($remark->follow_up_at)->format('d M, Y h:i A') }}
+                                                                            </small>
+                                                                        </div>
+                                                                    @endif
                                                                 </div>
                                                             </div>
                                                         </div>
