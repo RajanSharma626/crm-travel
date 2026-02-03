@@ -208,8 +208,13 @@
                                                             <div class="flex-grow-1">
                                                                 <div class="small text-muted mb-1">
                                                                     <strong>{{ $lead->latest_booking_file_remark->user->name ?? 'Unknown' }}</strong>
-                                                                    <span
-                                                                        class="ms-2">{{ $lead->latest_booking_file_remark->created_at->format('d/m/Y h:i A') }}</span>
+                                                                    <span class="ms-2">
+                                                                        @if($lead->latest_booking_file_remark->follow_up_at)
+                                                                            {{ \Carbon\Carbon::parse($lead->latest_booking_file_remark->follow_up_at)->format('d/m/Y h:i A') }}
+                                                                        @else
+                                                                            {{ $lead->latest_booking_file_remark->created_at->format('d/m/Y h:i A') }}
+                                                                        @endif
+                                                                    </span>
                                                                 </div>
                                                                 <div class="text-truncate" style="max-width: 300px;"
                                                                     title="{{ $lead->latest_booking_file_remark->remark }}">

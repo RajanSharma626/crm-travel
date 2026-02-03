@@ -268,8 +268,13 @@
                                                 @php
                                                     $stageInfo = $stageInfo ?? null;
                                                     $currentStage = $currentStage ?? 'Pending';
+                                                    $isSalesUser = $currentUser && (
+                                                        $currentUser->department === 'Sales' ||
+                                                        $currentUser->hasRole('Sales') ||
+                                                        $currentUser->hasRole('Sales Manager')
+                                                    );
                                                 @endphp
-                                                @if ($stageInfo)
+                                                @if ($stageInfo && !$isSalesUser)
                                                     <div class="col-md-3">
                                                         <label class="form-label">Stage</label>
                                                         <div class="input-group input-group-sm">
@@ -1125,8 +1130,10 @@
                                                                 @endif
                                                             </td>
                                                             <td>
-                                                                @if ($doc->doc_type === 'passport' && $doc->dob)
+                                                                @if ($doc->dob)
                                                                     {{ $doc->dob->format('d/m/Y') }}
+                                                                @else
+                                                                    -
                                                                 @endif
                                                             </td>
                                                             <td>

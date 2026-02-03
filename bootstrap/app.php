@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.active' => \App\Http\Middleware\CheckUserStatus::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'permission' => \App\Http\Middleware\PermissionMiddleware::class,
+            'admin.ops' => \App\Http\Middleware\CheckAdminOrOperations::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -89,35 +89,17 @@
                                     </div>
                                     <div class="col-md-4 col-lg-3">
                                         <label for="search" class="form-label">Search</label>
-                                        <input type="text" name="search" id="search"
-                                            class="form-control form-control-sm" placeholder="Enter name, ref no., or phone"
-                                            value="{{ $filters['search'] ?? '' }}">
-                                    </div>
-                                    <div class="col-md-3 col-lg-2">
-                                        <label for="delivery_status" class="form-label">Delivery Status</label>
                                         <div class="d-flex">
-                                            <select name="delivery_status" id="delivery_status"
-                                                class="form-select form-select-sm">
-                                                <option value="">All Status</option>
-                                                <option value="Pending"
-                                                    {{ ($filters['delivery_status'] ?? '') == 'Pending' ? 'selected' : '' }}>
-                                                    Pending
-                                                </option>
-                                                <option value="In_Process"
-                                                    {{ ($filters['delivery_status'] ?? '') == 'In_Process' ? 'selected' : '' }}>
-                                                    In
-                                                    Process</option>
-                                                <option value="Delivered"
-                                                    {{ ($filters['delivery_status'] ?? '') == 'Delivered' ? 'selected' : '' }}>
-                                                    Delivered</option>
-                                            </select>
-                                            <button type="submit" class="btn btn-primary btn-sm ms-2 d-flex"> <i
-                                                    class="ri-search-line me-1"></i> Filter</button>
+                                            <input type="text" name="search" id="search"
+                                                class="form-control form-control-sm" placeholder="Enter name, ref no., or phone"
+                                                value="{{ $filters['search'] ?? '' }}">
+                                            <button type="submit" class="btn btn-primary btn-sm ms-2 d-flex align-items-center">
+                                                <i class="ri-search-line me-1"></i> Filter
+                                            </button>
                                         </div>
                                     </div>
                                     @if (
                                         !empty($filters['search']) ||
-                                            !empty($filters['delivery_status']) ||
                                             !empty($filters['travel_date']) ||
                                             !empty($filters['stage']) ||
                                             !empty($filters['next_days']) ||
@@ -220,8 +202,13 @@
                                                             <div class="flex-grow-1">
                                                                 <div class="small text-muted mb-1">
                                                                     <strong>{{ $lead->latest_booking_file_remark->user->name ?? 'Unknown' }}</strong>
-                                                                    <span
-                                                                        class="ms-2">{{ $lead->latest_booking_file_remark->created_at->format('d/m/Y h:i A') }}</span>
+                                                                    <span class="ms-2">
+                                                                        @if($lead->latest_booking_file_remark->follow_up_at)
+                                                                            {{ \Carbon\Carbon::parse($lead->latest_booking_file_remark->follow_up_at)->format('d/m/Y h:i A') }}
+                                                                        @else
+                                                                            {{ $lead->latest_booking_file_remark->created_at->format('d/m/Y h:i A') }}
+                                                                        @endif
+                                                                    </span>
                                                                 </div>
                                                                 <div class="text-truncate" style="max-width: 200px;"
                                                                     title="{{ $lead->latest_booking_file_remark->remark }}">

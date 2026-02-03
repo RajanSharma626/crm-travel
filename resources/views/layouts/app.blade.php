@@ -353,41 +353,54 @@
                                 </li>
                             @endif
 
-                            <!-- Services - Visible to all users -->
-                            <li class="nav-item mb-2 {{ request()->is('services*') ? 'active' : '' }}">
-                                <a class="nav-link" href="{{ route('services.index') }}">
-                                    <span class="nav-icon-wrap">
-                                        <span class="svg-icon">
-                                            <i data-feather="briefcase" class="small"></i>
+                            <!-- Services - Admin and Operations only -->
+                            @php
+                                $canAccessServices = $isAdmin || 
+                                    Auth::user()->department === 'Operation' || 
+                                    Auth::user()->department === 'Operations' ||
+                                    Auth::user()->hasRole('Operation') ||
+                                    Auth::user()->hasRole('Operations');
+                            @endphp
+                            @if($canAccessServices)
+                                <li class="nav-item mb-2 {{ request()->is('services*') ? 'active' : '' }}">
+                                    <a class="nav-link" href="{{ route('services.index') }}">
+                                        <span class="nav-icon-wrap">
+                                            <span class="svg-icon">
+                                                <i data-feather="briefcase" class="small"></i>
+                                            </span>
                                         </span>
-                                    </span>
-                                    <span class="nav-link-text">Services</span>
-                                </a>
-                            </li>
+                                        <span class="nav-link-text">Services</span>
+                                    </a>
+                                </li>
+                            @endif
 
-                            <!-- Destinations - Visible to all users -->
-                            <li class="nav-item mb-2 {{ request()->is('destinations*') ? 'active' : '' }}">
-                                <a class="nav-link" href="{{ route('destinations.index') }}">
-                                    <span class="nav-icon-wrap">
-                                        <span class="svg-icon">
-                                            <i data-feather="map-pin" class="small"></i>
+                            <!-- Destinations - Admin and Operations only -->
+                            @if($canAccessServices)
+                                <li class="nav-item mb-2 {{ request()->is('destinations*') ? 'active' : '' }}">
+                                    <a class="nav-link" href="{{ route('destinations.index') }}">
+                                        <span class="nav-icon-wrap">
+                                            <span class="svg-icon">
+                                                <i data-feather="map-pin" class="small"></i>
+                                            </span>
                                         </span>
-                                    </span>
-                                    <span class="nav-link-text">Destinations</span>
-                                </a>
-                            </li>
+                                        <span class="nav-link-text">Destinations</span>
+                                    </a>
+                                </li>
+                            @endif
 
-                            <!-- Hotels - Visible to all users -->
-                            <li class="nav-item mb-2 {{ request()->is('hotels*') ? 'active' : '' }}">
-                                <a class="nav-link" href="{{ route('hotels.index') }}">
-                                    <span class="nav-icon-wrap">
-                                        <span class="svg-icon">
-                                            <i data-feather="home" class="small"></i>
+                            <!-- Hotels - Admin and Operations only -->
+                            @if($canAccessServices)
+                                <li class="nav-item mb-2 {{ request()->is('hotels*') ? 'active' : '' }}">
+                                    <a class="nav-link" href="{{ route('hotels.index') }}">
+                                        <span class="nav-icon-wrap">
+                                            <span class="svg-icon">
+                                                <i data-feather="home" class="small"></i>
+                                            </span>
                                         </span>
-                                    </span>
-                                    <span class="nav-link-text">Hotels</span>
-                                </a>
-                            </li>
+                                        <span class="nav-link-text">Hotels</span>
+                                    </a>
+                                </li>
+                            @endif
 
 
                             <!-- Incentives Tab - Visible to Admin and HR only (Hidden for Customer Care) -->
