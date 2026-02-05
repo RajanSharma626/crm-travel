@@ -509,14 +509,29 @@
                                                             $currentUser->hasRole('Post Sales')) ||
                                                         (method_exists($currentUser, 'hasRole') &&
                                                             $currentUser->hasRole('Post Sales Manager')));
+                                                
+                                                // Calculate pending amount
+                                                $totalAmount = $lead->selling_price ?? 0;
+                                                $totalReceived = $lead->payments->where('status', 'received')->sum('amount');
+                                                $pendingAmount = $totalAmount - $totalReceived;
                                             @endphp
-                                            @if (!$isViewOnly || $isPostSalesUser)
-                                                <button type="button" class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal" data-bs-target="#postSalesAddPaymentModal">
-                                                    <i data-feather="plus" style="width: 14px; height: 14px;"></i>
-                                                    Add Payment
-                                                </button>
-                                            @endif
+                                            <div class="d-flex align-items-center gap-3">
+                                                @if ($totalAmount > 0)
+                                                    <div>
+                                                        <span class="badge border" style="background-color: #fff9e6; color: #856404;">
+                                                            <i data-feather="clock" style="width: 14px; height: 14px;"></i>
+                                                            ₹{{ number_format($pendingAmount, 2) }}
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                                @if (!$isViewOnly || $isPostSalesUser)
+                                                    <button type="button" class="btn btn-sm btn-primary"
+                                                        data-bs-toggle="modal" data-bs-target="#postSalesAddPaymentModal">
+                                                        <i data-feather="plus" style="width: 14px; height: 14px;"></i>
+                                                        Add Payment
+                                                    </button>
+                                                @endif
+                                            </div>
                                         </div>
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-sm mb-0" id="customerPaymentsTable">

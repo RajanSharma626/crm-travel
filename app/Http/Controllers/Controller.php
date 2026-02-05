@@ -107,6 +107,7 @@ abstract class Controller extends BaseController
                 'Visa' => 'Visa',
                 'Insurance' => 'Insurance',
                 'Delivery' => 'Delivery',
+                'Accounts' => 'Accounts',
             ];
             return $deptMap[$department] ?? $department;
         }
@@ -117,64 +118,58 @@ abstract class Controller extends BaseController
     /**
      * Get stage for a lead based on assigned user's department
      */
-    public static function getLeadStage($lead)
+    public static function getLeadStage($lead, $currentUserDepartment = null)
     {
-        $assignedUser = $lead->assignedUser;
-        
-        if (!$assignedUser) {
-            return [
-                'stage' => 'Pending',
-                'badge_class' => 'bg-secondary',
-                'department' => 'Unknown'
+        // Map department to stage column
+        $deptMap = [
+            'Sales' => ['sales_stage', 'Sales'],
+            'Post Sales' => ['post_sales_stage', 'Post Sales'],
+            'Operations' => ['operations_stage', 'Operations'],
+            'Operation' => ['operations_stage', 'Operations'],
+            'Ticketing' => ['ticketing_stage', 'Ticketing'],
+            'Visa' => ['visa_stage', 'Visa'],
+            'Insurance' => ['insurance_stage', 'Insurance'],
+            'Delivery' => ['delivery_stage', 'Delivery'],
+            'Accounts' => ['accounts_stage', 'Accounts'],
+        ];
+
+        // If current user department is provided, show that department's stage
+        if ($currentUserDepartment && isset($deptMap[$currentUserDepartment])) {
+            [$stageKey, $department] = $deptMap[$currentUserDepartment];
+            $currentStage = $lead->{$stageKey} ?? 'Pending';
+        } else {
+            // Fallback: Find the most recent active department stage
+            $departmentStages = [
+                ['key' => 'accounts_stage', 'name' => 'Accounts'],
+                ['key' => 'delivery_stage', 'name' => 'Delivery'],
+                ['key' => 'insurance_stage', 'name' => 'Insurance'],
+                ['key' => 'visa_stage', 'name' => 'Visa'],
+                ['key' => 'ticketing_stage', 'name' => 'Ticketing'],
+                ['key' => 'operations_stage', 'name' => 'Operations'],
+                ['key' => 'post_sales_stage', 'name' => 'Post Sales'],
+                ['key' => 'sales_stage', 'name' => 'Sales'],
             ];
-        }
 
-        // Get role - try role field first, then Spatie roles
-        $userRole = $assignedUser->role;
-        if (!$userRole && $assignedUser->roles && $assignedUser->roles->isNotEmpty()) {
-            $userRole = $assignedUser->roles->first()->name;
-        }
-        $userDepartment = $assignedUser->department;
+            $stageKey = null;
+            $department = null;
+            $currentStage = 'Pending';
 
-        // Map role to department and stage column
-        $stageKey = null;
-        $department = null;
+            foreach ($departmentStages as $deptStage) {
+                $stageValue = $lead->{$deptStage['key']} ?? null;
+                
+                if ($stageValue && $stageValue !== 'Pending' && $stageValue !== '') {
+                    $stageKey = $deptStage['key'];
+                    $department = $deptStage['name'];
+                    $currentStage = $stageValue;
+                    break;
+                }
+            }
 
-        if (in_array($userRole, ['Sales', 'Sales Manager'])) {
-            $stageKey = 'sales_stage';
-            $department = 'Sales';
-        } elseif (in_array($userRole, ['Post Sales', 'Post Sales Manager'])) {
-            $stageKey = 'post_sales_stage';
-            $department = 'Post Sales';
-        } elseif (in_array($userRole, ['Operation', 'Operation Manager'])) {
-            $stageKey = 'operations_stage';
-            $department = 'Operations';
-        } elseif (in_array($userRole, ['Delivery', 'Delivery Manager'])) {
-            $stageKey = 'delivery_stage';
-            $department = 'Delivery';
-        } elseif ($userDepartment) {
-            $deptMap = [
-                'Sales' => ['sales_stage', 'Sales'],
-                'Post Sales' => ['post_sales_stage', 'Post Sales'],
-                'Operations' => ['operations_stage', 'Operations'],
-                'Operation' => ['operations_stage', 'Operations'],
-                'Ticketing' => ['ticketing_stage', 'Ticketing'],
-                'Visa' => ['visa_stage', 'Visa'],
-                'Insurance' => ['insurance_stage', 'Insurance'],
-                'Delivery' => ['delivery_stage', 'Delivery'],
-            ];
-            if (isset($deptMap[$userDepartment])) {
-                [$stageKey, $department] = $deptMap[$userDepartment];
+            if (!$stageKey) {
+                $currentStage = $lead->sales_stage ?? 'Pending';
+                $department = 'Sales';
             }
         }
-
-        if (!$stageKey) {
-            // Default to post_sales_stage if can't determine
-            $stageKey = 'post_sales_stage';
-            $department = 'Post Sales';
-        }
-
-        $currentStage = $lead->{$stageKey} ?? 'Pending';
 
         // Determine badge color based on stage
         $badgeClass = 'bg-secondary'; // default
@@ -186,7 +181,7 @@ abstract class Controller extends BaseController
             $badgeClass = 'bg-success text-white';
         } elseif (in_array($currentStage, ['Refused', 'Cancelled'])) {
             $badgeClass = 'bg-danger text-white';
-        } elseif (in_array($currentStage, ['Vouchered', 'Monitoring', 'Received', 'Briefing', 'Booked', 'QC Passed', 'Feedback'])) {
+        } elseif (in_array($currentStage, ['Vouchered', 'Monitoring', 'Received', 'Briefing', 'Booked', 'QC Passed', 'Feedback', 'Done'])) {
             $badgeClass = 'bg-primary text-white';
         }
 

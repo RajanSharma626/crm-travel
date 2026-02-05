@@ -52,6 +52,7 @@ class Lead extends Model
         'visa_stage',
         'insurance_stage',
         'delivery_stage',
+        'accounts_stage',
         'post_sales_user_id',
         'operations_user_id',
         'ticketing_user_id',

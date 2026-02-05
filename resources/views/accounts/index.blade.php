@@ -195,7 +195,8 @@
                                                 </td>
                                                 <td>{{ $bookingType }}</td>
                                                 @php
-                                                    $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead);
+                                                    $currentUserDept = Auth::user()->department ?? (Auth::user()->getRoleNameAttribute() ?? null);
+                                                    $stageInfo = \App\Http\Controllers\Controller::getLeadStage($lead, $currentUserDept);
                                                 @endphp
                                                 <td>
                                                     <span class="badge {{ $stageInfo['badge_class'] }}">
