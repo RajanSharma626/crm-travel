@@ -87,6 +87,12 @@
                                             @endforeach
                                         </select>
                                     </div>
+                                    <div class="col-md-3 col-lg-2">
+                                        <label for="follow_up_date" class="form-label">Follow-up Date</label>
+                                        <input type="date" name="follow_up_date" id="follow_up_date"
+                                            class="form-control form-control-sm"
+                                            value="{{ $filters['follow_up_date'] ?? '' }}">
+                                    </div>
                                     <div class="col-md-4 col-lg-3">
                                         <label for="search" class="form-label">Search</label>
                                         <div class="d-flex">
@@ -104,7 +110,8 @@
                                             !empty($filters['stage']) ||
                                             !empty($filters['next_days']) ||
                                             !empty($filters['service']) ||
-                                            !empty($filters['destination']))
+                                            !empty($filters['destination']) ||
+                                            !empty($filters['follow_up_date']))
                                         <div class="col-md-3 col-lg-2 align-self-end ms-auto">
                                             <a href="{{ route('post-sales.index') }}"
                                                 class="btn btn-outline-danger w-100 btn-sm">Clear

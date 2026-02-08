@@ -94,7 +94,7 @@
                                             <tr>
                                                 <td><strong>{{ $employee->employee_id ?? 'N/A' }}</strong></td>
                                                 <td>{{ $employee->name }}</td>
-                                                <td>{{ $employee->work_email ?? 'N/A' }}</td>
+                                                <td>{{ $employee->email ?? 'N/A' }}</td>
                                                 <td>{{ $employee->department ?? 'N/A' }}</td>
                                                 <td>{{ $employee->designation ?? 'N/A' }}</td>
                                                 <td>{{ $employee->doj ? $employee->doj->format('d M, Y') : 'N/A' }}</td>

@@ -31,6 +31,7 @@ class PaymentController extends Controller
             'next_days' => $request->input('next_days'),
             'service' => $request->input('service'),
             'destination' => $request->input('destination'),
+            'follow_up_date' => $request->input('follow_up_date'),
         ];
 
         // Show booked leads with payment and cost information for Accounts team
@@ -103,6 +104,15 @@ class PaymentController extends Controller
 
         if (!empty($filters['destination'])) {
             $leadsQuery->where('destination_id', $filters['destination']);
+        }
+
+        // Follow-up date filter - filter by user's own remarks
+        if (!empty($filters['follow_up_date'])) {
+            $userId = $currentUser->id;
+            $leadsQuery->whereHas('bookingFileRemarks', function ($q) use ($userId, $filters) {
+                $q->where('user_id', $userId)
+                  ->whereDate('follow_up_at', '=', $filters['follow_up_date']);
+            });
         }
 
         $leads = $leadsQuery->paginate(25);

@@ -4166,7 +4166,7 @@
                                     <td><small>${createdAt}</small></td>
                                     <td class="text-center">
                                         <button type="button" class="btn btn-sm btn-outline-primary" 
-                                            onclick="openDownloadModal(${voucher.id}, ${voucher.lead_id})" title="Download Voucher">
+                                            onclick="openDownloadModal(${voucher.id}, ${voucher.lead_id})">
                                             <i data-feather="download" style="width: 14px; height: 14px;"></i>
                                         </button>
                                         ${voucher.voucher_type !== 'itinerary' ? `

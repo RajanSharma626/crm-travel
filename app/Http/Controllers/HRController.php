@@ -20,18 +20,21 @@ class HRController extends Controller
         }
         
         // Check Spatie roles
-        $hasSpatieRole = $user->hasRole('Admin') || $user->hasRole('HR') || $user->hasRole('Developer') || $user->department === 'Admin';
+        $hasSpatieRole = $user->hasRole('Admin') || $user->hasRole('HR') || $user->hasRole('Developer');
+        
+        // Check department field
+        $hasDepartment = in_array($user->department, ['Admin', 'HR']);
         
         // Also check role field for backward compatibility
         $roleField = $user->role ?? $user->getRoleNameAttribute();
         $hasRoleField = in_array($roleField, ['Admin', 'HR', 'Developer']);
         
         // Allow access if any check passes
-        if ($hasSpatieRole || $hasRoleField) {
+        if ($hasSpatieRole || $hasDepartment || $hasRoleField) {
             return; // Allow access
         }
         
-        abort(403, 'You do not have permission to access this resource. Your role: ' . ($roleField ?? 'none'));
+        abort(403, 'You do not have permission to access this resource. Your role: ' . ($roleField ?? 'User') . ', Department: ' . ($user->department ?? 'none'));
     }
 
     /**
